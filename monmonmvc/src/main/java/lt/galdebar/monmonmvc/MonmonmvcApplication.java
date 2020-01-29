@@ -8,6 +8,8 @@ public class MonmonmvcApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MonmonmvcApplication.class, args);
+		System.out.println("app runs!");
+
 	}
 
 }
