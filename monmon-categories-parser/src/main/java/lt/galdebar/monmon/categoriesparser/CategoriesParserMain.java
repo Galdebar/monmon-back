@@ -9,10 +9,7 @@ public class CategoriesParserMain {
 
     public void pushCategoriesToDB(){
         List<CategoryDAO> categoryDAOList = convertToDAO(getCategories());
-//        for(CategoryDAO categoryDAO: categoryDAOList){
-//            System.out.println(categoryDAO);
-//        }
-//        GlobalDependencies.SESSION_MANAGER.pushList(categoryDAOList);
+        GlobalDependencies.SESSION_MANAGER.pushList(categoryDAOList);
     }
 
     private List<CategoryDTO> getCategories(){

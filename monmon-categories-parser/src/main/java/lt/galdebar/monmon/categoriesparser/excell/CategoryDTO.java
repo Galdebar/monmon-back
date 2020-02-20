@@ -1,5 +1,6 @@
 package lt.galdebar.monmon.categoriesparser.excell;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -11,6 +12,10 @@ public class CategoryDTO {
     private Set<String> keywords;
 
     public CategoryDTO() {
+        this.categoryName = "";
+        this.subcategory = "";
+        this.foodCategoryName = "";
+        this.keywords = new HashSet<>();
     }
 
     public CategoryDTO(String categoryName, String subcategory, String foodCategoryName, Set<String> keywords) {

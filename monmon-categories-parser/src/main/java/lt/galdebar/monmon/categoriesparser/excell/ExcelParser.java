@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ExcellParser {
+public class ExcelParser {
     private static final File TAXONOMY_FILE = new File("monmon-categories-parser/src/main/resources/taxonomy-with-ids.en-US.xls");
     private static final String SHEET_NAME = "Sheet1";
     private static final String FOOD_CATEGORY_NAME = "Food Items";
@@ -23,7 +23,7 @@ public class ExcellParser {
     private static DataFormatter dataFormatter;
     private static boolean isParserValid;
 
-    public ExcellParser() {
+    public ExcelParser() {
         try {
             workbook = WorkbookFactory.create(TAXONOMY_FILE);
             sheet = workbook.getSheet(SHEET_NAME);
@@ -62,94 +62,73 @@ public class ExcellParser {
 
     private void generateDTOFromRow(List<CategoryDTO> categoryDTOList, Row row) {
         int cellCount = 0; // First cell needs to be ignored, because I don't need the category ID
-        CategoryDTO categoryDTO;
-        String categoryName = "";
-        String subcategory = "";
-        String foodCategoryName = "";
+        CategoryDTO categoryDTO = new CategoryDTO();
         Set<String> keywords = new HashSet<>();
 
         for (Cell cell : row) {
             cellCount++;
             String cellValue = dataFormatter.formatCellValue(cell);
-            if (cellCount != 1) {
+            if (cellCount != 1 && !cellValue.equals("")) {
+                    getCategoryName(cellCount, categoryDTO, cellValue);
+                    getSubcategoryName(cellCount, categoryDTO, cellValue);
+                    getFoodCategoryName(cellCount, categoryDTO, cellValue);
+                    addKeywordsIfValid(categoryDTO.getKeywords(), cellValue);
+
 //                categoryName = getCategoryName(cellCount, cellValue, categoryName);
 //                subcategory = getSubcategoryName(cellCount, cellValue, subcategory);
 //                foodCategoryName = getFoodCategoryName(cellCount, subcategory, cellValue, subcategory);
 //                addKeywordIfValid(keywords, cellValue);
-
-                if (cellCount == 2) {
-                    categoryName = cellValue;
-                }
-                if (!cellValue.equals("")) {
-                    if (cellCount == 3 && cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)) {
-                        categoryName = TOBACCO_SUBCATEGORY_NAME_IN_SHEETS;
-                    } else if (cellCount == 3 && cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)) {
-                        categoryName = BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS;
-                    }
-
-                    if (cellCount == 3 && cellValue.equals(FOOD_CATEGORY_NAME)) {
-                        subcategory = cellValue;
-                    }
-
-                    if (cellCount == 4 && subcategory.equals(FOOD_CATEGORY_NAME)) {
-                        foodCategoryName = cellValue;
-                    }
-                    keywords.add(cellValue);
-                }
+//
+//                if (cellCount == 2) {
+//                    categoryDTO.setCategoryName(cellValue);
+//                }
+//                if (!cellValue.equals("")) {
+//                    getCategoryName(cellCount, categoryDTO, cellValue);
+//
+//                    getSubcategoryName(cellCount, categoryDTO, cellValue);
+//
+//                    getFoodCategoryName(cellCount, categoryDTO, cellValue);
+//                    addKeywordsIfValid(categoryDTO.getKeywords(), cellValue);
+//                }
 
 
             }
         }
 
-        keywords.remove(FOOD_CATEGORY_NAME);
-        keywords.remove(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS);
-        keywords.remove(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS);
-        keywords.remove(FOOD_BEVERAGES_TOBACCO);
-
-        categoryDTO = new CategoryDTO(categoryName, subcategory, foodCategoryName, keywords);
-//        System.out.println(categoryDTO);
         categoryDTOList.add(categoryDTO);
     }
 
-    private void addKeywordIfValid(Set<String> keywords, String cellValue) {
-        if (!cellValue.equals("")) {
+    private void addKeywordsIfValid(Set<String> keywords, String cellValue) {
+        if(!cellValue.equals(FOOD_CATEGORY_NAME)
+        || !cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)
+        || !cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)
+        || !cellValue.equals(FOOD_BEVERAGES_TOBACCO)){
             keywords.add(cellValue);
         }
     }
 
-
-    private String getFoodCategoryName(int cellCount, String subcategoryName, String cellValue, String currentValue) {
-        if (!cellValue.equals("")) {
-
-            if (cellCount == 4 && subcategoryName.equals(FOOD_CATEGORY_NAME)) {
-                return cellValue;
-            }
+    private void getFoodCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+        if (cellCount == 4 && categoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
+            categoryDTO.setFoodCategoryName(cellValue);
         }
-        return currentValue;
     }
 
-    private String getSubcategoryName(int cellCount, String cellValue, String currentValue) {
-        if (!cellValue.equals("")) {
-            if (cellCount == 3 && cellValue.equals(FOOD_CATEGORY_NAME)) {
-                return cellValue;
-            }
+    private void getSubcategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+        if (cellCount == 3 && cellValue.equals(FOOD_CATEGORY_NAME)) {
+            categoryDTO.setSubcategory(cellValue);
         }
-        return currentValue;
-
     }
 
-    private String getCategoryName(int cellCount, String cellValue, String currentValue) {
+    private void getCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
         if (cellCount == 2) {
-            return cellValue;
+            categoryDTO.setCategoryName(cellValue);
         }
-        if (!cellValue.equals("")) {
-            if (cellCount == 3 && cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)) {
-                return TOBACCO_SUBCATEGORY_NAME_IN_SHEETS;
-            } else if (cellCount == 3 && cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)) {
-                return BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS;
-            }
+
+        if (cellCount == 3 && cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)) {
+            categoryDTO.setCategoryName(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS);
+        } else if (cellCount == 3 && cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)) {
+            categoryDTO.setCategoryName(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS);
         }
-        return currentValue;
     }
 
     private List<CategoryDTO> trimList(List<CategoryDTO> unfilteredList) {
