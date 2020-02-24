@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.model.shoppingitem;
+package lt.galdebar.monmonmvc.persistence.dao;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;

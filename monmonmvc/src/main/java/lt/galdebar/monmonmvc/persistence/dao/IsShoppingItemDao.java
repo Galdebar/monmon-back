@@ -1,6 +1,4 @@
-package lt.galdebar.monmonmvc.dao;
-
-import lt.galdebar.monmonmvc.model.shoppingitem.ShoppingItem;
+package lt.galdebar.monmonmvc.persistence.dao;
 
 public interface IsShoppingItemDao {
     void insertItem(ShoppingItem shoppingItem);

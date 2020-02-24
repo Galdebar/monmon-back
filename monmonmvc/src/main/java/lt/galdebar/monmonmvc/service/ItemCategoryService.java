@@ -1,6 +1,6 @@
 package lt.galdebar.monmonmvc.service;
 
-import lt.galdebar.monmonmvc.model.shoppingitem.ShoppingItemCategory;
+import lt.galdebar.monmonmvc.persistence.dao.ShoppingItemCategory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

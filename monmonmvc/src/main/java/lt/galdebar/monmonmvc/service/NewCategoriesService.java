@@ -1,6 +1,6 @@
 package lt.galdebar.monmonmvc.service;
 
-import lt.galdebar.monmonmvc.dao.NewCategoriesRepository;
+import lt.galdebar.monmonmvc.persistence.repositories.NewCategoriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,5 @@
 package lt.galdebar.monmonmvc;
 
-import lt.galdebar.monmon.categoriesparser.CategoriesParserMain;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -12,8 +11,8 @@ public class MonmonmvcApplication {
 
 		System.out.println("app runs!");
 
-		CategoriesParserMain categoriesParser = new CategoriesParserMain();
-		categoriesParser.pushCategoriesToDB();
+//		CategoriesParserMain categoriesParser = new CategoriesParserMain();
+//		categoriesParser.pushCategoriesToDB();
 	}
 
 }

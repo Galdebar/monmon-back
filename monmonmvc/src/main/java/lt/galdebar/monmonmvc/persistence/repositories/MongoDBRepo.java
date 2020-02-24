@@ -1,6 +1,6 @@
-package lt.galdebar.monmonmvc.dao;
+package lt.galdebar.monmonmvc.persistence.repositories;
 
-import lt.galdebar.monmonmvc.model.shoppingitem.ShoppingItem;
+import lt.galdebar.monmonmvc.persistence.dao.ShoppingItem;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

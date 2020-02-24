@@ -13,8 +13,8 @@ public class CategoriesParserMain {
     }
 
     private List<CategoryDTO> getCategories(){
-        if(GlobalDependencies.EXCELL_PARSER.isParserValid()){
-            return GlobalDependencies.EXCELL_PARSER.getCategories();
+        if(GlobalDependencies.EXCEL_PARSER.isParserValid()){
+            return GlobalDependencies.EXCEL_PARSER.getCategories();
         }
 
         return null;

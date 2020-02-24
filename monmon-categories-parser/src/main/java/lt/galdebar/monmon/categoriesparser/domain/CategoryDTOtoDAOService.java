@@ -18,9 +18,11 @@ public class CategoryDTOtoDAOService {
     }
 
     public CategoryDAO convertSingle(CategoryDTO categoryDTO) {
-        Set<String> keywords = new HashSet<>();
+        Set<KeywordDAO> keywords = new HashSet<>();
         for (String keyword : categoryDTO.getKeywords()) {
-            keywords.add(keyword);
+            KeywordDAO keywordDAO = new KeywordDAO();
+            keywordDAO.setKeyword(keyword);
+            keywords.add(keywordDAO);
         }
         return new CategoryDAO(
                 categoryDTO.getCategoryName(),

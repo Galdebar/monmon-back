@@ -2,11 +2,10 @@ package lt.galdebar.monmonmvc.service;
 
 
 import lombok.RequiredArgsConstructor;
-import lt.galdebar.monmonmvc.dao.InMemoryShoppingItemRepo;
-import lt.galdebar.monmonmvc.dao.MongoDBRepo;
-import lt.galdebar.monmonmvc.model.shoppingitem.ShoppingItem;
+import lt.galdebar.monmonmvc.persistence.dao.Category;
+import lt.galdebar.monmonmvc.persistence.repositories.MongoDBRepo;
+import lt.galdebar.monmonmvc.persistence.dao.ShoppingItem;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -16,27 +15,31 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ItemService {
-    @Autowired
-    @Qualifier("inMemoryRepo")
-    private final InMemoryShoppingItemRepo inMemoryItemRepo;
 
     @Autowired
     private final MongoDBRepo mongoDBRepo;
 
-    public void addItem(ShoppingItem shoppingItem){
-        inMemoryItemRepo.insertItem(shoppingItem);
-        mongoDBRepo.insert(shoppingItem);
+    @Autowired
+    private HibernateSearchService hibernateSearchService;
+
+    public ShoppingItem addItem(ShoppingItem shoppingItem) {
+        Category shoppingItemCategory = hibernateSearchService.findCategoryByKeyword(
+                shoppingItem.itemName
+        );
+        shoppingItem.itemCategory = shoppingItemCategory.getCategoryName();
+        ShoppingItem returnedItem = mongoDBRepo.insert(shoppingItem);
+        return returnedItem;
     }
 
-    public Optional<ShoppingItem> getItemById(String id){
+    public Optional<ShoppingItem> getItemById(String id) {
         return mongoDBRepo.findById(id);
     }
 
-    public ShoppingItem getItemByName(String itemName){
+    public ShoppingItem getItemByName(String itemName) {
         return mongoDBRepo.findByItemName(itemName);
     }
 
-    public List<ShoppingItem> getItemsByCategory(String requestedCategory){
+    public List<ShoppingItem> getItemsByCategory(String requestedCategory) {
         return mongoDBRepo.findByItemCategory(requestedCategory);
     }
 
@@ -44,23 +47,24 @@ public class ItemService {
         return mongoDBRepo.findAll();
     }
 
-    public List<ShoppingItem> getAllNOTInCart(){
+    public List<ShoppingItem> getAllNOTInCart() {
         return mongoDBRepo.findByIsInCart(false);
     }
 
-    public void updateItem(ShoppingItem shoppingItem){
-        mongoDBRepo.save(shoppingItem);
+    public ShoppingItem updateItem(ShoppingItem shoppingItem) {
+
+        return mongoDBRepo.save(shoppingItem);
     }
 
-    public void updateItems(ShoppingItem[] shoppingItems){
-        mongoDBRepo.saveAll(Arrays.asList(shoppingItems));
+    public List<ShoppingItem> updateItems(ShoppingItem[] shoppingItems) {
+        return mongoDBRepo.saveAll(Arrays.asList(shoppingItems));
     }
 
-    public void deleteItem(ShoppingItem shoppingItem){
+    public void deleteItem(ShoppingItem shoppingItem) {
         mongoDBRepo.delete(shoppingItem);
     }
 
-    public void deleteItems(ShoppingItem[] shoppingItems){
+    public void deleteItems(ShoppingItem[] shoppingItems) {
         mongoDBRepo.deleteAll(Arrays.asList(shoppingItems));
     }
 }

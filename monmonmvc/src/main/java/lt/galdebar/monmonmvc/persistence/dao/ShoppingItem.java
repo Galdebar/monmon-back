@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.model.shoppingitem;
+package lt.galdebar.monmonmvc.persistence.dao;
 
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -13,7 +13,7 @@ public class ShoppingItem {
     @Id
     public String id;
     public String itemName;
-    public ShoppingItemCategory itemCategory;
+    public String itemCategory;
     public Integer quantity;
     public String comment;
     public boolean isInCart = false;

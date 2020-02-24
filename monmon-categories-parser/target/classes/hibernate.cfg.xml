@@ -23,6 +23,7 @@
         <property name="show_sql">true</property>
 
         <mapping class="lt.galdebar.monmon.categoriesparser.domain.CategoryDAO"/>
+        <mapping class="lt.galdebar.monmon.categoriesparser.domain.KeywordDAO"/>
 
 
     </session-factory>
