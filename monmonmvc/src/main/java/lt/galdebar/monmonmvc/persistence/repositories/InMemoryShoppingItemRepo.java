@@ -1,28 +1,27 @@
 package lt.galdebar.monmonmvc.persistence.repositories;
 
-import lt.galdebar.monmonmvc.persistence.dao.IsShoppingItemDao;
-import lt.galdebar.monmonmvc.persistence.dao.ShoppingItem;
+import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingItemDAO;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository("inMemoryRepo")
-public class InMemoryShoppingItemRepo implements IsShoppingItemDao {
-    private static List<ShoppingItem> shoppingItems = new ArrayList<>();
+public class InMemoryShoppingItemRepo implements IsShoppingItemRepo {
+    private static List<ShoppingItemDAO> shoppingItemDAOS = new ArrayList<>();
 
 
-    public void insertItem(ShoppingItem shoppingItem){
-        shoppingItems.add(shoppingItem);
+    public void insertItem(ShoppingItemDAO shoppingItemDAO){
+        shoppingItemDAOS.add(shoppingItemDAO);
     }
 
-    public ShoppingItem findByItemName(String itemName) {
-        ShoppingItem foundShoppingItem = null;
-        for(ShoppingItem shoppingItem : shoppingItems){
-            if(shoppingItem.itemName.equalsIgnoreCase(itemName)){
-                foundShoppingItem = shoppingItem;
+    public ShoppingItemDAO findByItemName(String itemName) {
+        ShoppingItemDAO foundShoppingItemDAO = null;
+        for(ShoppingItemDAO shoppingItemDAO : shoppingItemDAOS){
+            if(shoppingItemDAO.itemName.equalsIgnoreCase(itemName)){
+                foundShoppingItemDAO = shoppingItemDAO;
             }
         }
-        return foundShoppingItem;
+        return foundShoppingItemDAO;
     }
 }

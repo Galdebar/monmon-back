@@ -61,7 +61,7 @@ public class ExcelParser {
     }
 
     private void generateDTOFromRow(List<CategoryDTO> categoryDTOList, Row row) {
-        int cellCount = 0; // First cell needs to be ignored, because I don't need the category ID
+        int cellCount = 0; // First cell needs to be ignored, because I don't need the shoppingItemCategory ID
         CategoryDTO categoryDTO = new CategoryDTO();
         Set<String> keywords = new HashSet<>();
 

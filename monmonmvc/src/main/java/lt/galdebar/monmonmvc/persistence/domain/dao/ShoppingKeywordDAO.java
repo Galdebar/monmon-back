@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.persistence.dao;
+package lt.galdebar.monmonmvc.persistence.domain.dao;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Keyword {
+public class ShoppingKeywordDAO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -24,7 +24,7 @@ public class Keyword {
     @JsonManagedReference
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id")
-    private Category category;
+    private ShoppingCategoryDAO shoppingItemCategory;
     @Field
     @Column(name = "keywords")
     private String keyword;

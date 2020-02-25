@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.persistence.dao;
+package lt.galdebar.monmonmvc.persistence.domain.dao;
 
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Accessors(fluent = true)
 @Document(collection = "items")
-public class ShoppingItem {
+public class ShoppingItemDAO {
     @Id
     public String id;
     public String itemName;
@@ -22,7 +22,7 @@ public class ShoppingItem {
 
     @Override
     public String toString() {
-        return "ShoppingItem{" +
+        return "ShoppingItemDAO{" +
                 "id='" + id + '\'' +
                 ", itemName='" + itemName + '\'' +
                 ", itemCategory=" + itemCategory +

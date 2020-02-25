@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.persistence.dao;
+package lt.galdebar.monmonmvc.persistence.domain.dao;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Category {
+public class ShoppingCategoryDAO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -25,8 +25,8 @@ public class Category {
     @Column(unique = true, name = "category_name")
     private String categoryName;
     @JsonBackReference
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "category", fetch = FetchType.EAGER)
-    private Set<Keyword> keywords;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "shoppingItemCategory", fetch = FetchType.EAGER)
+    private Set<ShoppingKeywordDAO> keywords;
 
 
 }
