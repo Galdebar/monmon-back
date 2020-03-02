@@ -3,6 +3,8 @@ package lt.galdebar.monmonmvc;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.util.function.Function;
+
 @SpringBootApplication
 public class MonmonmvcApplication {
 
@@ -13,6 +15,8 @@ public class MonmonmvcApplication {
 
 //		CategoriesParserMain categoriesParser = new CategoriesParserMain();
 //		categoriesParser.pushCategoriesToDB();
+
+
 	}
 
 }

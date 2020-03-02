@@ -1,7 +1,7 @@
 package lt.galdebar.monmon.categoriesparser;
 
 import lt.galdebar.monmon.categoriesparser.domain.CategoryDAO;
-import lt.galdebar.monmon.categoriesparser.excell.CategoryDTO;
+import lt.galdebar.monmon.categoriesparser.excel.CategoryDTO;
 
 import java.util.List;
 

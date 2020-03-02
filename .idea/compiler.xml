@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="monmonmvc" />
         <module name="monmoncategoriesparser" />
+        <module name="monmonwebscraper" />
       </profile>
     </annotationProcessing>
   </component>

@@ -1,6 +1,6 @@
 package lt.galdebar.monmon.categoriesparser.domain;
 
-import lt.galdebar.monmon.categoriesparser.excell.CategoryDTO;
+import lt.galdebar.monmon.categoriesparser.excel.CategoryDTO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,7 +17,7 @@ public class CategoryDTOtoDAOService {
         return categoryDAOList;
     }
 
-    public CategoryDAO convertSingle(CategoryDTO categoryDTO) {
+    private CategoryDAO convertSingle(CategoryDTO categoryDTO) {
         Set<KeywordDAO> keywords = new HashSet<>();
         for (String keyword : categoryDTO.getKeywords()) {
             KeywordDAO keywordDAO = new KeywordDAO();

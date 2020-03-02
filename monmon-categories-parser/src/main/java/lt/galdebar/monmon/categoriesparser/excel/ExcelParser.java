@@ -1,4 +1,4 @@
-package lt.galdebar.monmon.categoriesparser.excell;
+package lt.galdebar.monmon.categoriesparser.excel;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
@@ -18,6 +18,7 @@ public class ExcelParser {
     private static final String TOBACCO_SUBCATEGORY_NAME_IN_SHEETS = "Tobacco Products";
     private static final String BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS = "Beverages";
     private static final String FOOD_BEVERAGES_TOBACCO = "Food, Beverages & Tobacco";
+    private static final String UNCATEGORIZED_TITLE = "Uncategorized";
     private static Workbook workbook;
     private static Sheet sheet;
     private static DataFormatter dataFormatter;
@@ -36,7 +37,21 @@ public class ExcelParser {
             e.printStackTrace();
             isParserValid = false;
         }
+    }
 
+    public ExcelParser(String filePath) {
+        try {
+            workbook = WorkbookFactory.create(new File(filePath));
+            sheet = workbook.getSheet(SHEET_NAME);
+            dataFormatter = new DataFormatter();
+            isParserValid = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            isParserValid = false;
+        } catch (InvalidFormatException e) {
+            e.printStackTrace();
+            isParserValid = false;
+        }
     }
 
     public boolean isParserValid() {
@@ -44,23 +59,27 @@ public class ExcelParser {
     }
 
     public List<CategoryDTO> getCategories() {
-        return trimList(getUnfilteredCategories());
+        List<CategoryDTO> unfilteredList = getUnfilteredCategories();
+        List<CategoryDTO> consolidatedList = consolidateSimilarCategories(unfilteredList);
+        List<CategoryDTO> finalList = removeEmptyEntries(consolidatedList);
+        return finalList;
     }
 
-    private List<CategoryDTO> getUnfilteredCategories() {
+    List<CategoryDTO> getUnfilteredCategories() {
         List<CategoryDTO> categoryDTOList = new ArrayList<>();
         categoryDTOList.add(createUncategorized());
         for (Row row : sheet) {
-            generateDTOFromRow(categoryDTOList, row);
+            CategoryDTO generatedDTO = generateDTOFromRow(row);
+            categoryDTOList.add(generatedDTO);
         }
         return categoryDTOList;
     }
 
     private CategoryDTO createUncategorized() {
-        return new CategoryDTO("Uncategorized", "", "", new HashSet<String>());
+        return new CategoryDTO(UNCATEGORIZED_TITLE, "", "", new HashSet<String>());
     }
 
-    private void generateDTOFromRow(List<CategoryDTO> categoryDTOList, Row row) {
+    CategoryDTO generateDTOFromRow(Row row) {
         int cellCount = 0; // First cell needs to be ignored, because I don't need the shoppingItemCategory ID
         CategoryDTO categoryDTO = new CategoryDTO();
         Set<String> keywords = new HashSet<>();
@@ -69,57 +88,38 @@ public class ExcelParser {
             cellCount++;
             String cellValue = dataFormatter.formatCellValue(cell);
             if (cellCount != 1 && !cellValue.equals("")) {
-                    getCategoryName(cellCount, categoryDTO, cellValue);
-                    getSubcategoryName(cellCount, categoryDTO, cellValue);
-                    getFoodCategoryName(cellCount, categoryDTO, cellValue);
-                    addKeywordsIfValid(categoryDTO.getKeywords(), cellValue);
-
-//                categoryName = getCategoryName(cellCount, cellValue, categoryName);
-//                subcategory = getSubcategoryName(cellCount, cellValue, subcategory);
-//                foodCategoryName = getFoodCategoryName(cellCount, subcategory, cellValue, subcategory);
-//                addKeywordIfValid(keywords, cellValue);
-//
-//                if (cellCount == 2) {
-//                    categoryDTO.setCategoryName(cellValue);
-//                }
-//                if (!cellValue.equals("")) {
-//                    getCategoryName(cellCount, categoryDTO, cellValue);
-//
-//                    getSubcategoryName(cellCount, categoryDTO, cellValue);
-//
-//                    getFoodCategoryName(cellCount, categoryDTO, cellValue);
-//                    addKeywordsIfValid(categoryDTO.getKeywords(), cellValue);
-//                }
-
-
+                getCategoryName(cellCount, categoryDTO, cellValue);
+                getSubcategoryName(cellCount, categoryDTO, cellValue);
+                getFoodCategoryName(cellCount, categoryDTO, cellValue);
+                addKeywordsIfValid(categoryDTO.getKeywords(), cellValue);
             }
         }
 
-        categoryDTOList.add(categoryDTO);
+        return categoryDTO;
     }
 
-    private void addKeywordsIfValid(Set<String> keywords, String cellValue) {
-        if(!cellValue.equals(FOOD_CATEGORY_NAME)
-        || !cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)
-        || !cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)
-        || !cellValue.equals(FOOD_BEVERAGES_TOBACCO)){
+    void addKeywordsIfValid(Set<String> keywords, String cellValue) {
+        if (!cellValue.equals(FOOD_CATEGORY_NAME)
+                && !cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)
+                && !cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)
+                && !cellValue.equals(FOOD_BEVERAGES_TOBACCO)) {
             keywords.add(cellValue);
         }
     }
 
-    private void getFoodCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+    void getFoodCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
         if (cellCount == 4 && categoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
             categoryDTO.setFoodCategoryName(cellValue);
         }
     }
 
-    private void getSubcategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+    void getSubcategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
         if (cellCount == 3 && cellValue.equals(FOOD_CATEGORY_NAME)) {
             categoryDTO.setSubcategory(cellValue);
         }
     }
 
-    private void getCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+    void getCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
         if (cellCount == 2) {
             categoryDTO.setCategoryName(cellValue);
         }
@@ -131,38 +131,37 @@ public class ExcelParser {
         }
     }
 
-    private List<CategoryDTO> trimList(List<CategoryDTO> unfilteredList) {
+    List<CategoryDTO> consolidateSimilarCategories(List<CategoryDTO> unfilteredList) {
         List<CategoryDTO> filteredList = new ArrayList<>();
 
-        for (CategoryDTO categoryDTO : unfilteredList) {
+        for (CategoryDTO unfilteredCategoryDTO : unfilteredList) {
             if (filteredList.size() == 0) {
-                filteredList.add(categoryDTO);
+                filteredList.add(unfilteredCategoryDTO);
                 continue;
             }
 
 
             CategoryDTO lastObjectInFilteredList = filteredList.get(filteredList.size() - 1);
-            if (categoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
-                categoryDTO.setCategoryName(categoryDTO.getFoodCategoryName());
+            if (unfilteredCategoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
+                unfilteredCategoryDTO.setCategoryName(unfilteredCategoryDTO.getFoodCategoryName());
             }
-            if (lastObjectInFilteredList.getCategoryName().equals(categoryDTO.getCategoryName())) {
-                lastObjectInFilteredList.getKeywords().addAll(categoryDTO.getKeywords());
+            if (lastObjectInFilteredList.getCategoryName().equals(unfilteredCategoryDTO.getCategoryName())) {
+                lastObjectInFilteredList.getKeywords().addAll(unfilteredCategoryDTO.getKeywords());
             } else {
-                filteredList.add(categoryDTO);
+                filteredList.add(unfilteredCategoryDTO);
             }
 
         }
+        return filteredList;
+    }
 
-        filteredList = filteredList.stream()
+    List<CategoryDTO> removeEmptyEntries(List<CategoryDTO> categoryDTOList) {
+        List<CategoryDTO> filteredList = categoryDTOList.stream()
                 .filter(item -> !item.getCategoryName().equals(""))
                 .distinct()
-                .filter(item -> item.getKeywords().size() != 1)
+                .filter(item -> item.getKeywords().size() >1 || item.getCategoryName().equals(UNCATEGORIZED_TITLE))
                 .filter(item -> !item.getCategoryName().equals(FOOD_BEVERAGES_TOBACCO))
                 .collect(Collectors.toList());
-
-        for(CategoryDTO categoryDTO:filteredList){
-            System.out.println(categoryDTO);
-        }
         return filteredList;
     }
 }

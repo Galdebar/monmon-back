@@ -1,7 +1,7 @@
 package lt.galdebar.monmon.categoriesparser;
 
 import lt.galdebar.monmon.categoriesparser.domain.CategoryDTOtoDAOService;
-import lt.galdebar.monmon.categoriesparser.excell.ExcelParser;
+import lt.galdebar.monmon.categoriesparser.excel.ExcelParser;
 
 public class GlobalDependencies {
     public static final ExcelParser EXCEL_PARSER = new ExcelParser();

@@ -1,7 +1,6 @@
-package lt.galdebar.monmon.categoriesparser.excell;
+package lt.galdebar.monmon.categoriesparser.excel;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -11,14 +10,14 @@ public class CategoryDTO {
     private String foodCategoryName;
     private Set<String> keywords;
 
-    public CategoryDTO() {
+    CategoryDTO() {
         this.categoryName = "";
         this.subcategory = "";
         this.foodCategoryName = "";
         this.keywords = new HashSet<>();
     }
 
-    public CategoryDTO(String categoryName, String subcategory, String foodCategoryName, Set<String> keywords) {
+    CategoryDTO(String categoryName, String subcategory, String foodCategoryName, Set<String> keywords) {
         this.categoryName = categoryName;
         this.subcategory = subcategory;
         this.foodCategoryName = foodCategoryName;
@@ -29,11 +28,11 @@ public class CategoryDTO {
         return keywords;
     }
 
-    public String getSubcategory() {
+    String getSubcategory() {
         return subcategory;
     }
 
-    public String getFoodCategoryName() {
+    String getFoodCategoryName() {
         return foodCategoryName;
     }
 
@@ -41,15 +40,15 @@ public class CategoryDTO {
         return categoryName;
     }
 
-    public void setCategoryName(String categoryName) {
+    void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
     }
 
-    public void setSubcategory(String subcategory) {
+    void setSubcategory(String subcategory) {
         this.subcategory = subcategory;
     }
 
-    public void setFoodCategoryName(String foodCategoryName) {
+    void setFoodCategoryName(String foodCategoryName) {
         this.foodCategoryName = foodCategoryName;
     }
 

@@ -12,6 +12,7 @@
     <modules>
         <module>monmonmvc</module>
         <module>monmon-categories-parser</module>
+        <module>monmon-web-scraper</module>
     </modules>
 
     <properties>

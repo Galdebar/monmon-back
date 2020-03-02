@@ -1,6 +1,7 @@
 package lt.galdebar.monmonmvc.service;
 
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingItemDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
@@ -15,11 +16,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class ShoppingItemService {
 
     @Autowired
-    private final MongoDBRepo mongoDBRepo;
+    private MongoDBRepo mongoDBRepo;
 
     @Autowired
     private ShoppingItemCategoryService shoppingItemCategoryService;
@@ -35,10 +36,6 @@ public class ShoppingItemService {
 
     public Optional<ShoppingItemDAO> getItemById(String id) {
         return mongoDBRepo.findById(id);
-    }
-
-    public ShoppingItemDAO getItemByName(String itemName) {
-        return mongoDBRepo.findByItemName(itemName);
     }
 
     public List<ShoppingItemDAO> getItemsByCategory(String requestedCategory) {
@@ -81,9 +78,7 @@ public class ShoppingItemService {
 
     private List<ShoppingItemDAO> dtosToDaos(List<ShoppingItemDTO> shoppingItemDTOList) {
         List<ShoppingItemDAO> shoppingItemDAOList = new ArrayList<>();
-        shoppingItemDTOList.forEach(dto -> {
-            shoppingItemDAOList.add(dtoToDao(dto));
-        });
+        shoppingItemDTOList.forEach(dto -> shoppingItemDAOList.add(dtoToDao(dto)));
         return shoppingItemDAOList;
     }
 
@@ -100,9 +95,7 @@ public class ShoppingItemService {
 
     private List<ShoppingItemDTO> daosToDtos(List<ShoppingItemDAO> shoppingItemDAOList) {
         List<ShoppingItemDTO> shoppingItemDTOList = new ArrayList<>();
-        shoppingItemDAOList.forEach(dao -> {
-            shoppingItemDTOList.add(daoToDto(dao));
-        });
+        shoppingItemDAOList.forEach(dao -> shoppingItemDTOList.add(daoToDto(dao)));
         return shoppingItemDTOList;
     }
 }

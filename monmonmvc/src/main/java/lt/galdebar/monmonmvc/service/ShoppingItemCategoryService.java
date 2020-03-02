@@ -91,7 +91,7 @@ public class ShoppingItemCategoryService {
     }
 
     @Transactional
-    public ShoppingCategoryDAO getUncategorized() {
+    private ShoppingCategoryDAO getUncategorized() {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
@@ -131,18 +131,14 @@ public class ShoppingItemCategoryService {
 
     private ShoppingCategoryDTO categoryDAOToDTO(ShoppingCategoryDAO shoppingCategoryDAO) {
         Set<String> keywords = new HashSet<>();
-        shoppingCategoryDAO.getKeywords().forEach(shoppingKeywordDAO -> {
-            keywords.add(shoppingKeywordDAO.getKeyword());
-        });
+        shoppingCategoryDAO.getKeywords().forEach(shoppingKeywordDAO -> keywords.add(shoppingKeywordDAO.getKeyword()));
 
         return new ShoppingCategoryDTO(shoppingCategoryDAO.getCategoryName(), keywords);
     }
 
     private List<ShoppingCategoryDTO> categoryDAOSToDTOS(List<ShoppingCategoryDAO> shoppingCategoryDAOList){
         List<ShoppingCategoryDTO> shoppingCategoryDTOList = new ArrayList<>();
-        shoppingCategoryDAOList.forEach(categoryDAO -> {
-            shoppingCategoryDTOList.add(categoryDAOToDTO(categoryDAO));
-        });
+        shoppingCategoryDAOList.forEach(categoryDAO -> shoppingCategoryDTOList.add(categoryDAOToDTO(categoryDAO)));
         return shoppingCategoryDTOList;
     }
 
@@ -160,18 +156,14 @@ public class ShoppingItemCategoryService {
 
     private List<ShoppingCategoryDAO> categoryDTOSToDAOS(List<ShoppingCategoryDTO> shoppingCategoryDTOList){
         List<ShoppingCategoryDAO> shoppingCategoryDAOList = new ArrayList<>();
-        shoppingCategoryDTOList.forEach(categoryDTO -> {
-            shoppingCategoryDAOList.add(categoryDTOToDAO(categoryDTO));
-        });
+        shoppingCategoryDTOList.forEach(categoryDTO -> shoppingCategoryDAOList.add(categoryDTOToDAO(categoryDTO)));
 
         return shoppingCategoryDAOList;
     }
 
     private List<ShoppingKeywordDTO> keywordDAOSToDTOS(List<ShoppingKeywordDAO> keywordList) {
         List<ShoppingKeywordDTO> shoppingKeywordDTOList = new ArrayList<>();
-        keywordList.forEach(keywordDAO -> {
-            shoppingKeywordDTOList.add(keywordDAOToDTO(keywordDAO));
-        });
+        keywordList.forEach(keywordDAO -> shoppingKeywordDTOList.add(keywordDAOToDTO(keywordDAO)));
 
         return shoppingKeywordDTOList;
     }
