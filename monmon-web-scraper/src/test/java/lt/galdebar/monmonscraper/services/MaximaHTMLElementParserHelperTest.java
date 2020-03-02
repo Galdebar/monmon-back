@@ -27,7 +27,6 @@ class MaximaHTMLElementParserHelperTest {
     }
 
     @Autowired
-    private
     MaximaHTMLElementParserHelper parser;
 
     @Test
@@ -111,6 +110,20 @@ class MaximaHTMLElementParserHelperTest {
         String expectedName = "Atšaldytas kiaulienos kumpis be kaulų, be odos, vakuumuotas";
         String expectedBrand = "LAUKUVA";
         float expectedPrice = 2.79f;
+
+        ScrapedShoppingItem actualItem = parser.parseElement(testElement);
+
+        assertEquals(expectedName, actualItem.getName());
+        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedPrice, actualItem.getPrice());
+    }
+
+    @Test
+    void complexElement3Test(){
+        Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/ComplexElement3.html");
+        String expectedName = "Virta dešra";
+        String expectedBrand = "SAMSONO DAKTARIŠKA";
+        float expectedPrice = 1.74f;
 
         ScrapedShoppingItem actualItem = parser.parseElement(testElement);
 

@@ -78,6 +78,16 @@ public class MaximaScraperTest {
     }
 
     @Test
+    void getItemsOnOfferPaginationTest() {
+        MaximaScraper scraper = new MaximaScraper();
+        int expectedItemCount = getTotalItemsFromActualSite();
+        int actualItemCount = scraper.getItemsOnOffer().size();
+
+        assertEquals(expectedItemCount, actualItemCount);
+
+    }
+
+    @Test
     void createItemFromElementTest1() {
         int expectedItemIndex = 2;
         String expectedItemName = "sviestas";
@@ -92,5 +102,16 @@ public class MaximaScraperTest {
         assertTrue(actualItem.getName().equalsIgnoreCase(expectedItemName));
         assertTrue(actualItem.getBrand().equalsIgnoreCase(expectedItemBrand));
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
+    }
+
+    private int getTotalItemsFromActualSite() {
+        Document doc = null;
+        try {
+            doc = Jsoup.connect("https://www.maxima.lt/akcijos#visi-pasiulymai-1").userAgent("Mozilla").get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Element totalItemsElement = doc.getElementById("items_cnt");
+        return Integer.parseInt(totalItemsElement.text());
     }
 }

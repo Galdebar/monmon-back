@@ -126,7 +126,7 @@ class MaximaHTMLElementParserHelper {
 
     private boolean checkifWordIsOnlyAlphabetic(String word) {
         for (char c : word.toCharArray()) {
-            if (!Character.isDigit(c) || c == ' ') {
+            if (!Character.isDigit(c)  && c!='.' || c == ' ') {
                 continue;
             }
             return false;
