@@ -1,0 +1,365 @@
+function header( ){
+	this.init();
+}
+
+//------------------------------------------------------
+header.prototype.init = function( ){
+
+	var self = this;
+
+	self.break_point = 1024;
+
+	self.opened = false;
+	self.animating = false;
+	self.sticky = false;
+	self.stick_block = false;
+	self.abs = false;
+	self.bl_sticky_margin_top = 0;
+	self.body_translated = 0;
+
+	self.$header = $("header");
+	self.$btn_exp = $("#menu_exp");
+	self.$extra_navc = $("#extra_navc");
+	self.$main_navc = $("#main_navc");
+	self.$nav_mob = $("#header_nav_mob");
+	self.$header_push = $("#header_push");
+    self.$locale_select = $(".locale-select.res");
+
+	self.$bl_sticky = $(".bl_sticky");
+	if( self.$bl_sticky.length )
+	{
+		self.$bl_sticky_push = $('<div></div>');
+		self.$bl_sticky_push.css({ display:'none'});
+		self.$bl_sticky_push.insertBefore( self.$bl_sticky );
+	}
+
+
+	self.initExpButton();
+	self.initScrollToTopButton();
+	self.calculateSizes();
+
+}
+
+
+//------------------------------------------------------
+header.prototype.initScrollToTopButton = function(){
+
+	var self = this;
+
+	if( !self.$bl_sticky.length )
+		return;
+
+	self.$bl_sticky.find(".st_top").click(function(){
+		$('html, body').stop().animate({ scrollTop: 0 }, 300 );
+	});
+
+
+}
+
+
+
+//------------------------------------------------------
+header.prototype.initExpButton = function(){
+
+	var self = this;
+
+	self.$btn_exp.click(function(){
+
+		if( self.opened )
+		{
+			self.close();
+		}
+		else
+		{
+			self.open();
+		}
+
+	});
+}
+
+//------------------------------------------------------
+header.prototype.open = function(){
+
+	var self = this;
+
+	if( self.animating )
+		return;
+
+	self.animating = true;
+	self.opened = true;
+
+	var h = self.$nav_mob.actual("outerHeight") + self.$extra_navc.actual("outerHeight");
+
+	var notify_h = ( app_.modules['notify'] != undefined ) ? app_.modules['notify'].height : 0;
+
+
+	self.$header.css({ y: -h });
+	self.$header.addClass("opened");
+
+	self.$nav_mob.css({ display:"block" });
+	self.$extra_navc.css({ display:"block" });
+	self.$btn_exp.addClass("act");
+    self.$locale_select.show();
+
+	self.$header.transition({ y: notify_h }, 300, 'easeOutCirc', function(){
+		self.animating = false;
+	});
+
+}
+
+
+//------------------------------------------------------
+header.prototype.close = function(){
+
+	var self = this;
+
+	if( self.animating )
+		return;
+
+	self.animating = true;
+	self.opened = false;
+
+	var h = self.$nav_mob.actual("outerHeight") + self.$extra_navc.actual("outerHeight");
+	self.$btn_exp.removeClass("act");
+    self.$locale_select.hide();
+
+	self.$header.transition({ y: -h }, 200, 'easeInCubic' ,function(){
+		self.animating = false;
+
+		var notify_h = ( app_.modules['notify'] != undefined ) ? app_.modules['notify'].height : 0;
+
+		self.$header.removeClass("opened");
+		self.$header.css({ y: notify_h });
+
+
+		self.$nav_mob.css({ display:"none" });
+		self.$extra_navc.css({ display:"none" });
+
+	});
+}
+
+
+//------------------------------------------------------
+header.prototype.calculateSizes = function(){
+
+	var self = this;
+
+	var old_margin_top = self.bl_sticky_margin_top;
+
+	self.extra_navc_h = self.$extra_navc.actual( 'outerHeight', { includeMargin : true });
+	self.main_navc_h = self.$main_navc.actual( 'outerHeight', { includeMargin : true });
+	self.header_h = self.extra_navc_h + self.main_navc_h;
+
+	if( self.$bl_sticky.length != 0 )
+	{
+
+		var mart = self.$bl_sticky.attr("data-margin-top");
+
+		if( mart != '')
+			self.bl_sticky_margin_top = parseInt( mart );
+		else
+			self.bl_sticky_margin_top = parseInt( self.$bl_sticky.css('marginTop') );
+
+		self.bl_sticky_margin_bottom = parseInt( self.$bl_sticky.css('marginBottom') );
+		self.bl_sticky_h = self.$bl_sticky.outerHeight() + self.bl_sticky_margin_bottom;
+
+
+		if( self.$bl_sticky_push.is(":visible") )
+		{
+			self.$bl_sticky_push.css({height: self.bl_sticky_h -1 });
+			var off_ = self.$bl_sticky_push.offset();
+
+		}
+		else{
+			var off_ = self.$bl_sticky.offset();
+		}
+
+
+		var notify_h = ( app_.modules['notify'] != undefined ) ? app_.modules['notify'].height : 0;
+
+		self.bl_sticky_top = off_.top - notify_h;
+
+	}
+
+}
+
+
+//-------------------------------------------------------------------
+header.prototype.scrollEvent = function(st){
+
+	var self = this;
+
+	if( app_.w_w <= self.break_point || app_.resizing)
+		return;
+
+	// scrolled to sticky block
+	if(  self.sticky && self.$bl_sticky.length )
+	{
+
+		// position header
+		if(  st > self.bl_sticky_top - self.main_navc_h   )
+		{
+			if( !self.abs )
+				self.absHeader();
+		}
+		else
+		{
+			if( self.abs )
+				self.unabsHeader();
+		}
+
+		// stick block
+		if(  st >  self.bl_sticky_top )
+		{
+			if( !self.stick_block )
+				self.stickBlock();
+		}
+		else
+		{
+			if( self.stick_block )
+				self.unstickBlock();
+		}
+
+	}
+
+	// scrolled header
+	//if( !self.$bl_sticky.length || self.$bl_sticky.length && self.bl_sticky_top!= self.header_h )
+
+
+	{
+		if( st >= self.extra_navc_h  )
+		{
+			if( !self.sticky )
+				self.stickHeader();
+		}
+		else
+			if( self.sticky )
+				self.unstickHeader();
+	}
+
+
+
+}
+
+
+//-------------------------------------------------------------------
+header.prototype.stickHeader = function () {
+
+    var self = this;
+    self.sticky = true;
+    self.$header.addClass("sticky");
+    self.$header_push.css({height: self.header_h, display: "block", top: 0});
+
+}
+
+//-------------------------------------------------------------------
+header.prototype.unstickHeader = function () {
+
+    var self = this;
+    self.sticky = false;
+    self.$header.removeClass("sticky");
+    self.$header_push.css({display: "none"});
+
+}
+
+//-------------------------------------------------------------------
+header.prototype.absHeader = function () {
+
+    var self = this;
+    self.abs = true;
+    self.sticky = true;
+    self.stickHeader();
+
+    self.$header.removeClass("sticky");
+    self.$header.addClass("abs");
+    self.$header.css({top: self.bl_sticky_top - self.main_navc_h});
+
+}
+
+//-------------------------------------------------------------------
+header.prototype.unabsHeader = function () {
+
+    var self = this;
+    self.abs = false;
+    self.$header.removeClass("abs");
+    self.$header.addClass("sticky");
+    self.$header.css({top: ''});
+
+}
+
+//-------------------------------------------------------------------
+header.prototype.stickBlock = function () {
+
+	var self = this;
+	self.stick_block = true;
+
+	self.$bl_sticky.addClass( "act" );
+	self.$bl_sticky_push.css({ height: self.bl_sticky_h - 1, display:"block" , marginTop: self.bl_sticky_margin_top + 'px'});
+
+}
+
+
+//-------------------------------------------------------------------
+header.prototype.unstickBlock = function () {
+
+    var self = this;
+
+    if (!self.$bl_sticky.length)
+        return;
+
+    self.stick_block = false;
+    self.$bl_sticky.removeClass("act");
+    self.$bl_sticky_push.css({display: "none", marginTop: ''});
+
+}
+
+
+//------------------------------------------------------
+header.prototype.resizeElements = function () {
+
+    var self = this;
+
+	if( app_.w_w > self.break_point )
+	{
+		self.opened = false;
+		self.$header.removeClass("opened");
+		self.$btn_exp.removeClass("act");
+
+		var notify_h = ( app_.modules['notify'] != undefined ) ? app_.modules['notify'].height : 0;
+		self.$header.css({ y: notify_h });
+
+
+		self.$nav_mob.css({ display:"" });
+		self.$extra_navc.css({ display:"" });
+
+        self.$locale_select.hide();
+	}
+	else
+	{
+		self.unabsHeader();
+		self.unstickHeader();
+		self.unstickBlock();
+		self.$header_push.css({display:'block', height: '' });
+	}
+}
+
+//------------------------------------------------------
+header.prototype.resizeElementsEnd = function () {
+
+    var self = this;
+
+	if( app_.w_w > self.break_point )
+	{
+		//self.sticky = false;
+		//self.stick_block = false;
+		//self.abs = false;
+		//app_.resizing = false;
+
+        //self.unabsHeader();
+        //self.unstickBlock();
+        //self.unstickHeader();
+        self.calculateSizes();
+
+        $('html, body').stop().animate({scrollTop: $(window).scrollTop() + 2}, 300);
+    }
+}

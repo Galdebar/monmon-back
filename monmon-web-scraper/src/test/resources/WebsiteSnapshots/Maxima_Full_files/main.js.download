@@ -1,0 +1,304 @@
+if (typeof console == "undefined") 
+	var console = { log: function() {} };
+
+if (!$.support.transition)
+	$.fn.transition = $.fn.animate;
+
+var loader_small = { lines: 8, length: 4, width: 3, radius: 5 };
+
+//------------------------------------------------------
+function isElementInViewport(el) {
+
+    //special bonus for those using jQuery
+    if (typeof jQuery === "function" && el instanceof jQuery) {
+        el = el[0];
+    }
+
+    var rect = el.getBoundingClientRect();
+
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
+    );
+}	
+
+//------------------------------------------------------
+function isElementVisible(el) {
+    var rect     = el.getBoundingClientRect(),
+        vWidth   = window.innerWidth || doc.documentElement.clientWidth,
+        vHeight  = window.innerHeight || doc.documentElement.clientHeight,
+        efp      = function (x, y) { return document.elementFromPoint(x, y) };     
+
+    // Return false if it's not in the viewport
+    if (rect.right < 0 || rect.bottom < 0 
+            || rect.left > vWidth || rect.top > vHeight)
+        return false;
+
+    // Return true if any of its four corners are visible
+    return (
+          el.contains(efp(rect.left,  rect.top))
+      ||  el.contains(efp(rect.right, rect.top))
+      ||  el.contains(efp(rect.right, rect.bottom))
+      ||  el.contains(efp(rect.left,  rect.bottom))
+    );
+}
+
+//------------------------------------------------------
+$(document).ready(function(){
+
+    if(document.getElementById("newsletter_c") !== null) {
+        grecaptcha.ready(function () {
+            grecaptcha.execute('6LeLzqkUAAAAAOE9BkdaXfjoSXeL93cFIpR_0mcW', { action: 'contact' }).then(function (token) {
+                var recaptchaResponse = document.getElementById('recaptchaResponse');
+                recaptchaResponse.value = token;
+            });
+        });
+    }
+
+	$(".mob_nav .btn.newsletter").click( function(){
+
+		$.fancybox.open( "#newsletter_c" ,
+		{
+			type:'inline',
+			wrapCSS : 'fancybox_newsletter',
+			maxWidth: 300, 
+			//height: 250,
+			autoHeight : true,
+			autoCenter : true,
+			padding : [30,20,26,20],
+			autoSize:false,
+			helpers : {
+						overlay : 	{
+		    							css: { background : 'rgba(0, 0, 0, 0.7)' }
+									}
+						},
+			beforeShow: function(){
+				fancybox_closed = 0;
+			},
+			beforeClose: function(){
+			},
+			afterClose: function(){
+				fancybox_closed = 1;
+			}
+
+		});	
+	});
+
+    $(".subscribe").click(function(){
+
+        $.fancybox.open( "#newsletter_c" ,
+            {
+                type:'inline',
+                wrapCSS : 'fancybox_newsletter',
+                maxWidth: 300,
+                //height: 250,
+                autoHeight : true,
+                autoCenter : true,
+                padding : [30,20,26,20],
+                autoSize:false,
+                scrolling : false,
+                helpers : {
+                    overlay : 	{
+                        locked: true,
+                        css: { background : 'rgba(0, 0, 0, 0.7)' }
+                    }
+                },
+                beforeShow: function(){
+                    fancybox_closed = 0;
+                },
+                beforeClose: function(){
+                },
+                afterClose: function(){
+                    fancybox_closed = 1;
+
+                    $("#newsletter_c").css({ display:""});
+                    $("#newsletter_c.difflang").css({ display:"none"});
+                }
+
+            });
+
+
+    });
+
+    initNewsletter();
+    initLocale();
+
+    if (detectIE()) {
+        //$(".custom_select select").css('padding-right', '8px');
+    }
+});
+
+
+
+
+//-----------------------------------------------------------
+function initNewsletter(){
+
+    var $email = $("#newsletter_c").find('input[name="email"]');
+    var $form = $("#form_newsletter");
+    var $submit = $("#newsletter_c").find('input[type="submit"]');
+    var $report = $("#newsletter_report");
+
+    $report.click(function(){
+        $(this).hide();
+    })
+
+    email_class( $email.val() );
+
+    $email.keyup(function(){
+        var email_str =  $(this).val();
+        email_class(email_str);
+        console.log('a')
+    });
+
+    $form.submit(function () {
+
+        var url = $form.attr('action');
+
+        email_str = $email.val();
+        email_class(email_str);
+
+        if (!isEmail(email_str))
+            return false;
+        
+        grecaptcha.execute('6LeLzqkUAAAAAOE9BkdaXfjoSXeL93cFIpR_0mcW', { action: 'contact' }).then(function (token) {
+            var recaptchaResponse = document.getElementById('recaptchaResponse');
+            recaptchaResponse.value = token;
+        });
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            data: $form.serialize(),
+            type: 'post',
+            cache: false,
+            success: function (data) {
+                $report.html(data.report);
+                $report.show();
+                $email.val("");
+            },
+            error: function (data) {
+            }
+        });
+
+        return false;
+
+    });
+
+    function email_class(email_str){
+        if( isEmail( email_str ) )
+            $submit.addClass("ok");
+        else
+            $submit.removeClass("ok");
+    }
+
+}	
+
+
+//-----------------------------------------------------------
+function isEmail(email){
+    return /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/.test( email );  
+}
+
+//------------------------------------------------------
+function openPDFviewer( url ){
+
+	var $cont = $("#pdfViewer");
+
+	$cont
+		.css({ display: "block" })
+		.flipBook({
+			pdfUrl: url,
+			pdfPageScale:1.5,
+			pageFlipDuration:1,
+			zoomMax : 3,
+			
+			btnToc : {enabled:false}, 
+			flipType : '2d',
+
+			assets: { 
+						preloader:"js/front/flip_book/images/preloader.jpg",
+						left:"js/front/flip_book/images/left.png",
+						overlay:"js/front/flip_book/images/overlay.jpg",
+						flipMp3:"js/front/flip_book/mp3/turnPage.mp3"
+
+					}
+		});
+
+	$cont.find(".flipbook-main-wrapper").append('<a class="btn small close" >Uždaryti</a>').click( function(){
+		$cont.empty();
+		$cont.hide();
+	});
+
+}
+
+//------------------------------------------------------
+$.fn.preload = function() {
+    this.each(function(){
+        $('<img/>')[0].src = this;
+    });
+}
+
+
+
+//-----------------------------------------------------z
+function initLocale() {
+    var langs = ["lt", "en", "ru"];
+    var uriArray = window.location.pathname.split("/");
+
+    if (langs.indexOf(uriArray[1]) > -1) {
+        $(".locale-select.top .custom_select option."+uriArray[1]).attr("selected", true);
+    } else {
+        $(".locale-select.top .custom_select option."+langs[0]).attr("selected", true);
+    }
+
+    if (langs.indexOf(uriArray[1]) > -1) {
+        $(".locale-select.res ul li."+uriArray[1]).addClass("active");
+    } else {
+        $(".locale-select.res ul li."+langs[0]).addClass("active");
+    }
+
+    $(".locale-select.top .custom_select select").on('change', function(){
+        var selectedOption = $("option:selected", $(this));
+        window.location.href = selectedOption.attr('value');
+    });
+}
+
+function detectIE() {
+    var ua = window.navigator.userAgent;
+
+    var msie = ua.indexOf('MSIE ');
+    if (msie > 0) {
+        // IE 10 or older => return version number
+        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
+    }
+
+    var trident = ua.indexOf('Trident/');
+    if (trident > 0) {
+        // IE 11 => return version number
+        var rv = ua.indexOf('rv:');
+        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+    }
+
+    var edge = ua.indexOf('Edge/');
+    if (edge > 0) {
+        // Edge (IE 12+) => return version number
+        return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
+    }
+
+    // other browser
+    return false;
+}
+
+//-----------------------------------------------------z
+
+
+/**
+* jquery.imgpreload 1.6.2 <https://github.com/farinspace/jquery.imgpreload>
+* Copyright 2009-2014 Dimas Begunoff <http://farinspace.com>
+* License MIT <http://opensource.org/licenses/MIT>
+*/
+"undefined"!=typeof jQuery&&!function(a){"use strict";a.imgpreload=function(b,c){c=a.extend({},a.fn.imgpreload.defaults,c instanceof Function?{all:c}:c),"string"==typeof b&&(b=[b]);var d=[];a.each(b,function(e,f){var g=new Image,h=f,i=g;"string"!=typeof f&&(h=a(f).attr("src")||a(f).css("background-image").replace(/^url\((?:"|')?(.*)(?:'|")?\)$/gm,"$1"),i=f),a(g).bind("load error",function(e){d.push(i),a.data(i,"loaded","error"==e.type?!1:!0),c.each instanceof Function&&c.each.call(i,d.slice(0)),d.length>=b.length&&c.all instanceof Function&&c.all.call(d),a(this).unbind("load error")}),g.src=h})},a.fn.imgpreload=function(b){return a.imgpreload(this,b),this},a.fn.imgpreload.defaults={each:null,all:null}}(jQuery);
+
+
