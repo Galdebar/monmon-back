@@ -1,5 +1,6 @@
 package lt.galdebar.monmonmvc.persistence.domain.dao;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
