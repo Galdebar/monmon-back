@@ -4,7 +4,7 @@ import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingItemDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
-import lt.galdebar.monmonmvc.persistence.repositories.MongoDBRepo;
+import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 //import org.junit.Test;
 
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class ShoppingItemServiceTest {
     private ShoppingItemService service;
 
     @MockBean
-    private MongoDBRepo mongoDBRepo;
+    private ShoppingItemRepo shoppingItemRepo;
 
 
     @MockBean
@@ -67,7 +67,7 @@ public class ShoppingItemServiceTest {
         ShoppingKeywordDTO keyword = new ShoppingKeywordDTO("", testShoppingItem.getItemName());
         Mockito.when(shoppingItemCategoryService.findCategoryByKeyword(any(ShoppingKeywordDTO.class)))
                 .thenReturn(mockCategoryDTO);
-        Mockito.when(mongoDBRepo.insert(any(ShoppingItemDAO.class))).thenReturn(
+        Mockito.when(shoppingItemRepo.insert(any(ShoppingItemDAO.class))).thenReturn(
                 new ShoppingItemDAO()
         );
 

@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 
-public interface MongoDBRepo extends MongoRepository<ShoppingItemDAO, String> {
+public interface ShoppingItemRepo extends MongoRepository<ShoppingItemDAO, String> {
     ShoppingItemDAO findByItemName(String itemName);
     List<ShoppingItemDAO> findByItemCategory(String itemCategory);
     List<ShoppingItemDAO> findByIsInCart(Boolean isInCart);
