@@ -3,6 +3,7 @@ package lt.galdebar.monmonscraper.services;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -69,22 +70,30 @@ public class MaximaScraperTest {
     }
 
     @Test
+    void getNumberOfRequiredRequestsTest(){
+        int singlePageItemsCount = 45;
+        int totalItems = 328;
+        int expectedCount = 8;
+        int actualCount = maximaScraper.countNumOfRequiredRequests();
+
+        assertEquals(expectedCount,actualCount);
+    }
+
+    @Test
+    void fetchItemsWithOffsetTest(){
+        MaximaScraper scraper = new MaximaScraper();
+        Elements fetchedElements = scraper.fetchItemsWithOffset();
+
+        assertNotNull(fetchedElements);
+    }
+
+    @Test
     void getItemsOnOfferTest() {
         int expectedCount = 328;
         Collection<Element> actualIterable = maximaScraper.getItemsOnOffer();
 
         assertNotNull(actualIterable);
         assertEquals(actualIterable.size(), expectedCount);
-    }
-
-    @Test
-    void getItemsOnOfferPaginationTest() {
-        MaximaScraper scraper = new MaximaScraper();
-        int expectedItemCount = getTotalItemsFromActualSite();
-        int actualItemCount = scraper.getItemsOnOffer().size();
-
-        assertEquals(expectedItemCount, actualItemCount);
-
     }
 
     @Test
