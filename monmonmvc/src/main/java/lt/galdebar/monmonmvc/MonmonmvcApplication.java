@@ -18,8 +18,6 @@ public class MonmonmvcApplication {
         SpringApplication.run(MonmonmvcApplication.class, args);
 
         System.out.println("app runs!");
-
-
     }
 
 

@@ -1,8 +1,6 @@
 package lt.galdebar.monmonmvc.context;
 
-import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
-import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

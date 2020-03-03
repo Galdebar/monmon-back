@@ -27,25 +27,11 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-//        http
-//                .authorizeRequests()
-//                .antMatchers("/").permitAll()
-//                .anyRequest().authenticated()
-////                .and()
-////                .formLogin()
-////                .loginPage("/login")
-////                .permitAll()
-//                .and()
-//                .logout()
-//                .deleteCookies("JSESSIONID") // might need to config this
-//                .permitAll();
-
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeRequests()
                 .antMatchers("/", "/login", "/signup").permitAll()
-//                .antMatchers("/**").access("hasRole('USER')")
                 .antMatchers("/**").hasAuthority("user");
 
 
@@ -55,8 +41,6 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
                 .and().httpBasic()
                 .and()
                 .sessionManagement().disable();
-
-
     }
 
 
