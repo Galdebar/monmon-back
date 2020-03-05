@@ -15,7 +15,7 @@ import javax.persistence.Id;
 public class UserDAO {
     @Id
     private String id;
-    private String userName;
+    private String userEmail;
     private String userPassword;
 
 }

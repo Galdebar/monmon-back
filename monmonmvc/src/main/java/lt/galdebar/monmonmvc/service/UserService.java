@@ -17,23 +17,23 @@ public class UserService {
 
     public UserDTO addUser(UserDTO userDTO){
         UserDAO newUser = new UserDAO();
-        newUser.setUserName(userDTO.getUserName());
+        newUser.setUserEmail(userDTO.getUserEmail());
         newUser.setUserPassword(passwordEncoder.encode(userDTO.getUserPassword()));
         UserDAO addedUserDAO = userRepo.insert(newUser);
         return daoToDto(addedUserDAO);
     }
 
-    public UserDTO findByUserName(String userName){
-        return daoToDto(userRepo.findByUserName(userName));
+    public UserDTO findByUserEmail(String userEmail){
+        return daoToDto(userRepo.findByUserEmail(userEmail));
     }
 
     UserDTO daoToDto (UserDAO userDAO){
-        return new UserDTO(userDAO.getUserName(), userDAO.getUserPassword());
+        return new UserDTO(userDAO.getUserEmail(), userDAO.getUserPassword());
     }
 
     UserDAO dtoToDao(UserDTO userDTO){
         UserDAO newUser = new UserDAO();
-        newUser.setUserName(userDTO.getUserName());
+        newUser.setUserEmail(userDTO.getUserEmail());
         newUser.setUserPassword(userDTO.getUserPassword());
         return newUser;
     }

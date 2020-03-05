@@ -44,7 +44,6 @@ public class ShoppingItemController {
             ShoppingItemDTO returnedItem = shoppingItemService.addItem(shoppingItemDTO);
             return ResponseEntity.ok( returnedItem );
         }
-        System.out.println("ShoppingItemDAO NULL");
         return ResponseEntity.badRequest().build();
     }
 

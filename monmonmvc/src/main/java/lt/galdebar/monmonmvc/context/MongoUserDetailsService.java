@@ -20,12 +20,12 @@ public class MongoUserDetailsService implements org.springframework.security.cor
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        UserDTO userDTO = userService.findByUserName(s);
+        UserDTO userDTO = userService.findByUserEmail(s);
         if (userDTO == null) {
             throw new UsernameNotFoundException("User Not Found");
         }
 
         List<SimpleGrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("user"));
-        return new User(userDTO.getUserName(), userDTO.getUserPassword(), authorities);
+        return new User(userDTO.getUserEmail(), userDTO.getUserPassword(), authorities);
     }
 }
