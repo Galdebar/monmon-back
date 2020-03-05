@@ -1,5 +1,7 @@
-package lt.galdebar.monmonmvc.context;
+package lt.galdebar.monmonmvc.context.security;
 
+import lt.galdebar.monmonmvc.context.security.jwt.JwtConfigurer;
+import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -34,10 +36,6 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-//        http.authorizeRequests()
-//                .antMatchers("/", "/login", "/signup").permitAll()
-//                .antMatchers("/**").hasAuthority("user");
-
         http
                 .authorizeRequests()
                 .antMatchers("/", "/login", "/signup").permitAll()
@@ -46,13 +44,6 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
         http
                 .apply(new JwtConfigurer(jwtTokenProvider));
 
-
-//        http
-//                .csrf().disable()
-//                .authorizeRequests().anyRequest().authenticated()
-//                .and().httpBasic()
-//                .and()
-//                .sessionManagement().disable();
 
         http
                 .cors();

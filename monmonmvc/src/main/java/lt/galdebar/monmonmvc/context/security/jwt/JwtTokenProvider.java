@@ -1,6 +1,8 @@
-package lt.galdebar.monmonmvc.context;
+package lt.galdebar.monmonmvc.context.security.jwt;
 
 import io.jsonwebtoken.*;
+import lt.galdebar.monmonmvc.context.security.MongoUserDetailsService;
+import lt.galdebar.monmonmvc.context.security.exceptions.InvalidJwtAuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

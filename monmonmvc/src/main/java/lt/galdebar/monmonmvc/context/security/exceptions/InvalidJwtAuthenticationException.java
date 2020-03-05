@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.context;
+package lt.galdebar.monmonmvc.context.security.exceptions;
 
 import io.jsonwebtoken.JwtException;
 

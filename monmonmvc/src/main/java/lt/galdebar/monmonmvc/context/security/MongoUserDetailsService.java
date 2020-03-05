@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.context;
+package lt.galdebar.monmonmvc.context.security;
 
 import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
 import lt.galdebar.monmonmvc.service.UserService;

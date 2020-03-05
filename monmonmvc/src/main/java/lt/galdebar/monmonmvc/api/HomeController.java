@@ -1,6 +1,7 @@
 package lt.galdebar.monmonmvc.api;
 
-import lt.galdebar.monmonmvc.context.JwtTokenProvider;
+import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
+import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
 import lt.galdebar.monmonmvc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,16 +38,16 @@ public class HomeController {
 
     @CrossOrigin
     @PostMapping("/login")
-    ResponseEntity login(@RequestBody UserDTO userDTO){
-        if(!isEmailValid(userDTO.getUserEmail())){
+    ResponseEntity login(@RequestBody LoginAttemptDTO loginAttemptDTO){
+        if(!isEmailValid(loginAttemptDTO.getUserEmail())){
             return ResponseEntity.badRequest().body("Invalid Email");
         }
         try{
-            String userName = userDTO.getUserEmail();
+            String userName = loginAttemptDTO.getUserEmail();
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             userName,
-                            userDTO.getUserPassword()
+                            loginAttemptDTO.getUserPassword()
                     )
             );
             UserDTO foundUser = userService.findByUserEmail(userName);

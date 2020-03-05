@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.context;
+package lt.galdebar.monmonmvc.context.security.jwt;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
