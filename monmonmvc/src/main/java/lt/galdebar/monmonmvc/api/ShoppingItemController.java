@@ -5,6 +5,7 @@ import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.service.ShoppingItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class ShoppingItemController {
     @CrossOrigin
     @GetMapping("getAll")
     ResponseEntity getAllItems(){
+        System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         return ResponseEntity.ok(shoppingItemService.getAll());
     }
 
