@@ -9,5 +9,7 @@ import java.util.List;
 public interface ShoppingItemRepo extends MongoRepository<ShoppingItemDAO, String> {
     ShoppingItemDAO findByItemName(String itemName);
     List<ShoppingItemDAO> findByItemCategory(String itemCategory);
+    List<ShoppingItemDAO> findByItemCategoryAndUsers(String itemCategory, String user);
     List<ShoppingItemDAO> findByIsInCart(Boolean isInCart);
+    List<ShoppingItemDAO> findByUsers(String user);
 }

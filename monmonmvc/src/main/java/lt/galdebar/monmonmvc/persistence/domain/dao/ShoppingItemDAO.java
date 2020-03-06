@@ -5,6 +5,9 @@ import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(fluent = true)
@@ -17,7 +20,7 @@ public class ShoppingItemDAO {
     public Integer quantity;
     public String comment;
     public boolean isInCart = false;
-
+    public Set<String> users = new HashSet<>();
 
 
     @Override
