@@ -38,11 +38,14 @@ public class UserService {
         );
 
         currentUser.getConnectedUsers().add(userToConnect.getUserEmail());
+        UserDAO userToConnectDAO = userRepo.findByUserEmail(userToConnect.getUserEmail());
+        userToConnectDAO.getConnectedUsers().add(currentUser.getUserEmail());
+        userRepo.save(userToConnectDAO);
 
         return daoToDto(userRepo.save(currentUser));
     }
 
-    UserDTO daoToDto(UserDAO userDAO) {
+    private UserDTO daoToDto(UserDAO userDAO) {
         if (userDAO == null) {
             return new UserDTO();
         }

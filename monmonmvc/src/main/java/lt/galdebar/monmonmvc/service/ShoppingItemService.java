@@ -7,7 +7,6 @@ import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +20,9 @@ public class ShoppingItemService {
 
     @Autowired
     private ShoppingItemRepo shoppingItemRepo;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private ShoppingItemCategoryService shoppingItemCategoryService;
@@ -39,12 +41,12 @@ public class ShoppingItemService {
     }
 
     public List<ShoppingItemDAO> getItemsByCategory(String requestedCategory) {
-//        return shoppingItemRepo.findByItemCategory(requestedCategory);
-        return shoppingItemRepo.findByItemCategoryAndUsers(requestedCategory, getCurrentUser());
+        return shoppingItemRepo.findByItemCategory(requestedCategory);
+//        return shoppingItemRepo.findByItemCategoryAndUsers(requestedCategory, getCurrentUserAndConnectedUsers());
     }
 
     public List<ShoppingItemDTO> getAll() {
-        return daosToDtos(shoppingItemRepo.findByUsers(getCurrentUser()));
+        return daosToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
     }
 
 
@@ -103,7 +105,10 @@ public class ShoppingItemService {
         return shoppingItemDTOList;
     }
 
-    private String getCurrentUser(){
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+    private List<String> getCurrentUserAndConnectedUsers(){
+        List<String> users = userService.getConnectedUsers();
+        users.add(SecurityContextHolder.getContext().getAuthentication().getName());
+        System.out.println(users);
+        return users;
     }
 }

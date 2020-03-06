@@ -11,5 +11,5 @@ public interface ShoppingItemRepo extends MongoRepository<ShoppingItemDAO, Strin
     List<ShoppingItemDAO> findByItemCategory(String itemCategory);
     List<ShoppingItemDAO> findByItemCategoryAndUsers(String itemCategory, String user);
     List<ShoppingItemDAO> findByIsInCart(Boolean isInCart);
-    List<ShoppingItemDAO> findByUsers(String user);
+    List<ShoppingItemDAO> findByUsersIn(List<String> users);
 }
