@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Id;
+import java.util.HashSet;
+import java.util.Set;
 
 @NoArgsConstructor
 @Getter
@@ -17,6 +19,7 @@ public class UserDAO {
     private String id;
     private String userEmail;
     private String userPassword;
+    private Set<String> connectedUsers = new HashSet<>();
 
 }
 
