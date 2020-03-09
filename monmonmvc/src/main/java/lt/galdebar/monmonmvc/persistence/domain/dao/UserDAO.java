@@ -20,6 +20,7 @@ public class UserDAO {
     private String userEmail;
     private String userPassword;
     private Set<String> connectedUsers = new HashSet<>();
+    private boolean isValidated;
 
 }
 

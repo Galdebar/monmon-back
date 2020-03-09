@@ -1,9 +1,14 @@
 package lt.galdebar.monmonmvc.api;
 
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
+import lt.galdebar.monmonmvc.persistence.domain.dto.AuthTokenDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
+import lt.galdebar.monmonmvc.service.UserRegistrationService;
 import lt.galdebar.monmonmvc.service.UserService;
+import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
+import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
+import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyExists;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,7 +36,11 @@ public class UserController {
     private UserService userService;
 
     @Autowired
+    private UserRegistrationService registrationService;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
+
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -56,33 +65,33 @@ public class UserController {
             return ResponseEntity.badRequest().body("Invalid Email");
         }
         try {
-            String userName = loginAttemptDTO.getUserEmail();
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            userName,
-                            loginAttemptDTO.getUserPassword()
-                    )
-            );
-            UserDTO foundUser = userService.findByUserEmail(userName);
-            String token = jwtTokenProvider.createToken(
-                    userName,
-                    Collections.singletonList(foundUser.toString())
-            );
+            AuthTokenDTO receivedToken = userService.login(loginAttemptDTO);
             Map<Object, Object> model = new HashMap<>();
-            model.put("userEmail", userName);
-            model.put("token", token);
+            model.put("userEmail", receivedToken.getUserEmail());
+            model.put("token", receivedToken.getToken());
             return ResponseEntity.ok(model);
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username/password supplied");
+        } catch (UserNotValidated userNotValidated) {
+            userNotValidated.printStackTrace();
+            return ResponseEntity.badRequest().body("User Not Validated. Confirm registration");
+        } catch (UserNotFound userNotFound) {
+            userNotFound.printStackTrace();
+            return ResponseEntity.badRequest().body("User Not Found");
         }
     }
 
     @PostMapping("/signup")
-    ResponseEntity signUp(@RequestBody UserDTO userDTO) {
-        if (userDTO != null && isEmailValid(userDTO.getUserEmail())) {
-            UserDTO addedUser = userService.addUser(userDTO);
-            return ResponseEntity.ok(addedUser);
-        } else return ResponseEntity.badRequest().build();
+    ResponseEntity signUp(@RequestBody LoginAttemptDTO loginAttempt) {
+        if (loginAttempt != null && isEmailValid(loginAttempt.getUserEmail())) {
+            try {
+                registrationService.registerNewUser(loginAttempt);
+                return ResponseEntity.ok().body("User Created Successfully. Confirmation Email Sent");
+            } catch (UserAlreadyExists userAlreadyExists) {
+                userAlreadyExists.printStackTrace();
+                return ResponseEntity.badRequest().body("User Already Exists");
+            }
+        } else return ResponseEntity.badRequest().body("Invalid or empty email");
     }
 
     @PostMapping("/connectuser")
