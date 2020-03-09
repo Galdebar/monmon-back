@@ -65,5 +65,4 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-
 }

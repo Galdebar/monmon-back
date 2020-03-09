@@ -1,10 +1,12 @@
 package lt.galdebar.monmonmvc.service;
 
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
+import lt.galdebar.monmonmvc.persistence.domain.dao.UserConnectionTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.AuthTokenDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
+import lt.galdebar.monmonmvc.persistence.repositories.UserConnectionTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyExists;
@@ -15,9 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -26,7 +27,6 @@ public class UserService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -79,19 +79,6 @@ public class UserService {
         return daoToDto(userRepo.findByUserEmail(userEmail));
     }
 
-    public UserDTO connectUserWithCurrent(UserDTO userToConnect) {
-        UserDAO currentUser = userRepo.findByUserEmail(
-                SecurityContextHolder.getContext().getAuthentication().getName()
-        );
-
-        currentUser.getConnectedUsers().add(userToConnect.getUserEmail());
-        UserDAO userToConnectDAO = userRepo.findByUserEmail(userToConnect.getUserEmail());
-        userToConnectDAO.getConnectedUsers().add(currentUser.getUserEmail());
-        userRepo.save(userToConnectDAO);
-
-        return daoToDto(userRepo.save(currentUser));
-    }
-
     private UserDTO daoToDto(UserDAO userDAO) {
         if (userDAO == null) {
             return new UserDTO();
@@ -111,7 +98,7 @@ public class UserService {
         return connectedUserNames;
     }
 
-    private UserDAO getCurrentUserDAO() {
+    public UserDAO getCurrentUserDAO() {
         return userRepo.findByUserEmail(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
@@ -128,4 +115,6 @@ public class UserService {
         user.setValidated(true);
         return userRepo.save(user) != null;
     }
+
+
 }

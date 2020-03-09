@@ -9,20 +9,17 @@ import lt.galdebar.monmonmvc.service.UserService;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
 import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyExists;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -92,23 +89,6 @@ public class UserController {
                 return ResponseEntity.badRequest().body("User Already Exists");
             }
         } else return ResponseEntity.badRequest().body("Invalid or empty email");
-    }
-
-    @PostMapping("/connectuser")
-    ResponseEntity connectUser(@RequestBody UserDTO userDTO) {
-        if (userDTO == null || !isEmailValid(userDTO.getUserEmail())) {
-            return ResponseEntity.badRequest().body("Invalid User Email");
-        }
-        UserDTO userToConnect = userService.findByUserEmail(userDTO.getUserEmail());
-
-        if (userToConnect.getUserEmail() == null) {
-            return ResponseEntity.badRequest().body("Such User doesn't exist");
-        }
-
-        UserDTO updatedCurrentUser = userService.connectUserWithCurrent(userToConnect);
-        if (updatedCurrentUser == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong- could not connect users");
-        } else return ResponseEntity.ok(updatedCurrentUser);
     }
 
     @GetMapping("/getconnectedusers")

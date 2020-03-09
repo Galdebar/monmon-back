@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailSenderService {
 
-    private static final String CONFIRMATION_PATH = "localhost:8080/register/confirm";
+    private static final String REGISTER_CONFIRM = "localhost:8080/register/confirm";
+    private static final String CONNECTUSER_CONFIRM = "localhost:8080/user/connectuser/confirm";
 
     @Autowired
     private JavaMailSender javaMailSender;
@@ -17,16 +18,34 @@ public class EmailSenderService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recepient);
         message.setSubject("MonMon Registration Confirmation");
-        message.setText(generateLink(token));
+        message.setText(generateRegistrationLink(token));
 
         javaMailSender.send(message);
     }
 
-    private String generateLink(String token) {
+    public void sendUserConnectConfirmationEmail(String recepient,String token){
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recepient);
+        message.setSubject("MonMon User Sync Confirmation");
+        message.setText(generateRegistrationLink(token));
+
+        javaMailSender.send(message);
+    }
+
+    private String generateRegistrationLink(String token) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(CONFIRMATION_PATH)
+        stringBuilder.append(REGISTER_CONFIRM)
                 .append("/")
                 .append(token);
         return stringBuilder.toString();
     }
+
+    private String generateUserConnectConfirmationLink(String token){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(CONNECTUSER_CONFIRM)
+                .append("/")
+                .append(token);
+        return stringBuilder.toString();
+    }
+
 }

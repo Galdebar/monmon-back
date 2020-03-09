@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/register")
-public class RegistrationController {
+public class UserRegistrationController {
     @Autowired
     private UserRegistrationService registrationService;
 
