@@ -20,6 +20,7 @@ public class ConnectUsersController {
     @Autowired
     private ConnectUsersService connectUsersService;
 
+    @CrossOrigin
     @PostMapping("/connect")
     ResponseEntity connectUser(@RequestBody UserDTO userDTO) {
         if (userDTO == null || !isEmailValid(userDTO.getUserEmail())) {
@@ -34,6 +35,7 @@ public class ConnectUsersController {
         }
     }
 
+    @CrossOrigin
     @GetMapping("confirm/{token}")
     ResponseEntity confirmConnectUsers(@PathVariable String token) {
         if (token.isEmpty()) {
@@ -52,6 +54,7 @@ public class ConnectUsersController {
         }
     }
 
+    @CrossOrigin
     @GetMapping("renew/{token}")
     ResponseEntity renewConnectRequestToken(@PathVariable String token) {
         if (token.isEmpty()) {

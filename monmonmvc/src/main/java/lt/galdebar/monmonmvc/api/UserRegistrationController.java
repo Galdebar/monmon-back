@@ -18,6 +18,7 @@ public class UserRegistrationController {
     private UserRegistrationService registrationService;
 
 
+    @CrossOrigin
     @GetMapping(value = "/confirm/{token}")
     ResponseEntity validateUser(@PathVariable String token) {
         if (token.isEmpty()) {
@@ -43,6 +44,7 @@ public class UserRegistrationController {
         }
     }
 
+    @CrossOrigin
     @GetMapping(path = "/requestnewtoken/{token}")
     ResponseEntity requestNewToken(@RequestParam("token") String token){
         if (token.isEmpty()) {

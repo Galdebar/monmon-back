@@ -34,7 +34,7 @@ public class ShoppingItemCategoryController {
     }
 
     @CrossOrigin
-    @GetMapping("cat")
+    @GetMapping
     ResponseEntity searchCategory(@RequestParam(value = "searchcategory", required = false) ShoppingKeywordDTO keyword) {
         System.out.println(keyword);
         if (keyword != null && keyword.getKeyword() != "") {

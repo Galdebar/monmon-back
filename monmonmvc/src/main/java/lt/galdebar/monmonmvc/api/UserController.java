@@ -78,6 +78,7 @@ public class UserController {
         }
     }
 
+    @CrossOrigin
     @PostMapping("/signup")
     ResponseEntity signUp(@RequestBody LoginAttemptDTO loginAttempt) {
         if (loginAttempt != null && isEmailValid(loginAttempt.getUserEmail())) {
@@ -91,6 +92,7 @@ public class UserController {
         } else return ResponseEntity.badRequest().body("Invalid or empty email");
     }
 
+    @CrossOrigin
     @GetMapping("/getconnectedusers")
     ResponseEntity getConnectedUsers() {
         return ResponseEntity.ok(userService.getConnectedUsers());
