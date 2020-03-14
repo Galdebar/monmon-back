@@ -1,9 +1,7 @@
 package lt.galdebar.monmonmvc.api;
 
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
-import lt.galdebar.monmonmvc.persistence.domain.dto.AuthTokenDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
+import lt.galdebar.monmonmvc.persistence.domain.dto.*;
 import lt.galdebar.monmonmvc.service.UserRegistrationService;
 import lt.galdebar.monmonmvc.service.UserService;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
@@ -68,12 +66,13 @@ public class UserController {
             model.put("token", receivedToken.getToken());
             return ResponseEntity.ok(model);
         } catch (AuthenticationException e) {
-            throw new BadCredentialsException("Invalid username/password supplied");
+//            throw new BadCredentialsException("Invalid username/password supplied");
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (UserNotValidated userNotValidated) {
-            userNotValidated.printStackTrace();
+//            userNotValidated.printStackTrace();
             return ResponseEntity.badRequest().body("User Not Validated. Confirm registration");
         } catch (UserNotFound userNotFound) {
-            userNotFound.printStackTrace();
+//            userNotFound.printStackTrace();
             return ResponseEntity.badRequest().body("User Not Found");
         }
     }
@@ -84,18 +83,33 @@ public class UserController {
         if (loginAttempt != null && isEmailValid(loginAttempt.getUserEmail())) {
             try {
                 registrationService.registerNewUser(loginAttempt);
-                return ResponseEntity.ok().body("User Created Successfully. Confirmation Email Sent");
+                return ResponseEntity.ok().body("Success");
             } catch (UserAlreadyExists userAlreadyExists) {
-                userAlreadyExists.printStackTrace();
+//                userAlreadyExists.printStackTrace();
                 return ResponseEntity.badRequest().body("User Already Exists");
             }
-        } else return ResponseEntity.badRequest().body("Invalid or empty email");
+        } else return ResponseEntity.badRequest().body("Invalid Email");
     }
 
     @CrossOrigin
     @GetMapping("/getconnectedusers")
     ResponseEntity getConnectedUsers() {
         return ResponseEntity.ok(userService.getConnectedUsers());
+    }
+
+
+    @CrossOrigin
+    @PostMapping("/changepassword")
+    ResponseEntity changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
+        if (passwordChangeRequest == null) {
+            return ResponseEntity.badRequest().body("Invalid Request");
+        }
+        try {
+            userService.changePassword(passwordChangeRequest);
+            return ResponseEntity.ok().body("Success");
+        } catch (AuthenticationException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     private boolean isEmailValid(String userEmail) {

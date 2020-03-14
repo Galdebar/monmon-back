@@ -1,16 +1,18 @@
 package lt.galdebar.monmonmvc.service;
 
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dao.UserEmailChangeTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserRegistrationTokenDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dto.EmailChangeRequest;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
+import lt.galdebar.monmonmvc.persistence.repositories.UserEmailChangeTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRegistrationTokenRepo;
 import lt.galdebar.monmonmvc.service.exceptions.registration.TokenExpired;
 import lt.galdebar.monmonmvc.service.exceptions.registration.TokenNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyExists;
 import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyValidated;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 //import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +27,10 @@ public class UserRegistrationService {
     private static final int EXPIRATION_IN_HOURS = 24;
 
     @Autowired
-    private UserRegistrationTokenRepo tokenRepo;
+    private UserRegistrationTokenRepo registrationTokenRepo;
+
+    @Autowired
+    private UserEmailChangeTokenRepo emailChangeTokenRepo;
 
     @Autowired
     private EmailSenderService emailSenderService;
@@ -51,8 +56,36 @@ public class UserRegistrationService {
     }
 
     @Transactional
+    public void changeUserEmail(EmailChangeRequest emailChangeRequest) throws UserAlreadyExists {
+        if(userService.checkIfUserExists(emailChangeRequest.getNewEmail())){
+            throw new UserAlreadyExists();
+        }
+
+        UserDAO currentUser = userService.getCurrentUserDAO();
+        String token = UUID.randomUUID().toString();
+        UserEmailChangeTokenDAO tokenDAO = createEmailChangeToken(currentUser,emailChangeRequest.getNewEmail(),token);
+        emailSenderService.sendEmailChangeConfirmationEmail(
+                emailChangeRequest.getNewEmail(),
+                token
+        );
+    }
+
+    @Transactional
+    public boolean confirmUserEmailChange(String token) throws TokenNotFound, TokenExpired {
+        UserEmailChangeTokenDAO tokenDAO = emailChangeTokenRepo.findByToken(token);
+        if(tokenDAO == null){
+            throw new TokenNotFound();
+        }
+        if (tokenDAO.getExpiryDate().getTime() - Calendar.getInstance().getTime().getTime() <= 0) {
+            throw new TokenExpired();
+        }
+
+        return userService.updateUserEmail(tokenDAO.getUser(), tokenDAO.getNewEmail());
+    }
+
+    @Transactional
     public void extendTokenDuration(String token) throws UserAlreadyValidated, TokenNotFound {
-        UserRegistrationTokenDAO registrationToken = tokenRepo.findByToken(token);
+        UserRegistrationTokenDAO registrationToken = registrationTokenRepo.findByToken(token);
         if (registrationToken.getId() == null) {
             throw new TokenNotFound();
         }
@@ -71,7 +104,7 @@ public class UserRegistrationService {
     }
 
     private UserRegistrationTokenDAO checkToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenExpired {
-        UserRegistrationTokenDAO registrationToken = tokenRepo.findByToken(token);
+        UserRegistrationTokenDAO registrationToken = registrationTokenRepo.findByToken(token);
         if (registrationToken.getId() == null) {
             throw new TokenNotFound();
         }
@@ -89,7 +122,16 @@ public class UserRegistrationService {
         registrationToken.setUser(newUser);
         registrationToken.setToken(token);
         registrationToken.setExpiryDate(calculateTokenExpiryDate());
-        return tokenRepo.save(registrationToken);
+        return registrationTokenRepo.save(registrationToken);
+    }
+
+    private UserEmailChangeTokenDAO createEmailChangeToken(UserDAO currentUser, String newEmail, String token){
+        UserEmailChangeTokenDAO emailChangeTokenDAO = new UserEmailChangeTokenDAO();
+        emailChangeTokenDAO.setUser(currentUser);
+        emailChangeTokenDAO.setNewEmail(newEmail);
+        emailChangeTokenDAO.setToken(token);
+        emailChangeTokenDAO.setExpiryDate(calculateTokenExpiryDate());
+        return emailChangeTokenRepo.save(emailChangeTokenDAO);
     }
 
     private UserDAO registerUser(LoginAttemptDTO loginAttemptDTO) throws UserAlreadyExists {

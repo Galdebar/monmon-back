@@ -3,9 +3,7 @@ package lt.galdebar.monmonmvc.service;
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserConnectionTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.AuthTokenDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
+import lt.galdebar.monmonmvc.persistence.domain.dto.*;
 import lt.galdebar.monmonmvc.persistence.repositories.UserConnectionTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
@@ -13,9 +11,11 @@ import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyExists;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -34,6 +34,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Transactional
     public AuthTokenDTO login(LoginAttemptDTO loginAttemptDTO) throws UserNotValidated, UserNotFound {
         UserDAO foundUser = loginUserCheck(loginAttemptDTO);
         String token = jwtTokenProvider.createToken(
@@ -56,11 +57,15 @@ public class UserService {
         if (!foundUser.isValidated()) {
             throw new UserNotValidated();
         }
+        if(!passwordEncoder.matches(loginAttemptDTO.getUserPassword(),foundUser.getUserPassword())){
+            throw new BadCredentialsException("Invalid password");
+        }
         return foundUser;
     }
 
+    @Transactional
     public UserDAO registerUser(UserDTO userDTO) throws UserAlreadyExists {
-        if (checkIfUserExists(userDTO)) {
+        if (checkIfUserExists(userDTO.getUserEmail())) {
             throw new UserAlreadyExists();
         }
         UserDAO newUser = new UserDAO();
@@ -71,8 +76,8 @@ public class UserService {
         return addedUserDAO;
     }
 
-    private boolean checkIfUserExists(UserDTO userDTO) {
-        return userRepo.findByUserEmail(userDTO.getUserEmail()) != null;
+    public boolean checkIfUserExists(String userEmail) {
+        return userRepo.findByUserEmail(userEmail) != null;
     }
 
     public UserDTO findByUserEmail(String userEmail) {
@@ -98,6 +103,47 @@ public class UserService {
         return connectedUserNames;
     }
 
+    public boolean validateUser(UserDAO user) {
+        user.setValidated(true);
+        return userRepo.save(user) != null;
+    }
+
+    @Transactional
+    public void changeEmail(EmailChangeRequest emailChangeRequest) throws UserAlreadyExists {
+        if (!checkIfUserExists(emailChangeRequest.getNewEmail())) {
+            UserDAO currentUser = getCurrentUserDAO();
+            currentUser.setUserEmail(emailChangeRequest.getNewEmail());
+            userRepo.save(currentUser);
+        } else throw new UserAlreadyExists();
+
+    }
+
+    @Transactional
+    public void changePassword(PasswordChangeRequest passwordChangeRequest) throws BadCredentialsException {
+        UserDAO currentUser = getCurrentUserDAO();
+        if(!currentUser.getUserEmail().equals(passwordChangeRequest.getUserEmail())){
+            throw new BadCredentialsException("Invalid user email");
+        }
+
+        if (passwordEncoder.matches(passwordChangeRequest.getOldPassword(), currentUser.getUserPassword())) {
+            currentUser.setUserPassword(
+                    passwordEncoder.encode(
+                            passwordChangeRequest.getNewPassword()
+                    )
+            );
+            userRepo.save(currentUser);
+        } else throw new BadCredentialsException("Invalid password supplied");
+    }
+
+    public boolean updateUserEmail(UserDAO user, String newEmail) {
+        user.setUserEmail(newEmail);
+        return userRepo.save(user) != null;
+    }
+
+    public UserDAO updateUser(UserDAO currentUser) {
+        return userRepo.save(currentUser);
+    }
+
     public UserDAO getCurrentUserDAO() {
         return userRepo.findByUserEmail(
                 SecurityContextHolder.getContext().getAuthentication().getName()
@@ -110,11 +156,4 @@ public class UserService {
         newUser.setUserPassword(userDTO.getUserPassword());
         return newUser;
     }
-
-    public boolean validateUser(UserDAO user) {
-        user.setValidated(true);
-        return userRepo.save(user) != null;
-    }
-
-
 }

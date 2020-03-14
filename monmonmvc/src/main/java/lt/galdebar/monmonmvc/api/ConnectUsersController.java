@@ -30,7 +30,7 @@ public class ConnectUsersController {
             connectUsersService.connectUserWithCurrent(userDTO);
             return ResponseEntity.ok("Connection request sent");
         } catch (UserNotFound userNotFound) {
-            userNotFound.printStackTrace();
+//            userNotFound.printStackTrace();
             return ResponseEntity.badRequest().body("Such User doesn't exist");
         }
     }
@@ -46,10 +46,10 @@ public class ConnectUsersController {
             connectUsersService.confirmUserConnect(token);
             return ResponseEntity.ok("Success");
         } catch (ConnectUsersTokenNotFound connectUsersTokenNotFound) {
-            connectUsersTokenNotFound.printStackTrace();
+//            connectUsersTokenNotFound.printStackTrace();
             return ResponseEntity.badRequest().body("Token Not Found");
         } catch (ConnectUsersTokenExpired connectUsersTokenExpired) {
-            connectUsersTokenExpired.printStackTrace();
+//            connectUsersTokenExpired.printStackTrace();
             return ResponseEntity.badRequest().body("Token Expired, Send request again");
         }
     }
@@ -65,10 +65,10 @@ public class ConnectUsersController {
             connectUsersService.renewToken(token);
             return ResponseEntity.ok("Success");
         } catch (ConnectUsersTokenExpired connectUsersTokenExpired) {
-            connectUsersTokenExpired.printStackTrace();
+//            connectUsersTokenExpired.printStackTrace();
             return ResponseEntity.badRequest().body("Token Expired, Send request again");
         } catch (ConnectUsersTokenNotFound connectUsersTokenNotFound) {
-            connectUsersTokenNotFound.printStackTrace();
+//            connectUsersTokenNotFound.printStackTrace();
             return ResponseEntity.badRequest().body("Token Not Found");
         }
     }

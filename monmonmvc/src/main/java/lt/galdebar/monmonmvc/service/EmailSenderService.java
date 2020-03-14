@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 public class EmailSenderService {
 
     private static final String REGISTER_CONFIRM = "localhost:8080/register/confirm";
-    private static final String CONNECTUSER_CONFIRM = "localhost:8080/user/connectuser/confirm";
+    private static final String CONNECTUSER_CONFIRM = "localhost:8080/connectusers/confirm";
+    private static final String CHANGE_EMAIL = "localhost:8080/register/changeemail/confirm";
 
     @Autowired
     private JavaMailSender javaMailSender;
@@ -27,7 +28,16 @@ public class EmailSenderService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recepient);
         message.setSubject("MonMon User Sync Confirmation");
-        message.setText(generateRegistrationLink(token));
+        message.setText(generateUserConnectConfirmationLink(token));
+
+        javaMailSender.send(message);
+    }
+
+    public void sendEmailChangeConfirmationEmail(String recepient, String token) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recepient);
+        message.setSubject("MonMon Email Change Confirmation");
+        message.setText(generateEmailChangeConfirmationLink(token));
 
         javaMailSender.send(message);
     }
@@ -48,4 +58,11 @@ public class EmailSenderService {
         return stringBuilder.toString();
     }
 
+    private String generateEmailChangeConfirmationLink(String token){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(CHANGE_EMAIL)
+                .append("/")
+                .append(token);
+        return stringBuilder.toString();
+    }
 }
