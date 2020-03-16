@@ -1,7 +1,7 @@
 package lt.galdebar.monmonmvc.service;
 
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserConnectionTokenDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dao.token.LinkUsersTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserEmailChangeTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserRegistrationTokenDAO;
@@ -92,18 +92,6 @@ public class UserService {
         return new UserDTO(userDAO.getUserEmail(), userDAO.getUserPassword());
     }
 
-    public List<String> getConnectedUsers() {
-        UserDAO currentUser = getCurrentUserDAO();
-        List<String> connectedUserNames = new ArrayList<>();
-        for (String userName : currentUser.getConnectedUsers()) {
-            if (userName != null) {
-                connectedUserNames.add(userName);
-            }
-        }
-
-        return connectedUserNames;
-    }
-
     @Transactional
     public void registerNewUser(LoginAttemptDTO registrationAttempt) throws UserAlreadyExists {
         UserDAO newUser = createNewUser(
@@ -177,12 +165,24 @@ public class UserService {
     }
 
 
+    public List<String> getLinkedUsers() {
+        UserDAO currentUser = getCurrentUserDAO();
+        List<String> connectedUserNames = new ArrayList<>();
+        for (String userName : currentUser.getLinkedUsers()) {
+            if (userName != null) {
+                connectedUserNames.add(userName);
+            }
+        }
+
+        return connectedUserNames;
+    }
+
     @Transactional
-    public void connectUserWithCurrent(UserDTO userToConnect) throws UserNotFound {
+    public void linkUserWithCurrent(UserDTO userToConnect) throws UserNotFound {
         UserDAO currentUserDAO = getCurrentUserDAO();
         UserDAO userToConnectDAO = findByUserEmail(userToConnect.getUserEmail());
         String token = UUID.randomUUID().toString();
-        UserConnectionTokenDAO connectionTokenDAO = tokenService.createConnectUsersToken(currentUserDAO, userToConnectDAO);
+        LinkUsersTokenDAO connectionTokenDAO = tokenService.createLinkUsersToken(currentUserDAO, userToConnectDAO);
 
         if (connectionTokenDAO != null) {
             emailSenderService.sendUserConnectConfirmationEmail(
@@ -193,25 +193,25 @@ public class UserService {
     }
 
     @Transactional
-    public void confirmUserConnect(String token) throws ConnectUsersTokenNotFound, ConnectUsersTokenExpired {
-        UserConnectionTokenDAO userConnectionTokenDAO = tokenService.checkUserConnectToken(token);
-        connectUsers(
-                userConnectionTokenDAO.getUserA(),
-                userConnectionTokenDAO.getUserB()
+    public void confirmLinkUsers(String token) throws ConnectUsersTokenNotFound, ConnectUsersTokenExpired {
+        LinkUsersTokenDAO linkUsersTokenDAO = tokenService.checkLinkUsersToken(token);
+        linkUsers(
+                linkUsersTokenDAO.getUserA(),
+                linkUsersTokenDAO.getUserB()
         );
-        connectUsers(
-                userConnectionTokenDAO.getUserB(),
-                userConnectionTokenDAO.getUserA()
+        linkUsers(
+                linkUsersTokenDAO.getUserB(),
+                linkUsersTokenDAO.getUserA()
         );
     }
 
-    private void connectUsers(UserDAO userA, UserDAO userB) {
-        userA.getConnectedUsers().add(userB.getUserEmail());
+    private void linkUsers(UserDAO userA, UserDAO userB) {
+        userA.getLinkedUsers().add(userB.getUserEmail());
         userRepo.save(userA);
     }
 
-    public void renewConnectUsersToken(String token) throws ConnectUsersTokenExpired, ConnectUsersTokenNotFound {
-        UserConnectionTokenDAO connectionTokenDAO = tokenService.renewConnectUsersToken(token);
+    public void renewLinkUsersToken(String token) throws ConnectUsersTokenExpired, ConnectUsersTokenNotFound {
+        LinkUsersTokenDAO connectionTokenDAO = tokenService.renewLinkUsersToken(token);
         if (connectionTokenDAO != null) {
             emailSenderService.sendUserConnectConfirmationEmail(
                     connectionTokenDAO.getUserB().getUserEmail(),

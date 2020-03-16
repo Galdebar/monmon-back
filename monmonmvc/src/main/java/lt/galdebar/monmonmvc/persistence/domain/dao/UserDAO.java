@@ -19,7 +19,7 @@ public class UserDAO {
     private String id;
     private String userEmail;
     private String userPassword;
-    private Set<String> connectedUsers = new HashSet<>();
+    private Set<String> linkedUsers = new HashSet<>();
     private boolean isValidated;
 
 }

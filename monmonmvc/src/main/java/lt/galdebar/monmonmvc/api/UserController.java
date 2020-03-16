@@ -178,19 +178,19 @@ public class UserController {
     }
 
     @CrossOrigin
-    @GetMapping("/getconnectedusers")
-    ResponseEntity getConnectedUsers() {
-        return ResponseEntity.ok(userService.getConnectedUsers());
+    @GetMapping("/getlinkedusers")
+    ResponseEntity getLinkedUsers() {
+        return ResponseEntity.ok(userService.getLinkedUsers());
     }
 
     @CrossOrigin
-    @PostMapping("/connect")
-    ResponseEntity connectUser(@RequestBody UserDTO userDTO) {
+    @PostMapping("/link")
+    ResponseEntity linkUsers(@RequestBody UserDTO userDTO) {
         if (userDTO == null || !isEmailValid(userDTO.getUserEmail())) {
             return ResponseEntity.badRequest().body("Invalid User Email");
         }
         try {
-            userService.connectUserWithCurrent(userDTO);
+            userService.linkUserWithCurrent(userDTO);
             return ResponseEntity.ok("Connection request sent");
         } catch (UserNotFound userNotFound) {
             return ResponseEntity.badRequest().body("Such User doesn't exist");
@@ -198,14 +198,14 @@ public class UserController {
     }
 
     @CrossOrigin
-    @GetMapping("connect/confirm/{token}")
-    ResponseEntity confirmConnectUsers(@PathVariable String token) {
+    @GetMapping("link/confirm/{token}")
+    ResponseEntity confirmLinkUsers(@PathVariable String token) {
         if (token.isEmpty()) {
             return ResponseEntity.badRequest().body("No Token");
         }
 
         try {
-            userService.confirmUserConnect(token);
+            userService.confirmLinkUsers(token);
             return ResponseEntity.ok("Success");
         } catch (ConnectUsersTokenNotFound connectUsersTokenNotFound) {
             return ResponseEntity.badRequest().body("Token Not Found");
@@ -215,14 +215,14 @@ public class UserController {
     }
 
     @CrossOrigin
-    @GetMapping("connect/renew/{token}")
-    ResponseEntity renewConnectRequestToken(@PathVariable String token) {
+    @GetMapping("link/renew/{token}")
+    ResponseEntity renewLinkUsersToken(@PathVariable String token) {
         if (token.isEmpty()) {
             return ResponseEntity.badRequest().body("No Token");
         }
 
         try {
-            userService.renewConnectUsersToken(token);
+            userService.renewLinkUsersToken(token);
             return ResponseEntity.ok("Success");
         } catch (ConnectUsersTokenExpired connectUsersTokenExpired) {
             return ResponseEntity.badRequest().body("Token Expired, Send request again");

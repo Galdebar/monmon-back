@@ -1,10 +1,10 @@
 package lt.galdebar.monmonmvc.service;
 
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserConnectionTokenDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dao.token.LinkUsersTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserEmailChangeTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserRegistrationTokenDAO;
-import lt.galdebar.monmonmvc.persistence.repositories.UserConnectionTokenRepo;
+import lt.galdebar.monmonmvc.persistence.repositories.LinkUsersTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserEmailChangeTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRegistrationTokenRepo;
 import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenExpired;
@@ -33,7 +33,7 @@ public class TokenService {
     private UserEmailChangeTokenRepo emailChangeTokenRepo;
 
     @Autowired
-    private UserConnectionTokenRepo connectionTokenRepo;
+    private LinkUsersTokenRepo linkUsersTokenRepo;
 
     public UserRegistrationTokenDAO createRegistrationToken(UserDAO newUser, String token) {
         UserRegistrationTokenDAO registrationToken = new UserRegistrationTokenDAO();
@@ -52,14 +52,14 @@ public class TokenService {
         return emailChangeTokenRepo.save(emailChangeTokenDAO);
     }
 
-    public UserConnectionTokenDAO createConnectUsersToken(UserDAO userA, UserDAO userB){
+    public LinkUsersTokenDAO createLinkUsersToken(UserDAO userA, UserDAO userB){
         String token = UUID.randomUUID().toString();
-        UserConnectionTokenDAO connectionTokenDAO = new UserConnectionTokenDAO();
+        LinkUsersTokenDAO connectionTokenDAO = new LinkUsersTokenDAO();
         connectionTokenDAO.setToken(token);
         connectionTokenDAO.setUserA(userA);
         connectionTokenDAO.setUserB(userB);
         connectionTokenDAO.setExpiryDate(calculateTokenExpiryDate());
-        return connectionTokenRepo.save(connectionTokenDAO);
+        return linkUsersTokenRepo.save(connectionTokenDAO);
     }
 
     @Transactional
@@ -79,15 +79,15 @@ public class TokenService {
         return registrationToken;
     }
 
-    public UserConnectionTokenDAO renewConnectUsersToken(String token) throws ConnectUsersTokenExpired, ConnectUsersTokenNotFound {
-        UserConnectionTokenDAO tokenDAO = checkUserConnectToken(token);
+    public LinkUsersTokenDAO renewLinkUsersToken(String token) throws ConnectUsersTokenExpired, ConnectUsersTokenNotFound {
+        LinkUsersTokenDAO tokenDAO = checkLinkUsersToken(token);
         String newToken = UUID.randomUUID().toString();
         Date newExpirationDate = calculateTokenExpiryDate();
 
         tokenDAO.setToken(newToken);
         tokenDAO.setExpiryDate(newExpirationDate);
 
-        return connectionTokenRepo.save(tokenDAO);
+        return linkUsersTokenRepo.save(tokenDAO);
     }
 
     public UserRegistrationTokenDAO checkRegistrationToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenExpired {
@@ -104,8 +104,8 @@ public class TokenService {
         return registrationToken;
     }
 
-    public UserConnectionTokenDAO checkUserConnectToken(String token) throws ConnectUsersTokenNotFound, ConnectUsersTokenExpired {
-        UserConnectionTokenDAO foundToken = connectionTokenRepo.findByToken(token);
+    public LinkUsersTokenDAO checkLinkUsersToken(String token) throws ConnectUsersTokenNotFound, ConnectUsersTokenExpired {
+        LinkUsersTokenDAO foundToken = linkUsersTokenRepo.findByToken(token);
         if (foundToken == null) {
             throw new ConnectUsersTokenNotFound();
         }

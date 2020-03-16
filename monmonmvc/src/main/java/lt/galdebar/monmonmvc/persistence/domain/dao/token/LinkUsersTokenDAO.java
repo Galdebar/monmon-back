@@ -15,7 +15,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Document(collection = "user_sync_tokens")
-public class UserConnectionTokenDAO {
+public class LinkUsersTokenDAO {
     @Indexed
     private String token;
     @DBRef(lazy = true)

@@ -106,7 +106,7 @@ public class ShoppingItemService {
     }
 
     private List<String> getCurrentUserAndConnectedUsers(){
-        List<String> users = userService.getConnectedUsers();
+        List<String> users = userService.getLinkedUsers();
         users.add(SecurityContextHolder.getContext().getAuthentication().getName());
         System.out.println(users);
         return users;
