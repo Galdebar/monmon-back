@@ -1,14 +1,20 @@
 package lt.galdebar.monmonmvc.service;
 
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
-import lt.galdebar.monmonmvc.persistence.domain.dao.UserConnectionTokenDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserConnectionTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserEmailChangeTokenDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserRegistrationTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.*;
-import lt.galdebar.monmonmvc.persistence.repositories.UserConnectionTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
+import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenExpired;
+import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
+import lt.galdebar.monmonmvc.service.exceptions.registration.TokenExpired;
+import lt.galdebar.monmonmvc.service.exceptions.registration.TokenNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyExists;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
+import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyValidated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,16 +23,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.util.*;
 
 @Service
 public class UserService {
+
+    private static final int EXPIRATION_IN_HOURS = 24;
+
     @Autowired
     private UserRepo userRepo;
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private EmailSenderService emailSenderService;
+
+    @Autowired
+    private TokenService tokenService;
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -63,25 +77,12 @@ public class UserService {
         return foundUser;
     }
 
-    @Transactional
-    public UserDAO registerUser(UserDTO userDTO) throws UserAlreadyExists {
-        if (checkIfUserExists(userDTO.getUserEmail())) {
-            throw new UserAlreadyExists();
+    public UserDAO findByUserEmail(String userEmail) throws UserNotFound {
+        UserDAO foundUser = userRepo.findByUserEmail(userEmail);
+        if(foundUser == null){
+            throw new UserNotFound();
         }
-        UserDAO newUser = new UserDAO();
-        newUser.setUserEmail(userDTO.getUserEmail());
-        newUser.setUserPassword(passwordEncoder.encode(userDTO.getUserPassword()));
-        newUser.setValidated(false);
-        UserDAO addedUserDAO = userRepo.insert(newUser);
-        return addedUserDAO;
-    }
-
-    public boolean checkIfUserExists(String userEmail) {
-        return userRepo.findByUserEmail(userEmail) != null;
-    }
-
-    public UserDTO findByUserEmail(String userEmail) {
-        return daoToDto(userRepo.findByUserEmail(userEmail));
+        return foundUser;
     }
 
     private UserDTO daoToDto(UserDAO userDAO) {
@@ -103,19 +104,59 @@ public class UserService {
         return connectedUserNames;
     }
 
-    public boolean validateUser(UserDAO user) {
-        user.setValidated(true);
-        return userRepo.save(user) != null;
+    @Transactional
+    public void registerNewUser(LoginAttemptDTO registrationAttempt) throws UserAlreadyExists {
+        UserDAO newUser = createNewUser(
+                registrationAttempt.getUserEmail(),
+                registrationAttempt.getUserPassword()
+        );
+        String token = UUID.randomUUID().toString();
+        UserRegistrationTokenDAO tokenDAO = tokenService.createRegistrationToken(newUser, token);
+        emailSenderService.sendConfirmationEmail(
+                newUser.getUserEmail(),
+                token
+        );
     }
 
     @Transactional
-    public void changeEmail(EmailChangeRequest emailChangeRequest) throws UserAlreadyExists {
-        if (!checkIfUserExists(emailChangeRequest.getNewEmail())) {
-            UserDAO currentUser = getCurrentUserDAO();
-            currentUser.setUserEmail(emailChangeRequest.getNewEmail());
-            userRepo.save(currentUser);
-        } else throw new UserAlreadyExists();
+    public boolean confirmRegistration(String token) throws TokenNotFound, UserAlreadyValidated, TokenExpired {
+        UserRegistrationTokenDAO registrationToken = tokenService.checkRegistrationToken(token);
+        UserDAO userToValidate = registrationToken.getUser();
+        userToValidate.setValidated(true);
+        return userRepo.save(userToValidate) != null;
+    }
 
+    @Transactional
+    public void changeUserEmail(EmailChangeRequest emailChangeRequest) throws UserAlreadyExists {
+        if(checkIfUserExists(emailChangeRequest.getNewEmail())){
+            throw new UserAlreadyExists();
+        }
+
+        UserDAO currentUser = getCurrentUserDAO();
+        String token = UUID.randomUUID().toString();
+        UserEmailChangeTokenDAO tokenDAO = tokenService.createEmailChangeToken(currentUser,emailChangeRequest.getNewEmail(),token);
+        emailSenderService.sendEmailChangeConfirmationEmail(
+                emailChangeRequest.getNewEmail(),
+                token
+        );
+    }
+
+    @Transactional
+    public boolean confirmUserEmailChange(String token) throws TokenNotFound, TokenExpired {
+        UserEmailChangeTokenDAO tokenDAO = tokenService.checkEmailChangeToken(token);
+        UserDAO userToUpdate = tokenDAO.getUser();
+        userToUpdate.setUserEmail(tokenDAO.getNewEmail());
+        return userRepo.save(userToUpdate) != null;
+
+    }
+
+    @Transactional
+    public void renewRegistrationToken(String token) throws UserAlreadyValidated, TokenExpired, TokenNotFound {
+        UserRegistrationTokenDAO registrationToken = tokenService.renewRegistrationToken(token);
+        emailSenderService.sendConfirmationEmail(
+                registrationToken.getUser().getUserEmail(),
+                registrationToken.getToken()
+        );
     }
 
     @Transactional
@@ -135,13 +176,48 @@ public class UserService {
         } else throw new BadCredentialsException("Invalid password supplied");
     }
 
-    public boolean updateUserEmail(UserDAO user, String newEmail) {
-        user.setUserEmail(newEmail);
-        return userRepo.save(user) != null;
+
+    @Transactional
+    public void connectUserWithCurrent(UserDTO userToConnect) throws UserNotFound {
+        UserDAO currentUserDAO = getCurrentUserDAO();
+        UserDAO userToConnectDAO = findByUserEmail(userToConnect.getUserEmail());
+        String token = UUID.randomUUID().toString();
+        UserConnectionTokenDAO connectionTokenDAO = tokenService.createConnectUsersToken(currentUserDAO, userToConnectDAO);
+
+        if (connectionTokenDAO != null) {
+            emailSenderService.sendUserConnectConfirmationEmail(
+                    currentUserDAO.getUserEmail(),
+                    token
+            );
+        }
     }
 
-    public UserDAO updateUser(UserDAO currentUser) {
-        return userRepo.save(currentUser);
+    @Transactional
+    public void confirmUserConnect(String token) throws ConnectUsersTokenNotFound, ConnectUsersTokenExpired {
+        UserConnectionTokenDAO userConnectionTokenDAO = tokenService.checkUserConnectToken(token);
+        connectUsers(
+                userConnectionTokenDAO.getUserA(),
+                userConnectionTokenDAO.getUserB()
+        );
+        connectUsers(
+                userConnectionTokenDAO.getUserB(),
+                userConnectionTokenDAO.getUserA()
+        );
+    }
+
+    private void connectUsers(UserDAO userA, UserDAO userB) {
+        userA.getConnectedUsers().add(userB.getUserEmail());
+        userRepo.save(userA);
+    }
+
+    public void renewConnectUsersToken(String token) throws ConnectUsersTokenExpired, ConnectUsersTokenNotFound {
+        UserConnectionTokenDAO connectionTokenDAO = tokenService.renewConnectUsersToken(token);
+        if (connectionTokenDAO != null) {
+            emailSenderService.sendUserConnectConfirmationEmail(
+                    connectionTokenDAO.getUserB().getUserEmail(),
+                    token
+            );
+        }
     }
 
     public UserDAO getCurrentUserDAO() {
@@ -155,5 +231,22 @@ public class UserService {
         newUser.setUserEmail(userDTO.getUserEmail());
         newUser.setUserPassword(userDTO.getUserPassword());
         return newUser;
+    }
+
+    private boolean checkIfUserExists(String userEmail) {
+        return userRepo.findByUserEmail(userEmail) != null;
+    }
+
+    @Transactional
+    private UserDAO createNewUser(String userEmail, String password) throws UserAlreadyExists {
+        if (checkIfUserExists(userEmail)) {
+            throw new UserAlreadyExists();
+        }
+        UserDAO newUser = new UserDAO();
+        newUser.setUserEmail(userEmail);
+        newUser.setUserPassword(passwordEncoder.encode(password));
+        newUser.setValidated(false);
+        UserDAO addedUserDAO = userRepo.insert(newUser);
+        return addedUserDAO;
     }
 }

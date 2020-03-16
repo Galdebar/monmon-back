@@ -1,8 +1,9 @@
-package lt.galdebar.monmonmvc.persistence.domain.dao;
+package lt.galdebar.monmonmvc.persistence.domain.dao.token;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;

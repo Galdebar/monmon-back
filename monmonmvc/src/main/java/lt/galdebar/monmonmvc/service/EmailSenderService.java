@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailSenderService {
 
-    private static final String REGISTER_CONFIRM = "localhost:8080/register/confirm";
-    private static final String CONNECTUSER_CONFIRM = "localhost:8080/connectusers/confirm";
-    private static final String CHANGE_EMAIL = "localhost:8080/register/changeemail/confirm";
+    private static final String REGISTER_CONFIRM = "localhost:8080/user/register/confirm";
+    private static final String CONNECTUSER_CONFIRM = "localhost:8080/user/connect/confirm";
+    private static final String CHANGE_EMAIL = "localhost:8080/register/user/changeemail/confirm";
 
     @Autowired
     private JavaMailSender javaMailSender;
