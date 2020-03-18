@@ -85,13 +85,6 @@ public class UserService {
         return foundUser;
     }
 
-    private UserDTO daoToDto(UserDAO userDAO) {
-        if (userDAO == null) {
-            return new UserDTO();
-        }
-        return new UserDTO(userDAO.getUserEmail(), userDAO.getUserPassword());
-    }
-
     @Transactional
     public void registerNewUser(LoginAttemptDTO registrationAttempt) throws UserAlreadyExists {
         UserDAO newUser = createNewUser(
@@ -168,6 +161,7 @@ public class UserService {
     public List<String> getLinkedUsers() {
         UserDAO currentUser = getCurrentUserDAO();
         List<String> connectedUserNames = new ArrayList<>();
+
         for (String userName : currentUser.getLinkedUsers()) {
             if (userName != null) {
                 connectedUserNames.add(userName);
@@ -224,6 +218,13 @@ public class UserService {
         return userRepo.findByUserEmail(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
+    }
+
+    private UserDTO daoToDto(UserDAO userDAO) {
+        if (userDAO == null) {
+            return new UserDTO();
+        }
+        return new UserDTO(userDAO.getUserEmail(), userDAO.getUserPassword());
     }
 
     UserDAO dtoToDao(UserDTO userDTO) {

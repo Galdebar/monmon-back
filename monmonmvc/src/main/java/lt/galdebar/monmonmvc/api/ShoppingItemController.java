@@ -3,6 +3,7 @@ package lt.galdebar.monmonmvc.api;
 import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.service.ShoppingItemService;
+import lt.galdebar.monmonmvc.service.exceptions.shoppingitem.ShoppingItemNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,71 +21,121 @@ public class ShoppingItemController {
 
 
     @GetMapping("getByCategory")
-    ResponseEntity getItemsByCategory(@RequestParam(value = "shoppingItemCategory", required = false) String requestedCategory){
-        if(requestedCategory != null && !requestedCategory.equalsIgnoreCase("")){
+    ResponseEntity getItemsByCategory(@RequestParam(value = "shoppingItemCategory", required = false) String requestedCategory) {
+        if (requestedCategory != null && !requestedCategory.equalsIgnoreCase("")) {
             return ResponseEntity.ok(shoppingItemService.getItemsByCategory(requestedCategory));
-        }else if(!requestedCategory.equalsIgnoreCase("")){
+        } else if (!requestedCategory.equalsIgnoreCase("")) {
             return ResponseEntity.ok().build();
-        }else return ResponseEntity.notFound().build();
+        } else return ResponseEntity.notFound().build();
     }
 
     @CrossOrigin
     @GetMapping("getAll")
-    ResponseEntity getAllItems(){
+    ResponseEntity getAllItems() {
         return ResponseEntity.ok(shoppingItemService.getAll());
     }
 
 
-
-
     @CrossOrigin
-    @PostMapping
-    ResponseEntity<ShoppingItemDTO> addItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
-        if (shoppingItemDTO != null) {
-            ShoppingItemDTO returnedItem = shoppingItemService.addItem(shoppingItemDTO);
-            return ResponseEntity.ok( returnedItem );
+    @PostMapping("/additem")
+    ResponseEntity<ShoppingItemDTO> addItem(@RequestBody(required = true) ShoppingItemDTO shoppingItemDTO) {
+        if (!isShoppingItemDTOValid(shoppingItemDTO)) {
+            return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.badRequest().build();
+        System.out.println(shoppingItemDTO.toString());
+        ShoppingItemDTO returnedItem = shoppingItemService.addItem(shoppingItemDTO);
+        return ResponseEntity.ok(returnedItem);
     }
 
     @CrossOrigin
-    @PutMapping(value = "{id}")
-    ResponseEntity<ShoppingItemDTO> updateItem(@PathVariable("id")String id, @RequestBody ShoppingItemDTO shoppingItemDTO){
-        if(shoppingItemDTO != null && shoppingItemService.getItemById(id) != null){// is this check neccessary, or is it enough to just update item?
-            ShoppingItemDTO returnedItem = shoppingItemService.updateItem(shoppingItemDTO);
+    @PutMapping("updateitem")
+    ResponseEntity updateItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
+        if (!isShoppingItemDTOValid(shoppingItemDTO)) {
+            return ResponseEntity.badRequest().build();
+        }
+        ShoppingItemDTO returnedItem;
+
+        try {
+            returnedItem = shoppingItemService.updateItem(shoppingItemDTO);
             return ResponseEntity.ok(returnedItem);
+        } catch (ShoppingItemNotFound shoppingItemNotFound) {
+            return ResponseEntity.badRequest().body("Item not found");
         }
-        return ResponseEntity.badRequest().build();
     }
 
     @CrossOrigin
-    @PutMapping("/updateItems")
-    ResponseEntity<List<ShoppingItemDTO>> updateItems(@RequestBody List<ShoppingItemDTO> shoppingItemDTOS){
-        if(shoppingItemDTOS != null){
-            List<ShoppingItemDTO> results = shoppingItemService.updateItems(shoppingItemDTOS);
+    @PutMapping("/updateitems")
+    ResponseEntity updateItems(@RequestBody List<ShoppingItemDTO> shoppingItemDTOS) {
+        if (shoppingItemDTOS == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        for(ShoppingItemDTO item:shoppingItemDTOS){
+            if(!isShoppingItemDTOValid(item)){
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
+        List<ShoppingItemDTO> results;
+
+        try {
+            results = shoppingItemService.updateItems(shoppingItemDTOS);
             return ResponseEntity.ok(results);
+        } catch (ShoppingItemNotFound shoppingItemNotFound) {
+            return ResponseEntity.badRequest().body("Item not found");
         }
-        return ResponseEntity.badRequest().build();
     }
 
     @CrossOrigin
-    @DeleteMapping(value = "{id}")
-    ResponseEntity deleteById(@PathVariable("id")String id, @RequestBody ShoppingItemDTO shoppingItemDTO){
-        if(shoppingItemDTO != null && shoppingItemService.getItemById(id) != null){// is this check neccessary, or is it enough to just update item?
+    @DeleteMapping("deleteitem")
+    ResponseEntity deleteById(@RequestBody ShoppingItemDTO shoppingItemDTO) {
+        if (!isShoppingItemDTOValid(shoppingItemDTO)) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
             shoppingItemService.deleteItem(shoppingItemDTO);
             return ResponseEntity.ok().build();
+        } catch (ShoppingItemNotFound shoppingItemNotFound) {
+            return ResponseEntity.badRequest().body("Item not found");
         }
-        return ResponseEntity.badRequest().build();
     }
 
     @CrossOrigin
-    @DeleteMapping("/deleteItems")
-    ResponseEntity deleteItems(@RequestBody List<ShoppingItemDTO> shoppingItemDTOS){
-        if(shoppingItemDTOS != null){
+    @DeleteMapping("/deleteitems")
+    ResponseEntity deleteItems(@RequestBody List<ShoppingItemDTO> shoppingItemDTOS) {
+        if (shoppingItemDTOS == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
             shoppingItemService.deleteItems(shoppingItemDTOS);
             return ResponseEntity.ok().build();
+        } catch (ShoppingItemNotFound shoppingItemNotFound) {
+            return ResponseEntity.badRequest().body("Item not found");
         }
-        return ResponseEntity.badRequest().build();
     }
 
+
+    private boolean isShoppingItemDTOValid(ShoppingItemDTO shoppingItemDTO) {
+        if(shoppingItemDTO == null){
+            return false;
+        }
+        if(!isStringValid(shoppingItemDTO.getItemName())){
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isStringValid(String itemName) {
+        if(itemName == null){
+            return false;
+        }
+        if(itemName.isEmpty()){
+            return false;
+        }
+        if(itemName.trim().isEmpty()){
+            return false;
+        }
+
+        return true;
+    }
 }

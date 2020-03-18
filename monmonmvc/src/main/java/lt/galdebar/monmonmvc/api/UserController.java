@@ -60,10 +60,10 @@ public class UserController {
         }
         try {
             AuthTokenDTO receivedToken = userService.login(loginAttemptDTO);
-            Map<Object, Object> model = new HashMap<>();
-            model.put("userEmail", receivedToken.getUserEmail());
-            model.put("token", receivedToken.getToken());
-            return ResponseEntity.ok(model);
+            Map<Object, Object> responseObj = new HashMap<>();
+            responseObj.put("userEmail", receivedToken.getUserEmail());
+            responseObj.put("token", receivedToken.getToken());
+            return ResponseEntity.ok(responseObj);
         } catch (AuthenticationException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (UserNotValidated userNotValidated) {

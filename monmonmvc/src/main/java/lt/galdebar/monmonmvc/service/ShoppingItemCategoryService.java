@@ -44,7 +44,6 @@ public class ShoppingItemCategoryService {
         List<ShoppingKeywordDAO> foundKeywords = searchKeywords(keywordDTO);
         if (foundKeywords.size() == 0
         || !foundKeywords.get(0).getKeyword().equalsIgnoreCase(keywordDTO.getKeyword())) {
-            System.out.println(foundKeywords.get(0).getShoppingItemCategory().getCategoryName());
             return categoryDAOToDTO(getUncategorized());
         } else return categoryDAOToDTO(foundKeywords.get(0).getShoppingItemCategory());
 
