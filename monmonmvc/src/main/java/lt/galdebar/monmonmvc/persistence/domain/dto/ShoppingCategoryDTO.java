@@ -1,18 +1,16 @@
 package lt.galdebar.monmonmvc.persistence.domain.dto;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
 @RequiredArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 public class ShoppingCategoryDTO {
     @NonNull
-    private final String categoryName;
+    private String categoryName;
     @NonNull
-    private final Set<String> keywords;
+    private Set<String> keywords;
 }

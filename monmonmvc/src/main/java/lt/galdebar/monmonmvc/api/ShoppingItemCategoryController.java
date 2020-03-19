@@ -16,6 +16,7 @@ import java.util.List;
 public class ShoppingItemCategoryController {
 
     @Autowired
+    private
     ShoppingItemCategoryService shoppingItemCategoryService;
 
 
@@ -35,9 +36,9 @@ public class ShoppingItemCategoryController {
 
     @CrossOrigin
     @GetMapping
-    ResponseEntity searchCategory(@RequestParam(value = "searchcategory", required = false) ShoppingKeywordDTO keyword) {
+    ResponseEntity searchCategory(@RequestBody ShoppingKeywordDTO keyword) {
         System.out.println(keyword);
-        if (keyword != null && keyword.getKeyword() != "") {
+        if (keyword != null && !keyword.getKeyword().equals("")) {
             ShoppingCategoryDTO result = null;
             try{
                 result = shoppingItemCategoryService.findCategoryByKeyword(keyword);

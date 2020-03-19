@@ -27,7 +27,7 @@ import java.util.Set;
 
 @Service
 public class ShoppingItemCategoryService {
-    private final int MAX_RESULTS = 5;
+    private final int MAX_RESULTS = 10;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -52,17 +52,23 @@ public class ShoppingItemCategoryService {
     @SuppressWarnings("unchecked")
     @Transactional
     private List<ShoppingKeywordDAO> searchKeywords(ShoppingKeywordDTO keywordDTO) {
-        String analyzedString = analyzeString(keywordDTO.getKeyword());
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
+                .getAnalyzer(ShoppingKeywordDAO.class);
+        String analyzedString = analyzeString(customAnalyzer, keywordDTO.getKeyword());
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
                 .forEntity(ShoppingKeywordDAO.class).get();
 
+        if(analyzedString.trim().isEmpty()){
+            return new ArrayList<ShoppingKeywordDAO>();
+        }
+
         Query query = queryBuilder
                 .keyword()
                 .fuzzy()
-                .withEditDistanceUpTo(1)
-                .withPrefixLength(1)
+                .withEditDistanceUpTo(2)
+                .withPrefixLength(2)
                 .onField("keyword")
                 .matching(analyzedString)
                 .createQuery();
@@ -73,13 +79,16 @@ public class ShoppingItemCategoryService {
         return jpaQuery.setMaxResults(MAX_RESULTS).getResultList();
     }
 
-    private String analyzeString(String searchString) {
+    private String analyzeString(Analyzer customAnalyzer, String searchString) {
         List<String> result = new ArrayList<>();
         try {
-            TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(searchString));
+            TokenStream tokenStream = customAnalyzer.tokenStream(null, new StringReader(searchString));
             tokenStream.reset();
             while (tokenStream.incrementToken()) {
-                result.add(tokenStream.getAttribute(CharTermAttribute.class).toString());
+                String string = tokenStream.getAttribute(CharTermAttribute.class).toString();
+                if(!string.trim().isEmpty()){
+                    result.add(string);
+                }
             }
             tokenStream.close();
 

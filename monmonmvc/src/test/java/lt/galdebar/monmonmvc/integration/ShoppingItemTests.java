@@ -3,45 +3,29 @@ package lt.galdebar.monmonmvc.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
 import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingItemDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
-import lt.galdebar.monmonmvc.service.ShoppingItemService;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -59,29 +43,23 @@ import java.util.Map;
 @TestPropertySource(locations = "classpath:test.properties")
 @SpringBootTest
 public class ShoppingItemTests {
+    private static final String TEST_USER_EMAIL = "user@somemail.com";
+    private static final String TEST_USER_PASS = "password";
 
     @Autowired
     private UserRepo userRepo;
 
     @Autowired
+    private
     ShoppingItemRepo shoppingItemRepo;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private static final String TEST_USER_EMAIL = "user@somemail.com";
-    private static final String TEST_USER_PASS = "password";
-
     @Autowired
     private WebApplicationContext wac;
 
     private MockMvc mvc;
-
-    @Autowired
-    private FilterChainProxy springSecurityFilterChain;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
 
     private TestUserCreatorHelper userCreatorHelper;
 
@@ -121,9 +99,8 @@ public class ShoppingItemTests {
         String item1Name = "water";
         String item1Category = "Beverages";
         String item2Name = "beer";
-        String item2Category = item1Category;
         createAndSaveShoppingItem(item1Name, item1Category, TEST_USER_EMAIL);
-        createAndSaveShoppingItem(item2Name, item2Category, TEST_USER_EMAIL);
+        createAndSaveShoppingItem(item2Name, item1Category, TEST_USER_EMAIL);
 
         mvc.perform(get("/shoppingitems/getAll").header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
@@ -144,9 +121,8 @@ public class ShoppingItemTests {
         String item1Name = "water";
         String item1Category = "Beverages";
         String item2Name = "beer";
-        String item2Category = item1Category;
         createAndSaveShoppingItem(item1Name, item1Category, TEST_USER_EMAIL);
-        createAndSaveShoppingItem(item2Name, item2Category, TEST_USER_EMAIL);
+        createAndSaveShoppingItem(item2Name, item1Category, TEST_USER_EMAIL);
 
         mvc.perform(get("/shoppingitems/getAll")
                 .header("Authorization", "Bearer " + authToken))
@@ -168,9 +144,8 @@ public class ShoppingItemTests {
         String item1Name = "water";
         String item1Category = "Beverages";
         String item2Name = "beer";
-        String item2Category = item1Category;
         createAndSaveShoppingItem(item1Name, item1Category, userAEmail);
-        createAndSaveShoppingItem(item2Name, item2Category, userBEmail);
+        createAndSaveShoppingItem(item2Name, item1Category, userBEmail);
 
 
         String userAAuthToken = getAuthToken(userAEmail, userAPassword);
@@ -213,9 +188,8 @@ public class ShoppingItemTests {
         String item1Name = "water";
         String item1Category = "Beverages";
         String item2Name = "beer";
-        String item2Category = item1Category;
         createAndSaveShoppingItem(item1Name, item1Category, userAEmail);
-        createAndSaveShoppingItem(item2Name, item2Category, userAEmail);
+        createAndSaveShoppingItem(item2Name, item1Category, userAEmail);
 
 
         String userAAuthToken = getAuthToken(userAEmail, userAPassword);
@@ -255,9 +229,8 @@ public class ShoppingItemTests {
         String item1Name = "water";
         String item1Category = "Beverages";
         String item2Name = "beer";
-        String item2Category = item1Category;
         createAndSaveShoppingItem(item1Name, item1Category, userAEmail);
-        createAndSaveShoppingItem(item2Name, item2Category, userBEmail);
+        createAndSaveShoppingItem(item2Name, item1Category, userBEmail);
 
 
         String userAAuthToken = getAuthToken(userAEmail, userAPassword);
@@ -389,12 +362,7 @@ public class ShoppingItemTests {
 
         String itemName = "";
 
-        Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
-        requestObject.put("itemCategory", "");
-        requestObject.put("quantity", "0");
-        requestObject.put("comment", "");
-        requestObject.put("isInCart", "false");
+        Map<String, String> requestObject = createDefaultRequestObject(itemName);
 
         mvc.perform(post("/shoppingitems/additem")
                 .header("Authorization", "Bearer " + authToken)
@@ -409,12 +377,7 @@ public class ShoppingItemTests {
 
         String itemName = "     ";
 
-        Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
-        requestObject.put("itemCategory", "");
-        requestObject.put("quantity", "0");
-        requestObject.put("comment", "");
-        requestObject.put("isInCart", "false");
+        Map<String, String> requestObject = createDefaultRequestObject(itemName);
 
         mvc.perform(post("/shoppingitems/additem")
                 .header("Authorization", "Bearer " + authToken)
@@ -429,20 +392,8 @@ public class ShoppingItemTests {
 
         String itemName = "itemName";
 
-        Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
-        requestObject.put("itemCategory", "");
-        requestObject.put("quantity", "0");
-        requestObject.put("comment", "");
-        requestObject.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+        Map<String, String> requestObject = createDefaultRequestObject(itemName);
+        String responseString = pushRequestObjToDB(requestObject,authToken);
         JsonNode jsonNode = objectMapper.readTree(responseString);
         String itemId = jsonNode.get("id").asText();
 
@@ -543,20 +494,8 @@ public class ShoppingItemTests {
 
         String itemName = "itemName";
 
-        Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
-        requestObject.put("itemCategory", "");
-        requestObject.put("quantity", "0");
-        requestObject.put("comment", "");
-        requestObject.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+        Map<String, String> requestObject = createDefaultRequestObject(itemName);
+        String responseString = pushRequestObjToDB(requestObject,authToken);
         JsonNode jsonNode = objectMapper.readTree(responseString);
         String itemId = jsonNode.get("id").asText();
 
@@ -589,19 +528,8 @@ public class ShoppingItemTests {
 
         String itemName = "itemName";
 
-        Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
-        requestObject.put("itemCategory", "");
-        requestObject.put("quantity", "0");
-        requestObject.put("comment", "");
-        requestObject.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        Map<String, String> requestObject = createDefaultRequestObject(itemName);
+        pushRequestObjToDB(requestObject,authToken);
 
         String itemId = "liauwjgdkaijwhgdlijahwd";
 
@@ -635,37 +563,14 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
         JsonNode jsonNode1 = objectMapper.readTree(responseString1);
         String item1Id = jsonNode1.get("id").asText();
 
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+        String responseString2 = pushRequestObjToDB(requestObject2, authToken);
         JsonNode jsonNode2 = objectMapper.readTree(responseString2);
         String item2Id = jsonNode2.get("id").asText();
 
@@ -729,36 +634,14 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
         JsonNode jsonNode1 = objectMapper.readTree(responseString1);
         String item1Id = jsonNode1.get("id").asText();
 
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject2, authToken);
 
         String item2Id = "iauhwdkjhawd";
 
@@ -807,36 +690,14 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
         JsonNode jsonNode1 = objectMapper.readTree(responseString1);
         String item1Id = jsonNode1.get("id").asText();
 
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject2, authToken);
 
         String item2Id = "";
 
@@ -885,36 +746,14 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
         JsonNode jsonNode1 = objectMapper.readTree(responseString1);
         String item1Id = jsonNode1.get("id").asText();
 
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject2, authToken);
 
         String item2Id = "     ";
 
@@ -963,36 +802,14 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
         JsonNode jsonNode1 = objectMapper.readTree(responseString1);
         String item1Id = jsonNode1.get("id").asText();
 
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject2, authToken);
 
         String item2Id = null;
 
@@ -1041,33 +858,11 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject1, authToken);
+        pushRequestObjToDB(requestObject2, authToken);
 
 
         mvc.perform(put("/shoppingitems/updateitems")
@@ -1084,19 +879,8 @@ public class ShoppingItemTests {
 
         String itemName = "itemName";
 
-        Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
-        requestObject.put("itemCategory", "");
-        requestObject.put("quantity", "0");
-        requestObject.put("comment", "");
-        requestObject.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        Map<String, String> requestObject = createDefaultRequestObject(itemName);
+        pushRequestObjToDB(requestObject, authToken);
 
         String itemId = "";
 
@@ -1129,19 +913,8 @@ public class ShoppingItemTests {
 
         String itemName = "itemName";
 
-        Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
-        requestObject.put("itemCategory", "");
-        requestObject.put("quantity", "0");
-        requestObject.put("comment", "");
-        requestObject.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        Map<String, String> requestObject = createDefaultRequestObject(itemName);
+        pushRequestObjToDB(requestObject, authToken);
 
         String itemId = "      ";
 
@@ -1174,19 +947,8 @@ public class ShoppingItemTests {
 
         String itemName = "itemName";
 
-        Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
-        requestObject.put("itemCategory", "");
-        requestObject.put("quantity", "0");
-        requestObject.put("comment", "");
-        requestObject.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        Map<String, String> requestObject = createDefaultRequestObject(itemName);
+        pushRequestObjToDB(requestObject, authToken);
 
         String itemId = null;
 
@@ -1277,33 +1039,11 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject1, authToken);
+        pushRequestObjToDB(requestObject2, authToken);
 
         String itemId = "liujahwdlijd";
         requestObject1.put("id", itemId);
@@ -1323,33 +1063,11 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject1, authToken);
+        pushRequestObjToDB(requestObject2, authToken);
 
         String itemId = "";
         requestObject1.put("id", itemId);
@@ -1369,33 +1087,11 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject1, authToken);
+        pushRequestObjToDB(requestObject2, authToken);
 
         String itemId = "  ";
         requestObject1.put("id", itemId);
@@ -1415,33 +1111,11 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        pushRequestObjToDB(requestObject1, authToken);
+        pushRequestObjToDB(requestObject2, authToken);
 
         String itemId = null;
         requestObject1.put("id", itemId);
@@ -1461,42 +1135,12 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
+        pushRequestObjToDBAndAddID(requestObject1, authToken);
+        pushRequestObjToDBAndAddID(requestObject2, authToken);
 
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        JsonNode jsonNode1 = objectMapper.readTree(responseString1);
-        String item1Id = jsonNode1.get("id").asText();
-        requestObject1.put("id", item1Id);
-
-
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        JsonNode jsonNode2 = objectMapper.readTree(responseString2);
-        String item2Id = jsonNode2.get("id").asText();
-        requestObject2.put("id", item2Id);
 
         List<Map<String, String>> listDeleteObject = new ArrayList<>();
         listDeleteObject.add(requestObject1);
@@ -1525,41 +1169,15 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        String item1Id = "ioahwd";
+        String item1Id = "iauwghdkjhawd";
         requestObject1.put("id", item1Id);
 
+        pushRequestObjToDBAndAddID(requestObject2, authToken);
 
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        JsonNode jsonNode2 = objectMapper.readTree(responseString2);
-        String item2Id = jsonNode2.get("id").asText();
-        requestObject2.put("id", item2Id);
 
         List<Map<String, String>> listDeleteObject = new ArrayList<>();
         listDeleteObject.add(requestObject1);
@@ -1580,41 +1198,15 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
-
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
 
         String item1Id = "";
         requestObject1.put("id", item1Id);
 
+        pushRequestObjToDBAndAddID(requestObject2, authToken);
 
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        JsonNode jsonNode2 = objectMapper.readTree(responseString2);
-        String item2Id = jsonNode2.get("id").asText();
-        requestObject2.put("id", item2Id);
 
         List<Map<String, String>> listDeleteObject = new ArrayList<>();
         listDeleteObject.add(requestObject1);
@@ -1644,41 +1236,14 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
 
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        String item1Id = "   ";
+        String item1Id = "    ";
         requestObject1.put("id", item1Id);
 
-
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        JsonNode jsonNode2 = objectMapper.readTree(responseString2);
-        String item2Id = jsonNode2.get("id").asText();
-        requestObject2.put("id", item2Id);
+        pushRequestObjToDBAndAddID(requestObject2, authToken);
 
         List<Map<String, String>> listDeleteObject = new ArrayList<>();
         listDeleteObject.add(requestObject1);
@@ -1708,41 +1273,14 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
-
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        Map<String, String> requestObject1 = createDefaultRequestObject(item1Name);
+        Map<String, String> requestObject2 = createDefaultRequestObject(item2Name);
+        String responseString1 = pushRequestObjToDB(requestObject1, authToken);
 
         String item1Id = null;
         requestObject1.put("id", item1Id);
 
-
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-        JsonNode jsonNode2 = objectMapper.readTree(responseString2);
-        String item2Id = jsonNode2.get("id").asText();
-        requestObject2.put("id", item2Id);
+        pushRequestObjToDBAndAddID(requestObject2, authToken);
 
         List<Map<String, String>> listDeleteObject = new ArrayList<>();
         listDeleteObject.add(requestObject1);
@@ -1772,34 +1310,8 @@ public class ShoppingItemTests {
         String item1Name = "item1Name";
         String item2Name = "item2Name";
 
-        Map<String, String> requestObject1 = new HashMap<>();
-        requestObject1.put("itemName", item1Name);
-        requestObject1.put("itemCategory", "");
-        requestObject1.put("quantity", "0");
-        requestObject1.put("comment", "");
-        requestObject1.put("isInCart", "false");
-
-        Map<String, String> requestObject2 = new HashMap<>();
-        requestObject2.put("itemName", item2Name);
-        requestObject2.put("itemCategory", "");
-        requestObject2.put("quantity", "0");
-        requestObject2.put("comment", "");
-        requestObject2.put("isInCart", "false");
-
-        String responseString1 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-
-        String responseString2 = mvc.perform(post("/shoppingitems/additem")
-                .header("Authorization", "Bearer " + authToken)
-                .content(objectMapper.writeValueAsString(requestObject2))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        createAndSaveDefaultRequestObject(item1Name, authToken);
+        createAndSaveDefaultRequestObject(item2Name, authToken);
 
 
         mvc.perform(delete("/shoppingitems/deleteitems")
@@ -1851,4 +1363,36 @@ public class ShoppingItemTests {
         return shoppingItemRepo.save(item1);
     }
 
+    private Map createDefaultRequestObject(String itemName) {
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("itemName", itemName);
+        requestObject.put("itemCategory", "");
+        requestObject.put("quantity", "0");
+        requestObject.put("comment", "");
+        requestObject.put("isInCart", "false");
+        return requestObject;
+    }
+
+    private String pushRequestObjToDB(Map<String, String> requestObject, String authToken) throws Exception {
+        String responseString = mvc.perform(post("/shoppingitems/additem")
+                .header("Authorization", "Bearer " + authToken)
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        return responseString;
+    }
+
+    private Map<String, String> pushRequestObjToDBAndAddID(Map<String, String> requestObject, String authToken) throws Exception {
+        String responseString = pushRequestObjToDB(requestObject, authToken);
+
+        JsonNode jsonNode2 = objectMapper.readTree(responseString);
+        String item2Id = jsonNode2.get("id").asText();
+        requestObject.put("id", item2Id);
+        return requestObject;
+    }
+
+    private String createAndSaveDefaultRequestObject(String itemName, String authToken) throws Exception {
+        return pushRequestObjToDB(createDefaultRequestObject(itemName), authToken);
+    }
 }
