@@ -3,6 +3,7 @@ package lt.galdebar.monmonmvc.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,7 +16,7 @@ public class EmailSenderService {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public void sendConfirmationEmail(String recepient, String token){
+    public void sendConfirmationEmail(String recepient, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recepient);
         message.setSubject("MonMon Registration Confirmation");
@@ -24,7 +25,7 @@ public class EmailSenderService {
         javaMailSender.send(message);
     }
 
-    public void sendUserConnectConfirmationEmail(String recepient,String token){
+    public void sendUserConnectConfirmationEmail(String recepient, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recepient);
         message.setSubject("MonMon User Sync Confirmation");
@@ -50,7 +51,7 @@ public class EmailSenderService {
         return stringBuilder.toString();
     }
 
-    private String generateUserConnectConfirmationLink(String token){
+    private String generateUserConnectConfirmationLink(String token) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(CONNECTUSER_CONFIRM)
                 .append("/")
@@ -58,7 +59,7 @@ public class EmailSenderService {
         return stringBuilder.toString();
     }
 
-    private String generateEmailChangeConfirmationLink(String token){
+    private String generateEmailChangeConfirmationLink(String token) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(CHANGE_EMAIL)
                 .append("/")

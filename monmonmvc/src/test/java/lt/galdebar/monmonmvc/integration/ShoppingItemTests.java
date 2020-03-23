@@ -1334,9 +1334,6 @@ public class ShoppingItemTests {
     //tests with empty requests ??
 
     private String getAuthToken(String userName, String userPassword) throws Exception {
-        Map<String, String> loginAttemptObject = new HashMap<>();
-        loginAttemptObject.put("userPassword", userPassword);
-        loginAttemptObject.put("userEmail", userName);
         LoginAttemptDTO loginAttemptDTO = new LoginAttemptDTO();
         loginAttemptDTO.setUserEmail(userName);
         loginAttemptDTO.setUserPassword(userPassword);

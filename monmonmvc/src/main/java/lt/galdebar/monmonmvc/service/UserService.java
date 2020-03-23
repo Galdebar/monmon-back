@@ -10,11 +10,8 @@ import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenExpired;
 import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
-import lt.galdebar.monmonmvc.service.exceptions.registration.TokenExpired;
-import lt.galdebar.monmonmvc.service.exceptions.registration.TokenNotFound;
-import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyExists;
+import lt.galdebar.monmonmvc.service.exceptions.registration.*;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
-import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyValidated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -132,7 +129,7 @@ public class UserService {
     }
 
     @Transactional
-    public void renewRegistrationToken(String token) throws UserAlreadyValidated, TokenExpired, TokenNotFound {
+    public void renewRegistrationToken(String token) throws UserAlreadyValidated, TokenNotExpired, TokenNotFound {
         UserRegistrationTokenDAO registrationToken = tokenService.renewRegistrationToken(token);
         emailSenderService.sendConfirmationEmail(
                 registrationToken.getUser().getUserEmail(),

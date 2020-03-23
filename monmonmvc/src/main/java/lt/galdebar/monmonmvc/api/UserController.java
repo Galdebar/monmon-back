@@ -7,10 +7,7 @@ import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenEx
 import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
-import lt.galdebar.monmonmvc.service.exceptions.registration.TokenExpired;
-import lt.galdebar.monmonmvc.service.exceptions.registration.TokenNotFound;
-import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyExists;
-import lt.galdebar.monmonmvc.service.exceptions.registration.UserAlreadyValidated;
+import lt.galdebar.monmonmvc.service.exceptions.registration.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -76,20 +73,27 @@ public class UserController {
     @CrossOrigin
     @PostMapping("/register")
     ResponseEntity signUp(@RequestBody LoginAttemptDTO loginAttempt) {
-        if (loginAttempt != null && isEmailValid(loginAttempt.getUserEmail())) {
-            try {
-                userService.registerNewUser(loginAttempt);
-                return ResponseEntity.ok().body("Success");
-            } catch (UserAlreadyExists userAlreadyExists) {
-                return ResponseEntity.badRequest().body("User Already Exists");
-            }
-        } else return ResponseEntity.badRequest().body("Invalid Email");
+        if (loginAttempt == null) {
+            return ResponseEntity.badRequest().body("Request body empty");
+        }
+        if (!isEmailValid(loginAttempt.getUserEmail())) {
+            return ResponseEntity.badRequest().body("Invalid Email");
+        }
+        if (loginAttempt.getUserPassword().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Password cannot be empty");
+        }
+        try {
+            userService.registerNewUser(loginAttempt);
+            return ResponseEntity.ok().body("Success");
+        } catch (UserAlreadyExists userAlreadyExists) {
+            return ResponseEntity.badRequest().body("User Already Exists");
+        }
     }
 
     @CrossOrigin
     @GetMapping(value = "register/confirm/{token}")
     ResponseEntity validateUser(@PathVariable String token) {
-        if (token.isEmpty()) {
+        if (token.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("No Token");
         }
 
@@ -124,8 +128,8 @@ public class UserController {
             return ResponseEntity.badRequest().body("User already validated");
         } catch (TokenNotFound tokenNotFound) {
             return ResponseEntity.badRequest().body("Incorrect token");
-        } catch (TokenExpired tokenExpired) {
-            return ResponseEntity.badRequest().body("Token expired");
+        } catch (TokenNotExpired tokenExpired) {
+            return ResponseEntity.badRequest().body("Original token not expired");
         }
     }
 
@@ -146,8 +150,8 @@ public class UserController {
 
     @CrossOrigin
     @GetMapping("/changeemail/confirm/{token}")
-    ResponseEntity confirmEmailChange(@PathVariable String token){
-        if(token.isEmpty()){
+    ResponseEntity confirmEmailChange(@PathVariable String token) {
+        if (token.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid token");
         }
 
