@@ -7,8 +7,8 @@ import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserRegistrationTokenD
 import lt.galdebar.monmonmvc.persistence.repositories.LinkUsersTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserEmailChangeTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRegistrationTokenRepo;
-import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenExpired;
-import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenNotFound;
+import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersTokenExpired;
+import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersTokenNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.registration.TokenExpired;
 import lt.galdebar.monmonmvc.service.exceptions.registration.TokenNotExpired;
 import lt.galdebar.monmonmvc.service.exceptions.registration.TokenNotFound;
@@ -53,8 +53,7 @@ class TokenService {
         return emailChangeTokenRepo.save(emailChangeTokenDAO);
     }
 
-    LinkUsersTokenDAO createLinkUsersToken(UserDAO userA, UserDAO userB){
-        String token = UUID.randomUUID().toString();
+    LinkUsersTokenDAO createLinkUsersToken(UserDAO userA, UserDAO userB, String token){
         LinkUsersTokenDAO connectionTokenDAO = new LinkUsersTokenDAO();
         connectionTokenDAO.setToken(token);
         connectionTokenDAO.setUserA(userA);
@@ -80,7 +79,7 @@ class TokenService {
         return registrationToken;
     }
 
-    LinkUsersTokenDAO renewLinkUsersToken(String token) throws ConnectUsersTokenExpired, ConnectUsersTokenNotFound {
+    LinkUsersTokenDAO renewLinkUsersToken(String token) throws LinkUsersTokenExpired, LinkUsersTokenNotFound {
         LinkUsersTokenDAO tokenDAO = checkLinkUsersToken(token);
         String newToken = UUID.randomUUID().toString();
         Date newExpirationDate = calculateTokenExpiryDate();
@@ -105,13 +104,13 @@ class TokenService {
         return registrationToken;
     }
 
-    LinkUsersTokenDAO checkLinkUsersToken(String token) throws ConnectUsersTokenNotFound, ConnectUsersTokenExpired {
+    LinkUsersTokenDAO checkLinkUsersToken(String token) throws LinkUsersTokenNotFound, LinkUsersTokenExpired {
         LinkUsersTokenDAO foundToken = linkUsersTokenRepo.findByToken(token);
         if (foundToken == null) {
-            throw new ConnectUsersTokenNotFound();
+            throw new LinkUsersTokenNotFound();
         }
         if (foundToken.getExpiryDate().getTime() - Calendar.getInstance().getTime().getTime() <= 0) {
-            throw new ConnectUsersTokenExpired();
+            throw new LinkUsersTokenExpired();
         }
         return foundToken;
     }

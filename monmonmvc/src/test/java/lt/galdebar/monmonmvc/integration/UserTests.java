@@ -1,12 +1,15 @@
 package lt.galdebar.monmonmvc.integration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dao.token.LinkUsersTokenDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserEmailChangeTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserRegistrationTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
+import lt.galdebar.monmonmvc.persistence.repositories.LinkUsersTokenRepo;
+import lt.galdebar.monmonmvc.persistence.repositories.UserEmailChangeTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRegistrationTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.EmailSenderService;
@@ -31,10 +34,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -63,6 +63,12 @@ public class UserTests {
     private UserRegistrationTokenRepo userRegistrationTokenRepo;
 
     @Autowired
+    private UserEmailChangeTokenRepo userEmailChangeTokenRepo;
+
+    @Autowired
+    private LinkUsersTokenRepo linkUsersTokenRepo;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -73,7 +79,7 @@ public class UserTests {
     private ObjectMapper objectMapper;
 
     @Before
-    public void setup(){
+    public void setup() {
         this.mvc = MockMvcBuilders
                 .webAppContextSetup(this.wac)
                 .apply(springSecurity())
@@ -84,6 +90,8 @@ public class UserTests {
         greenMail.start();
         userRepo.deleteAll();
         userRegistrationTokenRepo.deleteAll();
+        userEmailChangeTokenRepo.deleteAll();
+        linkUsersTokenRepo.deleteAll();
     }
 
 
@@ -91,6 +99,8 @@ public class UserTests {
     public void afterEach() {
         userRepo.deleteAll();
         userRegistrationTokenRepo.deleteAll();
+        userEmailChangeTokenRepo.deleteAll();
+        linkUsersTokenRepo.deleteAll();
         greenMail.stop();
     }
 
@@ -295,7 +305,7 @@ public class UserTests {
         assertNotNull(receivedMessages);
         assertEquals(1, receivedMessages.length);
         assertTrue(receivedMessages[0].getContent().toString().contains("register"));
-        String registrationLink = getRegistrationLink(receivedMessages[0].getContent().toString());
+        String registrationLink = getRelativeLink(receivedMessages[0].getContent().toString());
 
         String confirmResponse = mvc.perform(get(registrationLink))
                 .andDo(print())
@@ -322,7 +332,7 @@ public class UserTests {
         assertNotNull(receivedMessages);
         assertEquals(1, receivedMessages.length);
         assertTrue(receivedMessages[0].getContent().toString().contains("register"));
-        String registrationLink = getRegistrationLink(receivedMessages[0].getContent().toString());
+        String registrationLink = getRelativeLink(receivedMessages[0].getContent().toString());
         registrationLink += "iahwikdhaw";
 
         String confirmResponse = mvc.perform(get(registrationLink))
@@ -391,9 +401,9 @@ public class UserTests {
         assertEquals("Success", registerResponse);
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
-        makeTokenExpired(receivedMessages[0].getContent().toString());
+        makeRegistrationTokenExpired(receivedMessages[0].getContent().toString());
 
-        String registrationLink = getRegistrationLink(receivedMessages[0].getContent().toString());
+        String registrationLink = getRelativeLink(receivedMessages[0].getContent().toString());
         String confirmResponse = mvc.perform(get(registrationLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -415,7 +425,7 @@ public class UserTests {
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
-        String registrationLink = getRegistrationLink(receivedMessages[0].getContent().toString());
+        String registrationLink = getRelativeLink(receivedMessages[0].getContent().toString());
         mvc.perform(get(registrationLink))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -438,7 +448,7 @@ public class UserTests {
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String registrationToken = getTokenFromString(receivedMessages[0].getContent().toString());
-        makeTokenExpired(receivedMessages[0].getContent().toString());
+        makeRegistrationTokenExpired(receivedMessages[0].getContent().toString());
         String renewLink = "/user/register/renew/" + registrationToken;
 
         String requestResponse = mvc.perform(get(renewLink))
@@ -516,7 +526,7 @@ public class UserTests {
         String testEmail = "email@test.me";
         String testPassword = "password";
 
-        registerUser(testEmail,testPassword);
+        registerUser(testEmail, testPassword);
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String registrationToken = getTokenFromString(receivedMessages[0].getContent().toString());
@@ -536,9 +546,9 @@ public class UserTests {
     public void givenSimpleUser_whenLogin_thenResponseOKAndGiveAuthToken() throws Exception {
         String testEmail = "test@email.com";
         String testPassword = "password";
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
-        String authToken = getAuthToken(testEmail,testPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
 
         assertNotNull(authToken);
         assertFalse(authToken.trim().isEmpty());
@@ -592,7 +602,7 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testPassword = "password";
 
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
         Map<String, String> requestObject = new HashMap<>();
         requestObject.put("userEmail", "iuagwhd");
@@ -614,7 +624,7 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testPassword = "password";
 
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
         Map<String, String> requestObject = new HashMap<>();
         requestObject.put("userEmail", "");
@@ -636,7 +646,7 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testPassword = "password";
 
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
         Map<String, String> requestObject = new HashMap<>();
         requestObject.put("userEmail", "     ");
@@ -658,7 +668,7 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testPassword = "password";
 
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
         Map<String, String> requestObject = new HashMap<>();
         requestObject.put("userEmail", testEmail);
@@ -680,7 +690,7 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testPassword = "password";
 
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
         Map<String, String> requestObject = new HashMap<>();
         requestObject.put("userEmail", testEmail);
@@ -702,7 +712,7 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testPassword = "password";
 
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
         Map<String, String> requestObject = new HashMap<>();
         requestObject.put("userEmail", testEmail);
@@ -724,9 +734,9 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testPassword = "password";
 
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
-        String authToken = getAuthToken(testEmail,testPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
 
         String responseString = mvc.perform(
                 get("/user/me")
@@ -744,7 +754,7 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testPassword = "password";
 
-        registerAndConfirmUser(testEmail,testPassword);
+        registerAndConfirmUser(testEmail, testPassword);
 
         String responseString = mvc.perform(
                 get("/user/me")
@@ -756,36 +766,1451 @@ public class UserTests {
 
     }
 
-    //get current user
-    //error if token incorrect
+    @Test
+    public void givenStandardUserAndValidEmail_whenChangeEmail_thenResponseOkAndSendEmail() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "newEmail@test.you";
+        String testPassword = "password";
 
-    //error if not loged in
-    //change email
-    //error if not logged in or incorrect auth token
-    //error if incorrect email format
+        registerAndConfirmUser(testEmail, testPassword);
 
-    //error if email already taken
-    //change email confirm
-    //error if incorrect token
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
 
-    //error if token expired
-    //change password
-    //error if pass the same
-    //error if passwords don't match (?)
-    //error if email invalid
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("success"));
 
-    //error if incorrect auth token
-    //link users
-    //error if incorrect token
-    // error if emails match
-    // error if email invalid
-    // error if user not found
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(2, receivedMessages.length);
+        assertTrue(receivedMessages[1].getContent().toString().contains("changeemail"));
 
-    //error if user not validated
-    //confirm user link
-    // error if incorrect token
+        String registrationTokenIDFromEmail = getTokenFromString(receivedMessages[1].getContent().toString());
+        assertNotNull(registrationTokenIDFromEmail);
+        assertFalse(registrationTokenIDFromEmail.trim().isEmpty());
 
-    //error if token expired
+        UserEmailChangeTokenDAO emailChangeTokenDAO = userEmailChangeTokenRepo.findByToken(registrationTokenIDFromEmail);
+        assertNotNull(emailChangeTokenDAO);
+        assertEquals(newEmail, emailChangeTokenDAO.getNewEmail());
+
+        UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
+
+        assertEquals(emailChangeTokenDAO.getUser().getId(), registeredUser.getId());
+    }
+
+    @Test
+    public void givenStandardUserAndInvalidEmail_whenChangeEmail_thenReturnBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "iohawd";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+    }
+
+    @Test
+    public void givenStandardUserAndSameEmail_whenChangeEmail_thenReturnBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", testEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+    }
+
+    @Test
+    public void givenStandardUserAndTakenEmail_whenChangeEmail_thenReturnBadRequest() throws Exception {
+        String testEmail1 = "email@test.me";
+        String testEmail2 = "email2@test.this";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail1, testPassword);
+        registerAndConfirmUser(testEmail2, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", testEmail2);
+        String authToken = getAuthToken(testEmail1, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    }
+
+    @Test
+    public void givenStandardUserAndBlankEmail_whenChangeEmail_thenReturnBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(1, receivedMessages.length);
+    }
+
+    @Test
+    public void givenStandardUserAndEmptyEmail_whenChangeEmail_thenReturnBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "     ";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(1, receivedMessages.length);
+    }
+
+    @Test
+    public void givenStandardUserAndValidEmailAndInvalidToken_whenChangeEmail_thenReturnForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "newEmail@test.this";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = "oihawoih";
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(1, receivedMessages.length);
+    }
+
+    @Test
+    public void givenStandardUserAndValidEmailAndBlankToken_whenChangeEmail_thenReturnForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "newEmail@test.this";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = "";
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(1, receivedMessages.length);
+    }
+
+    @Test
+    public void givenStandardUserAndValidEmailAndEmptyToken_whenChangeEmail_thenReturnForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "newEmail@test.this";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = "    ";
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(1, receivedMessages.length);
+    }
+
+    @Test
+    public void givenValidToken_whenConfirmEmailChange_thenOkResponseAndUpdateUser() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "newEmail@test.this";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("success"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertNotNull(user);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(2, receivedMessages.length);
+        String confirmToken = getTokenFromString(receivedMessages[1].getContent().toString());
+        String confirmLink = "/user/changeemail/confirm/" + confirmToken;
+
+        String requestResponse2 = mvc.perform(get(confirmLink))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse2.toLowerCase().contains("success"));
+
+        UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
+        assertNull(userWithOldEmail);
+
+        UserDAO userWithNewEmail = userRepo.findByUserEmail(newEmail);
+        assertNotNull(userWithNewEmail);
+    }
+
+    @Test
+    public void givenInvalidToken_whenConfirmEmailChange_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "newEmail@test.this";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("success"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertNotNull(user);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(2, receivedMessages.length);
+        String confirmToken = "pioauhwdihawd";
+        String confirmLink = "/user/changeemail/confirm/" + confirmToken;
+
+        String requestResponse2 = mvc.perform(get(confirmLink))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
+        assertNotNull(userWithOldEmail);
+
+        UserDAO userWithNewEmail = userRepo.findByUserEmail(newEmail);
+        assertNull(userWithNewEmail);
+    }
+
+    @Test
+    public void givenBlankToken_whenConfirmEmailChange_thenNotFound() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "newEmail@test.this";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("success"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertNotNull(user);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(2, receivedMessages.length);
+        String confirmToken = "";
+        String confirmLink = "/user/changeemail/confirm/" + confirmToken;
+
+        String requestResponse2 = mvc.perform(get(confirmLink))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
+        assertNotNull(userWithOldEmail);
+
+        UserDAO userWithNewEmail = userRepo.findByUserEmail(newEmail);
+        assertNull(userWithNewEmail);
+    }
+
+    @Test
+    public void givenEmptyToken_whenConfirmEmailChange_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String newEmail = "newEmail@test.this";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("newEmail", newEmail);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changeemail")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("success"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertNotNull(user);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertNotNull(receivedMessages);
+        assertEquals(2, receivedMessages.length);
+        String confirmToken = "        ";
+        String confirmLink = "/user/changeemail/confirm/" + confirmToken;
+
+        String requestResponse2 = mvc.perform(get(confirmLink))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
+        assertNotNull(userWithOldEmail);
+
+        UserDAO userWithNewEmail = userRepo.findByUserEmail(newEmail);
+        assertNull(userWithNewEmail);
+    }
+
+    @Test
+    public void givenStandardUserAndValidNewPassword_whenChangePassword_thenReturnOkAndChangePassword() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", newPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("success"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertNotNull(user);
+        assertFalse(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertTrue(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndInvalidOldPassword_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", "iuawhd");
+        requestObject.put("newPassword", newPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndBlankOldPassword_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", "");
+        requestObject.put("newPassword", newPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndEmptyOldPassword_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", "     ");
+        requestObject.put("newPassword", newPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("invalid"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndSameNewPassword_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", testPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("match"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndBlankNewPassword_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", "");
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("invalid"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndEmptyNewPassword_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", "     ");
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("invalid"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndInvalidEmail_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", "iouahwd");
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", newPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("invalid email"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndBlankEmail_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", "");
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", newPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("invalid email"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenStandardUserAndEmptyEmail_whenChangePassword_thenBadRequest() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", "     ");
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", newPassword);
+        String authToken = getAuthToken(testEmail, testPassword);
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(requestResponse.toLowerCase().contains("invalid email"));
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenInvalidToken_whenChangePassword_thenForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", newPassword);
+        String authToken = ";oiahwd";
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenBlankToken_whenChangePassword_thenForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", newPassword);
+        String authToken = "";
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenEmptyToken_whenChangePassword_thenForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+        String newPassword = "newPassword";
+
+        registerAndConfirmUser(testEmail, testPassword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", testEmail);
+        requestObject.put("oldPassword", testPassword);
+        requestObject.put("newPassword", newPassword);
+        String authToken = "        ";
+
+        String requestResponse = mvc.perform(post("/user/changepassword")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO user = userRepo.findByUserEmail(testEmail);
+        assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
+        assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
+    }
+
+    @Test
+    public void givenValidUsers_whenLinkUsers_thenReturnOKAndEmailSent() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertTrue(requestResponse.toLowerCase().contains("success"));
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertEquals(3, receivedMessages.length);
+        assertTrue(checkMessagesForStringMatch("link", Arrays.asList(receivedMessages)));
+
+        String linkUsersToken = getTokenFromString(
+                getMessageByContentString(user1Email, "link", Arrays.asList(receivedMessages))
+        );
+        LinkUsersTokenDAO linkUsersTokenDAO = linkUsersTokenRepo.findByToken(linkUsersToken);
+        assertNotNull(linkUsersTokenDAO);
+        assertEquals(user1Email, linkUsersTokenDAO.getUserA().getUserEmail());
+        assertEquals(user2Email, linkUsersTokenDAO.getUserB().getUserEmail());
+    }
+
+    @Test
+    public void givenNotRegisteredEmail_whenLinkUsers_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertTrue(requestResponse.toLowerCase().contains("not found"));
+    }
+
+    @Test
+    public void givenMatchingEmail_whenLinkUsers_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user1Email);
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertTrue(requestResponse.toLowerCase().contains("match"));
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertEquals(2, receivedMessages.length);
+    }
+
+    @Test
+    public void givenNotValidatedEmail_whenLinkUsers_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertTrue(requestResponse.toLowerCase().contains("validated"));
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        assertEquals(2, receivedMessages.length);
+    }
+
+    @Test
+    public void givenInvalidEmail_whenLinkUsers_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", "oiahwdolh");
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertTrue(requestResponse.toLowerCase().contains("invalid"));
+    }
+
+    @Test
+    public void givenEmptyEmail_whenLinkUsers_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", "");
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertTrue(requestResponse.toLowerCase().contains("invalid"));
+    }
+
+    @Test
+    public void givenBlankEmail_whenLinkUsers_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", "       ");
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertTrue(requestResponse.toLowerCase().contains("invalid"));
+    }
+
+    @Test
+    public void givenInvalidToken_whenLinkUsers_thenForbidden() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = "oiawhd";
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    }
+
+    @Test
+    public void givenEmptyToken_whenLinkUsers_thenForbidden() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = "";
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    }
+
+    @Test
+    public void givenBlankToken_whenLinkUsers_thenForbidden() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = "    ";
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    }
+
+    @Test
+    public void givenValidToken_whenConfirmLink_thenReturnOkAndLinkUsers() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmationLink = getRelativeLink(
+                getMessageByContentString(user2Email, "link", Arrays.asList(receivedMessages))
+        );
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(confirmResponse.toLowerCase().contains("success"));
+
+        UserDAO user1 = userRepo.findByUserEmail(user1Email);
+        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        assertTrue(user1.getLinkedUsers().contains(user2.getUserEmail()));
+        assertTrue(user2.getLinkedUsers().contains(user1.getUserEmail()));
+
+    }
+
+    @Test
+    public void givenExpiredToken_whenConfirmLink_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmToken = getTokenFromString(
+                getMessageByContentString(user2Email, "link", Arrays.asList(receivedMessages))
+        );
+        String confirmationLink = "/user/link/confirm/" + confirmToken;
+        makeLinkUsersTokenExpired(confirmationLink);
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(confirmResponse.toLowerCase().contains("expired"));
+
+        UserDAO user1 = userRepo.findByUserEmail(user1Email);
+        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        assertFalse(user1.getLinkedUsers().contains(user2.getUserEmail()));
+        assertFalse(user2.getLinkedUsers().contains(user1.getUserEmail()));
+
+    }
+
+    @Test
+    public void givenInvalidToken_whenConfirmLink_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmationLink = "/user/link/confirm/piayhwdoliohaw";
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(confirmResponse.toLowerCase().contains("not found"));
+
+        UserDAO user1 = userRepo.findByUserEmail(user1Email);
+        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        assertFalse(user1.getLinkedUsers().contains(user2.getUserEmail()));
+        assertFalse(user2.getLinkedUsers().contains(user1.getUserEmail()));
+    }
+
+    @Test
+    public void givenBlankToken_whenConfirmLink_thenNotFound() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmationLink = "/user/link/confirm/";
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        UserDAO user1 = userRepo.findByUserEmail(user1Email);
+        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        assertFalse(user1.getLinkedUsers().contains(user2.getUserEmail()));
+        assertFalse(user2.getLinkedUsers().contains(user1.getUserEmail()));
+    }
+
+    @Test
+    public void givenEmptyToken_whenConfirmLink_thenBadRequest() throws Exception {
+        String user1Email = "email@test.me";
+        String user1Pasword = "password";
+        String user2Email = "email2@test.you";
+        String user2Pasword = "password";
+
+        registerAndConfirmUser(user1Email, user1Pasword);
+        registerAndConfirmUser(user2Email, user2Pasword);
+        String authToken = getAuthToken(user1Email, user1Pasword);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmationLink = "/user/link/confirm/     ";
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(confirmResponse.toLowerCase().contains("not found"));
+
+        UserDAO user1 = userRepo.findByUserEmail(user1Email);
+        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        assertFalse(user1.getLinkedUsers().contains(user2.getUserEmail()));
+        assertFalse(user2.getLinkedUsers().contains(user1.getUserEmail()));
+    }
+
+    @Test
+    public void givenValidToken_whenGetLinkedUsers_thenReturnArray() throws Exception {
+        String user1Email = "email@test.me";
+        String password = "password";
+        String user2Email = "email2@test.you";
+        String user3Email = "email3@test.this";
+
+        registerAndConfirmUser(user1Email, password);
+        registerAndConfirmUser(user2Email, password);
+        registerAndConfirmUser(user3Email, password);
+        String authToken = getAuthToken(user1Email, password);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmToken = getTokenFromString(
+                getMessageByContentString(user2Email, "link", Arrays.asList(receivedMessages))
+        );
+        String confirmationLink = "/user/link/confirm/" + confirmToken;
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+
+        String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertTrue(getLinkedUsersResponse.contains(user2Email));
+        assertFalse(getLinkedUsersResponse.contains(user1Email));
+        assertFalse(getLinkedUsersResponse.contains(user3Email));
+    }
+
+    @Test
+    public void givenInvalidToken_whenGetLinkedUsers_thenForbidden() throws Exception {
+        String user1Email = "email@test.me";
+        String password = "password";
+        String user2Email = "email2@test.you";
+        String user3Email = "email3@test.this";
+
+        registerAndConfirmUser(user1Email, password);
+        registerAndConfirmUser(user2Email, password);
+        registerAndConfirmUser(user3Email, password);
+        String authToken = getAuthToken(user1Email, password);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmToken = getTokenFromString(
+                getMessageByContentString(user2Email, "link", Arrays.asList(receivedMessages))
+        );
+        String confirmationLink = "/user/link/confirm/" + confirmToken;
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        String badAuthToken = "liuahwdiuhawd";
+        String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
+                .header("Authorization", "Bearer " + badAuthToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+    }
+
+    @Test
+    public void givenBlankToken_whenGetLinkedUsers_thenForbidden() throws Exception {
+        String user1Email = "email@test.me";
+        String password = "password";
+        String user2Email = "email2@test.you";
+        String user3Email = "email3@test.this";
+
+        registerAndConfirmUser(user1Email, password);
+        registerAndConfirmUser(user2Email, password);
+        registerAndConfirmUser(user3Email, password);
+        String authToken = getAuthToken(user1Email, password);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmToken = getTokenFromString(
+                getMessageByContentString(user2Email, "link", Arrays.asList(receivedMessages))
+        );
+        String confirmationLink = "/user/link/confirm/" + confirmToken;
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        String badAuthToken = "";
+        String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
+                .header("Authorization", "Bearer " + badAuthToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+    }
+
+    @Test
+    public void givenEmptyToken_whenGetLinkedUsers_thenForbidden() throws Exception {
+        String user1Email = "email@test.me";
+        String password = "password";
+        String user2Email = "email2@test.you";
+        String user3Email = "email3@test.this";
+
+        registerAndConfirmUser(user1Email, password);
+        registerAndConfirmUser(user2Email, password);
+        registerAndConfirmUser(user3Email, password);
+        String authToken = getAuthToken(user1Email, password);
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("userEmail", user2Email);
+        requestObject.put("userPassword", "");
+
+        String requestResponse = mvc.perform(post("/user/link")
+                .characterEncoding(StandardCharsets.UTF_8.toString())
+                .content(objectMapper.writeValueAsString(requestObject))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
+        String confirmToken = getTokenFromString(
+                getMessageByContentString(user2Email, "link", Arrays.asList(receivedMessages))
+        );
+        String confirmationLink = "/user/link/confirm/" + confirmToken;
+
+        String confirmResponse = mvc.perform(get(confirmationLink))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        String badAuthToken = "      ";
+        String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
+                .header("Authorization", "Bearer " + badAuthToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+    }
+
     //get linked users
     // get linked users works both ways
 
@@ -795,7 +2220,7 @@ public class UserTests {
         return finalStringCleanup(trimmedString);
     }
 
-    private String getRegistrationLink(String link) {
+    private String getRelativeLink(String link) {
         String partToRemove = "localhost:8080";
         String trimmedLink = link.replace(partToRemove, "");
         return finalStringCleanup(trimmedLink);
@@ -806,6 +2231,24 @@ public class UserTests {
                 .replace("\n", "")
                 .replace("\r", "")
                 .trim();
+    }
+
+    private boolean checkMessagesForStringMatch(String matchString, Iterable<? extends MimeMessage> messagesArray) throws IOException, MessagingException {
+        for (MimeMessage message : messagesArray) {
+            if (message.getContent().toString().contains(matchString)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getMessageByContentString(String email, String matchString, Iterable<? extends MimeMessage> messagesArray) throws IOException, MessagingException {
+        for (MimeMessage message : messagesArray) {
+            if (message.getContent().toString().contains(matchString)) {
+                return message.getContent().toString();
+            }
+        }
+        return "";
     }
 
     private String registerUser(String userEmail, String password) throws Exception {
@@ -823,7 +2266,7 @@ public class UserTests {
         return responseString;
     }
 
-    private void makeTokenExpired(String registrationLink) {
+    private void makeRegistrationTokenExpired(String registrationLink) {
         String registrationToken = getTokenFromString(registrationLink);
         UserRegistrationTokenDAO token = userRegistrationTokenRepo.findByToken(registrationToken);
         Calendar calendar = Calendar.getInstance();
@@ -834,10 +2277,23 @@ public class UserTests {
         userRegistrationTokenRepo.save(token);
     }
 
+    private void makeLinkUsersTokenExpired(String linkUsersUrl) {
+        String token = getTokenFromString(linkUsersUrl);
+        LinkUsersTokenDAO tokenDAO = linkUsersTokenRepo.findByToken(token);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Timestamp(calendar.getTime().getTime()));
+        calendar.add(Calendar.HOUR, -1);
+
+        tokenDAO.setExpiryDate(new Date(calendar.getTime().getTime()));
+        linkUsersTokenRepo.save(tokenDAO);
+    }
+
     private void registerAndConfirmUser(String email, String password) throws Exception {
-        registerUser(email,password);
+        registerUser(email, password);
         UserDAO user = userRepo.findByUserEmail(email);
-        if(user == null){ throw new Exception();}
+        if (user == null) {
+            throw new Exception();
+        }
 
         user.setValidated(true);
         userRepo.save(user);

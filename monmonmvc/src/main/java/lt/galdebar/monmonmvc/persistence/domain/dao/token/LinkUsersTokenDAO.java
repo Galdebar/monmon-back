@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -16,7 +17,9 @@ import java.util.Date;
 @Setter
 @Document(collection = "user_sync_tokens")
 public class LinkUsersTokenDAO {
-    @Indexed
+    @Id
+    private String id;
+    @Indexed(unique = true)
     private String token;
     @DBRef(lazy = true)
     @NotNull

@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 @Configuration
 @EnableConfigurationProperties
@@ -38,8 +39,18 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-                .antMatchers("/", "/user/login", "/user/register/**").permitAll()
-                .antMatchers("/**").hasAuthority("user");
+                .antMatchers("/",
+                        "/user/login",
+                        "/user/register/**",
+                        "/user/changeemail/confirm/*").permitAll()
+                .antMatchers("/user/me",
+                        "user/changeemail",
+                        "user/changepassword",
+                        "user/getlinkedusers",
+                        "user/link",
+                        "shoppingitems/**",
+                        "categorysearch/**"
+                        ).hasAuthority("user");
 
         http
                 .apply(new JwtConfigurer(jwtTokenProvider));

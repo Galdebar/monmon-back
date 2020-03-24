@@ -1,5 +1,6 @@
 package lt.galdebar.monmonmvc.context.security.jwt;
 
+import lt.galdebar.monmonmvc.context.security.exceptions.InvalidJwtAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
@@ -9,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class JwtTokenFilter extends GenericFilterBean {
@@ -21,13 +23,19 @@ public class JwtTokenFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        String token =
-                jwtTokenProvider.resolveToken((HttpServletRequest) servletRequest);
-        if(token != null && jwtTokenProvider.validateToken(token)){
-            Authentication auth = jwtTokenProvider.getAuthentication(token);
+        String token = jwtTokenProvider.resolveToken((HttpServletRequest) servletRequest);
+        HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        try {
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                Authentication auth = jwtTokenProvider.getAuthentication(token);
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+            filterChain.doFilter(servletRequest, servletResponse);
+        } catch (InvalidJwtAuthenticationException invalidTokenException) {
+            SecurityContextHolder.clearContext();
+            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, invalidTokenException.getMessage());
         }
-        filterChain.doFilter(servletRequest, servletResponse);
     }
 }

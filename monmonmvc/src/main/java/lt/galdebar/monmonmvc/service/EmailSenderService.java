@@ -11,7 +11,7 @@ public class EmailSenderService {
 
     private static final String REGISTER_CONFIRM = "localhost:8080/user/register/confirm";
     private static final String CONNECTUSER_CONFIRM = "localhost:8080/user/link/confirm";
-    private static final String CHANGE_EMAIL = "localhost:8080/register/user/changeemail/confirm";
+    private static final String CHANGE_EMAIL = "localhost:8080/user/changeemail/confirm";
 
     @Autowired
     private JavaMailSender javaMailSender;

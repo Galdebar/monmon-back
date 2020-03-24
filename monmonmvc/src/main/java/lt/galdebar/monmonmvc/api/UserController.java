@@ -3,8 +3,9 @@ package lt.galdebar.monmonmvc.api;
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonmvc.persistence.domain.dto.*;
 import lt.galdebar.monmonmvc.service.UserService;
-import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenExpired;
-import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenNotFound;
+import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersMatch;
+import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersTokenExpired;
+import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersTokenNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
 import lt.galdebar.monmonmvc.service.exceptions.registration.*;
@@ -173,6 +174,15 @@ public class UserController {
         if (passwordChangeRequest == null) {
             return ResponseEntity.badRequest().body("Invalid Request");
         }
+        if (!isEmailValid(passwordChangeRequest.getUserEmail())) {
+            return ResponseEntity.badRequest().body("Invalid Email");
+        }
+        if(passwordChangeRequest.getNewPassword().trim().isEmpty()){
+            return ResponseEntity.badRequest().body("Invalid new password");
+        }
+        if(passwordChangeRequest.getOldPassword().equals(passwordChangeRequest.getNewPassword())){
+            return ResponseEntity.badRequest().body("Old and new password match");
+        }
         try {
             userService.changePassword(passwordChangeRequest);
             return ResponseEntity.ok().body("Success");
@@ -195,9 +205,13 @@ public class UserController {
         }
         try {
             userService.linkUserWithCurrent(userDTO);
-            return ResponseEntity.ok("Connection request sent");
+            return ResponseEntity.ok("Success! Connection request sent");
         } catch (UserNotFound userNotFound) {
-            return ResponseEntity.badRequest().body("Such User doesn't exist");
+            return ResponseEntity.badRequest().body("User not found");
+        } catch (UserNotValidated userNotValidated) {
+            return ResponseEntity.badRequest().body("User not validated");
+        } catch (LinkUsersMatch linkUsersMatch) {
+            return ResponseEntity.badRequest().body("User emails match");
         }
     }
 
@@ -211,9 +225,9 @@ public class UserController {
         try {
             userService.confirmLinkUsers(token);
             return ResponseEntity.ok("Success");
-        } catch (ConnectUsersTokenNotFound connectUsersTokenNotFound) {
+        } catch (LinkUsersTokenNotFound connectUsersTokenNotFound) {
             return ResponseEntity.badRequest().body("Token Not Found");
-        } catch (ConnectUsersTokenExpired connectUsersTokenExpired) {
+        } catch (LinkUsersTokenExpired connectUsersTokenExpired) {
             return ResponseEntity.badRequest().body("Token Expired, Send request again");
         }
     }
@@ -228,9 +242,9 @@ public class UserController {
         try {
             userService.renewLinkUsersToken(token);
             return ResponseEntity.ok("Success");
-        } catch (ConnectUsersTokenExpired connectUsersTokenExpired) {
+        } catch (LinkUsersTokenExpired connectUsersTokenExpired) {
             return ResponseEntity.badRequest().body("Token Expired, Send request again");
-        } catch (ConnectUsersTokenNotFound connectUsersTokenNotFound) {
+        } catch (LinkUsersTokenNotFound connectUsersTokenNotFound) {
             return ResponseEntity.badRequest().body("Token Not Found");
         }
     }

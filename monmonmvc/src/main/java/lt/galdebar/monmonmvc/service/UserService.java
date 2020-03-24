@@ -7,8 +7,9 @@ import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserEmailChangeTokenDA
 import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserRegistrationTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.*;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
-import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenExpired;
-import lt.galdebar.monmonmvc.service.exceptions.connectusers.ConnectUsersTokenNotFound;
+import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersMatch;
+import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersTokenExpired;
+import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersTokenNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.registration.*;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
@@ -141,7 +142,7 @@ public class UserService {
     public void changePassword(PasswordChangeRequest passwordChangeRequest) throws BadCredentialsException {
         UserDAO currentUser = getCurrentUserDAO();
         if(!currentUser.getUserEmail().equals(passwordChangeRequest.getUserEmail())){
-            throw new BadCredentialsException("Invalid user email");
+            throw new BadCredentialsException("Invalid email");
         }
 
         if (passwordEncoder.matches(passwordChangeRequest.getOldPassword(), currentUser.getUserPassword())) {
@@ -169,11 +170,17 @@ public class UserService {
     }
 
     @Transactional
-    public void linkUserWithCurrent(UserDTO userToConnect) throws UserNotFound {
+    public void linkUserWithCurrent(UserDTO userToConnect) throws UserNotFound, UserNotValidated, LinkUsersMatch {
         UserDAO currentUserDAO = getCurrentUserDAO();
         UserDAO userToConnectDAO = findByUserEmail(userToConnect.getUserEmail());
+        if(!userToConnectDAO.isValidated()){
+            throw new UserNotValidated();
+        }
+        if(currentUserDAO.getId().equals(userToConnectDAO.getId())){
+            throw new LinkUsersMatch();
+        }
         String token = UUID.randomUUID().toString();
-        LinkUsersTokenDAO connectionTokenDAO = tokenService.createLinkUsersToken(currentUserDAO, userToConnectDAO);
+        LinkUsersTokenDAO connectionTokenDAO = tokenService.createLinkUsersToken(currentUserDAO, userToConnectDAO, token);
 
         if (connectionTokenDAO != null) {
             emailSenderService.sendUserConnectConfirmationEmail(
@@ -184,7 +191,7 @@ public class UserService {
     }
 
     @Transactional
-    public void confirmLinkUsers(String token) throws ConnectUsersTokenNotFound, ConnectUsersTokenExpired {
+    public void confirmLinkUsers(String token) throws LinkUsersTokenNotFound, LinkUsersTokenExpired {
         LinkUsersTokenDAO linkUsersTokenDAO = tokenService.checkLinkUsersToken(token);
         linkUsers(
                 linkUsersTokenDAO.getUserA(),
@@ -201,7 +208,7 @@ public class UserService {
         userRepo.save(userA);
     }
 
-    public void renewLinkUsersToken(String token) throws ConnectUsersTokenExpired, ConnectUsersTokenNotFound {
+    public void renewLinkUsersToken(String token) throws LinkUsersTokenExpired, LinkUsersTokenNotFound {
         LinkUsersTokenDAO connectionTokenDAO = tokenService.renewLinkUsersToken(token);
         if (connectionTokenDAO != null) {
             emailSenderService.sendUserConnectConfirmationEmail(
