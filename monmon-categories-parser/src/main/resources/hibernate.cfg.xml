@@ -22,8 +22,8 @@
         <property name="hibernate.hbm2ddl.auto">create</property>
         <property name="show_sql">true</property>
 
-        <mapping class="lt.galdebar.monmon.categoriesparser.domain.CategoryDAO"/>
-        <mapping class="lt.galdebar.monmon.categoriesparser.domain.KeywordDAO"/>
+        <mapping class="lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDAO"/>
+        <mapping class="lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDAO"/>
 
 
     </session-factory>

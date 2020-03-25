@@ -1,4 +1,4 @@
-package lt.galdebar.monmon.categoriesparser.domain;
+package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,4 +36,6 @@ public class CategoryDAO {
                 ", keywords=" + keywords +
                 '}';
     }
+
+
 }

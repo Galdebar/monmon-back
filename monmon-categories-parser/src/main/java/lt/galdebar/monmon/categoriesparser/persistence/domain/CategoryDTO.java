@@ -1,4 +1,4 @@
-package lt.galdebar.monmon.categoriesparser.excel;
+package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -10,14 +10,14 @@ public class CategoryDTO {
     private String foodCategoryName;
     private Set<String> keywords;
 
-    CategoryDTO() {
+    public CategoryDTO() {
         this.categoryName = "";
         this.subcategory = "";
         this.foodCategoryName = "";
         this.keywords = new HashSet<>();
     }
 
-    CategoryDTO(String categoryName, String subcategory, String foodCategoryName, Set<String> keywords) {
+    public CategoryDTO(String categoryName, String subcategory, String foodCategoryName, Set<String> keywords) {
         this.categoryName = categoryName;
         this.subcategory = subcategory;
         this.foodCategoryName = foodCategoryName;
@@ -28,11 +28,11 @@ public class CategoryDTO {
         return keywords;
     }
 
-    String getSubcategory() {
+    public String getSubcategory() {
         return subcategory;
     }
 
-    String getFoodCategoryName() {
+    public String getFoodCategoryName() {
         return foodCategoryName;
     }
 
@@ -40,15 +40,15 @@ public class CategoryDTO {
         return categoryName;
     }
 
-    void setCategoryName(String categoryName) {
+    public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
     }
 
-    void setSubcategory(String subcategory) {
+    public void setSubcategory(String subcategory) {
         this.subcategory = subcategory;
     }
 
-    void setFoodCategoryName(String foodCategoryName) {
+    public void setFoodCategoryName(String foodCategoryName) {
         this.foodCategoryName = foodCategoryName;
     }
 

@@ -1,4 +1,4 @@
-package lt.galdebar.monmon.categoriesparser.domain;
+package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
 import javax.persistence.*;
 
