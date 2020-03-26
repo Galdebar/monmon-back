@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 //@Component
 public class ExcelParser {
-    private static final File TAXONOMY_FILE = new File("monmon-categories-parser/src/main/resources/taxonomy-with-ids.en-US.xls");
     private static final String SHEET_NAME = "Sheet1";
     private static final String FOOD_CATEGORY_NAME = "Food Items";
     private static final String TOBACCO_SUBCATEGORY_NAME_IN_SHEETS = "Tobacco Products";
@@ -28,22 +27,6 @@ public class ExcelParser {
     private Sheet sheet;
     private DataFormatter dataFormatter;
     private boolean isParserValid;
-
-    @Autowired
-    public ExcelParser() {
-        try {
-            workbook = WorkbookFactory.create(TAXONOMY_FILE);
-            sheet = workbook.getSheet(SHEET_NAME);
-            dataFormatter = new DataFormatter();
-            isParserValid = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            isParserValid = false;
-        } catch (InvalidFormatException e) {
-            e.printStackTrace();
-            isParserValid = false;
-        }
-    }
 
     public ExcelParser(String filePath) {
         try {
