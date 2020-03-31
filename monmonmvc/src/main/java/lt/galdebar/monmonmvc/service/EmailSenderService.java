@@ -1,11 +1,13 @@
 package lt.galdebar.monmonmvc.service;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 public class EmailSenderService {
 
@@ -16,7 +18,12 @@ public class EmailSenderService {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public void sendConfirmationEmail(String recepient, String token) {
+    public void sendRegistrationConformationEmail(String recepient, String token) {
+        log.info(String.format(
+                "Sending registration email to: ",
+                recepient
+        ));
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recepient);
         message.setSubject("MonMon Registration Confirmation");
@@ -25,7 +32,12 @@ public class EmailSenderService {
         javaMailSender.send(message);
     }
 
-    public void sendUserConnectConfirmationEmail(String recepient, String token) {
+    public void sendLinkUsersConfirmationEmail(String recepient, String token) {
+        log.info(String.format(
+                "Sending link users email to: ",
+                recepient
+        ));
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recepient);
         message.setSubject("MonMon User Sync Confirmation");
@@ -35,6 +47,11 @@ public class EmailSenderService {
     }
 
     public void sendEmailChangeConfirmationEmail(String recepient, String token) {
+        log.info(String.format(
+                "Sending email change email to: ",
+                recepient
+        ));
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(recepient);
         message.setSubject("MonMon Email Change Confirmation");

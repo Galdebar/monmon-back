@@ -33,7 +33,7 @@ public class TestUserCreatorHelper {
         UserDAO userToAdd = userRepo.findByUserEmail(userB);
 
         if(user == null || userToAdd == null){
-            throw new UserNotFound();
+            throw new UserNotFound(user.getUserEmail());
         }
 
         user.getLinkedUsers().add(userToAdd.getUserEmail());

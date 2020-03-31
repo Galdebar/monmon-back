@@ -1,8 +1,10 @@
 package lt.galdebar.monmonmvc.api;
 
+import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonmvc.persistence.domain.dto.*;
 import lt.galdebar.monmonmvc.service.UserService;
+import lt.galdebar.monmonmvc.service.exceptions.CanSendResponse;
 import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersMatch;
 import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersTokenExpired;
 import lt.galdebar.monmonmvc.service.exceptions.linkusers.LinkUsersTokenNotFound;
@@ -15,10 +17,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -26,6 +30,7 @@ import static java.util.stream.Collectors.toList;
 
 @RestController
 @RequestMapping("/user")
+@Log4j2
 public class UserController {
     @Autowired
     private UserService userService;
@@ -40,20 +45,27 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity currentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        log.info("Attempting to get current user. ");
+
         Map<Object, Object> model = new HashMap<>();
         model.put("username", userDetails.getUsername());
         model.put("roles", userDetails.getAuthorities()
                 .stream()
-                .map(item -> ((GrantedAuthority) item).getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .collect(toList())
         );
+        log.info(String.format("Returned user: %s.", model.toString()));
         return ResponseEntity.ok(model);
     }
 
     @CrossOrigin
     @PostMapping("/login")
     ResponseEntity login(@RequestBody LoginAttemptDTO loginAttemptDTO) {
+        String failMessageStart = "Login attempt failed! ";
+        log.info("Login attempt. User: " + loginAttemptDTO.getUserEmail());
+
         if (!isEmailValid(loginAttemptDTO.getUserEmail())) {
+            log.warn(failMessageStart + String.format("Invalid email: %s", loginAttemptDTO.getUserEmail()));
             return ResponseEntity.badRequest().body("Invalid Email");
         }
         try {
@@ -61,109 +73,122 @@ public class UserController {
             Map<Object, Object> responseObj = new HashMap<>();
             responseObj.put("userEmail", receivedToken.getUserEmail());
             responseObj.put("token", receivedToken.getToken());
+            log.info("Login successful.");
             return ResponseEntity.ok(responseObj);
         } catch (AuthenticationException e) {
+            log.warn(failMessageStart + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (UserNotValidated userNotValidated) {
-            return ResponseEntity.badRequest().body("User Not Validated. Confirm registration");
-        } catch (UserNotFound userNotFound) {
-            return ResponseEntity.badRequest().body("User Not Found");
+        } catch (UserNotValidated | UserNotFound exception) {
+            return logAndSendBadRequest(failMessageStart, exception);
         }
     }
 
     @CrossOrigin
     @PostMapping("/register")
     ResponseEntity signUp(@RequestBody LoginAttemptDTO loginAttempt) {
-        if (loginAttempt == null) {
-            return ResponseEntity.badRequest().body("Request body empty");
-        }
+        String failMessageStart = "User registration failed! ";
+        log.info("User registration attempt: " + loginAttempt.getUserEmail());
+
         if (!isEmailValid(loginAttempt.getUserEmail())) {
-            return ResponseEntity.badRequest().body("Invalid Email");
+            return logAndSendBadRequest(failMessageStart, "Invalid email. ");
         }
         if (loginAttempt.getUserPassword().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Password cannot be empty");
+            return logAndSendBadRequest(failMessageStart, "Password empty. ");
         }
         try {
+            String message = "Registration successful. Confirmation email sent.";
             userService.registerNewUser(loginAttempt);
-            return ResponseEntity.ok().body("Success");
+            log.info(message);
+            return ResponseEntity.ok().body(message);
         } catch (UserAlreadyExists userAlreadyExists) {
-            return ResponseEntity.badRequest().body("User Already Exists");
+            return logAndSendBadRequest(failMessageStart, userAlreadyExists);
         }
     }
 
     @CrossOrigin
     @GetMapping(value = "register/confirm/{token}")
     ResponseEntity validateUser(@PathVariable String token) {
+        String failMessageStart = "User registration confirm failed! ";
+        log.info("Attempting to confirm user registration. Token: " + token);
+
         if (token.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("No Token");
+            return logAndSendBadRequest(failMessageStart, "No token. ");
         }
 
-        boolean isRegistrationSuccessful;
-
         try {
-            isRegistrationSuccessful = userService.confirmRegistration(token);
+            boolean isRegistrationSuccessful = userService.confirmRegistration(token);
             if (isRegistrationSuccessful) {
-                return ResponseEntity.ok("Registration successful");
-            } else return ResponseEntity.badRequest().body("Something went wrong");
-        } catch (TokenNotFound tokenNotFound) {
-            return ResponseEntity.badRequest().body("Incorrect token");
-        } catch (UserAlreadyValidated userAlreadyValidated) {
-            return ResponseEntity.badRequest().body("User already validated");
-        } catch (TokenExpired tokenExpired) {
-            return ResponseEntity.badRequest().body("Token expired");
+                String message = "Registration confirmed successfully";
+                log.info(message);
+                return ResponseEntity.ok(message);
+            } else {
+                String message = "Registration confirmation unsuccessful. ";
+                log.error(message);
+                return ResponseEntity.badRequest().body(message + "Internal error. ");
+            }
+        } catch (TokenNotFound | TokenExpired | UserAlreadyValidated exception) {
+            return logAndSendBadRequest(failMessageStart, exception);
         }
     }
 
     @CrossOrigin
     @GetMapping(path = "/register/renew/{token}")
     ResponseEntity requestNewToken(@PathVariable String token) {
+        String failMessageStart = "Registration token renewal failed! ";
+        log.info("Attempting registration token renewal. TokenID: " + token);
+
         if (token.isEmpty()) {
-            return ResponseEntity.badRequest().body("No Token");
+            return logAndSendBadRequest(failMessageStart, "No token. ");
         }
 
         try {
+            String message = "Success. Registration token renewed. ";
             userService.renewRegistrationToken(token);
-            return ResponseEntity.ok("Success");
-
-        } catch (UserAlreadyValidated userAlreadyValidated) {
-            return ResponseEntity.badRequest().body("User already validated");
-        } catch (TokenNotFound tokenNotFound) {
-            return ResponseEntity.badRequest().body("Incorrect token");
-        } catch (TokenNotExpired tokenExpired) {
-            return ResponseEntity.badRequest().body("Original token not expired");
+            log.info(message);
+            return ResponseEntity.ok(message);
+        } catch (UserAlreadyValidated | TokenNotExpired | TokenNotFound exception) {
+            return logAndSendBadRequest(failMessageStart, exception);
         }
     }
 
     @CrossOrigin
     @PostMapping("/changeemail")
     ResponseEntity changeEmail(@RequestBody EmailChangeRequest emailChangeRequest) {
-        if (emailChangeRequest == null || !isEmailValid(emailChangeRequest.getNewEmail())) {
-            return ResponseEntity.badRequest().body("Invalid Email");
+        String failMessageStart = "Change email failed! ";
+        log.info(String.format("Attempting email change. New email: %s. ", emailChangeRequest.getNewEmail()));
+
+        if (!isEmailValid(emailChangeRequest.getNewEmail())) {
+            return logAndSendBadRequest(failMessageStart, "Invalid email. ");
         }
 
         try {
             userService.changeUserEmail(emailChangeRequest);
-            return ResponseEntity.ok().body("Success");
+            String message = "Email change successful. ";
+            log.info(message);
+            return ResponseEntity.ok().body(message);
         } catch (UserAlreadyExists userAlreadyExists) {
-            return ResponseEntity.badRequest().body("Email is already taken");
+            return logAndSendBadRequest(failMessageStart, userAlreadyExists);
+
         }
     }
 
     @CrossOrigin
     @GetMapping("/changeemail/confirm/{token}")
     ResponseEntity confirmEmailChange(@PathVariable String token) {
+        String failMessageStart = "Email change confirmation failed! ";
+        log.info("Attempting email change confirmation. TokenID: " + token);
+
         if (token.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid token");
+            return logAndSendBadRequest(failMessageStart, "Invalid token. ");
         }
 
         try {
             userService.confirmUserEmailChange(token);
-            return ResponseEntity.ok().body("Success");
-        } catch (TokenNotFound tokenNotFound) {
-
-            return ResponseEntity.badRequest().body("Token not found");
-        } catch (TokenExpired tokenExpired) {
-            return ResponseEntity.badRequest().body("Token Expired");
+            String message = "Email change confirmed success. ";
+            log.info(message);
+            return ResponseEntity.ok().body(message);
+        } catch (TokenNotFound | TokenExpired exception) {
+            return logAndSendBadRequest(failMessageStart, exception);
         }
     }
 
@@ -171,22 +196,32 @@ public class UserController {
     @CrossOrigin
     @PostMapping("/changepassword")
     ResponseEntity changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
-        if (passwordChangeRequest == null) {
-            return ResponseEntity.badRequest().body("Invalid Request");
-        }
+        String failMessageStart = "Change password failed! ";
+        log.info(String.format(
+                "Password change attempt. User: %s. Old: %s, New: %s",
+                passwordChangeRequest.getUserEmail(),
+                passwordChangeRequest.getOldPassword(),
+                passwordChangeRequest.getNewPassword()
+        ));
+
         if (!isEmailValid(passwordChangeRequest.getUserEmail())) {
-            return ResponseEntity.badRequest().body("Invalid Email");
+            return logAndSendBadRequest(failMessageStart, "Invalid email. ");
         }
-        if(passwordChangeRequest.getNewPassword().trim().isEmpty()){
-            return ResponseEntity.badRequest().body("Invalid new password");
+        if (passwordChangeRequest.getNewPassword().trim().isEmpty()) {
+            return logAndSendBadRequest(failMessageStart, "Invalid new password. ");
         }
-        if(passwordChangeRequest.getOldPassword().equals(passwordChangeRequest.getNewPassword())){
-            return ResponseEntity.badRequest().body("Old and new password match");
+        if (passwordChangeRequest.getOldPassword().equals(passwordChangeRequest.getNewPassword())) {
+            String message = "Old and new passwords match. ";
+            log.warn(failMessageStart + message);
+            return ResponseEntity.badRequest().body(message);
         }
         try {
             userService.changePassword(passwordChangeRequest);
-            return ResponseEntity.ok().body("Success");
+            String message = "Password change successful";
+            log.info(message);
+            return ResponseEntity.ok().body(message);
         } catch (AuthenticationException e) {
+            log.warn(failMessageStart + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -194,58 +229,74 @@ public class UserController {
     @CrossOrigin
     @GetMapping("/getlinkedusers")
     ResponseEntity getLinkedUsers() {
-        return ResponseEntity.ok(userService.getLinkedUsers());
+        String attemptMessage = "Attempting to get linked users";
+        log.info(attemptMessage);
+
+        List<String> linkedUsers = userService.getLinkedUsers();
+        log.info("Returning: " + linkedUsers.toString());
+        return ResponseEntity.ok(linkedUsers);
     }
 
     @CrossOrigin
     @PostMapping("/link")
     ResponseEntity linkUsers(@RequestBody UserDTO userDTO) {
-        if (userDTO == null || !isEmailValid(userDTO.getUserEmail())) {
-            return ResponseEntity.badRequest().body("Invalid User Email");
+        String failMessageStart = "Link users failed! ";
+        log.info(String.format(
+                "Attempting to link users: Current user: %s | User to link: %s ",
+                SecurityContextHolder.getContext().getAuthentication().getName(),
+                userDTO.getUserEmail()
+        ));
+
+        if (!isEmailValid(userDTO.getUserEmail())) {
+            return logAndSendBadRequest(failMessageStart, "Invalid user email. ");
         }
         try {
             userService.linkUserWithCurrent(userDTO);
-            return ResponseEntity.ok("Success! Connection request sent");
-        } catch (UserNotFound userNotFound) {
-            return ResponseEntity.badRequest().body("User not found");
-        } catch (UserNotValidated userNotValidated) {
-            return ResponseEntity.badRequest().body("User not validated");
-        } catch (LinkUsersMatch linkUsersMatch) {
-            return ResponseEntity.badRequest().body("User emails match");
+            String message = "Success! Connection request sent. ";
+            log.info(message);
+            return ResponseEntity.ok(message);
+        } catch (UserNotFound | UserNotValidated | LinkUsersMatch exception) {
+            return logAndSendBadRequest(failMessageStart, exception);
         }
     }
 
     @CrossOrigin
     @GetMapping("link/confirm/{token}")
     ResponseEntity confirmLinkUsers(@PathVariable String token) {
+        String failMessageStart = "Link users confirmation failed! ";
+        log.info("Attempting to confirm link users. Token ID: " + token);
+
         if (token.isEmpty()) {
-            return ResponseEntity.badRequest().body("No Token");
+            return logAndSendBadRequest(failMessageStart, "No token. ");
         }
 
         try {
             userService.confirmLinkUsers(token);
-            return ResponseEntity.ok("Success");
-        } catch (LinkUsersTokenNotFound connectUsersTokenNotFound) {
-            return ResponseEntity.badRequest().body("Token Not Found");
-        } catch (LinkUsersTokenExpired connectUsersTokenExpired) {
-            return ResponseEntity.badRequest().body("Token Expired, Send request again");
+            String message = "User link confirmation successful. ";
+            log.info(message);
+            return ResponseEntity.ok(message);
+        } catch (LinkUsersTokenNotFound | LinkUsersTokenExpired exception) {
+            return logAndSendBadRequest(failMessageStart, exception);
         }
     }
 
     @CrossOrigin
     @GetMapping("link/renew/{token}")
     ResponseEntity renewLinkUsersToken(@PathVariable String token) {
+        String failMessageStart = "Link users token renew failed! ";
+        log.info("Attempting to renew confirm link users token. Token ID: " + token);
+
         if (token.isEmpty()) {
-            return ResponseEntity.badRequest().body("No Token");
+            return logAndSendBadRequest(failMessageStart, "No token. ");
         }
 
         try {
             userService.renewLinkUsersToken(token);
-            return ResponseEntity.ok("Success");
-        } catch (LinkUsersTokenExpired connectUsersTokenExpired) {
-            return ResponseEntity.badRequest().body("Token Expired, Send request again");
-        } catch (LinkUsersTokenNotFound connectUsersTokenNotFound) {
-            return ResponseEntity.badRequest().body("Token Not Found");
+            String message = "Success. New link users request sent. ";
+            log.warn(message);
+            return ResponseEntity.ok(message);
+        } catch (LinkUsersTokenExpired | LinkUsersTokenNotFound exception) {
+            return logAndSendBadRequest(failMessageStart, exception);
         }
     }
 
@@ -259,6 +310,16 @@ public class UserController {
         if (userEmail == null)
             return false;
         return pat.matcher(userEmail).matches();
+    }
+
+    private ResponseEntity logAndSendBadRequest(String messageStart, String message){
+        log.warn(messageStart + message);
+        return ResponseEntity.badRequest().body(message);
+    }
+
+    private <T extends Throwable & CanSendResponse> ResponseEntity logAndSendBadRequest(String messageStart, T exception){
+        log.warn(messageStart + exception.getMessage());
+        return ResponseEntity.badRequest().body(exception.getResponseMessage());
     }
 
 }

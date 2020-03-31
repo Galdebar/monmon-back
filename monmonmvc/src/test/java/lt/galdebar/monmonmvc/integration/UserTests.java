@@ -109,7 +109,7 @@ public class UserTests {
         String testEmail = "test@email.com";
         String testToken = "iauwhdiuhawd";
 
-        emailSenderService.sendUserConnectConfirmationEmail(testEmail, testToken);
+        emailSenderService.sendLinkUsersConfirmationEmail(testEmail, testToken);
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
 
@@ -135,7 +135,8 @@ public class UserTests {
         registerResponse = registerUser(testEmail, testPassword);
         assertNotNull(registerResponse);
         assertFalse(registerResponse.trim().isEmpty());
-        assertEquals("Success", registerResponse);
+        assertTrue(registerResponse.trim().toLowerCase().contains("success"));
+
 
         receivedMessages = greenMail.getReceivedMessages();
         assertNotNull(receivedMessages);
@@ -299,7 +300,8 @@ public class UserTests {
         String registerResponse = registerUser(testEmail, testPassword);
         assertNotNull(registerResponse);
         assertFalse(registerResponse.trim().isEmpty());
-        assertEquals("Success", registerResponse);
+        assertTrue(registerResponse.trim().toLowerCase().contains("success"));
+
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertNotNull(receivedMessages);
@@ -326,7 +328,8 @@ public class UserTests {
         String registerResponse = registerUser(testEmail, testPassword);
         assertNotNull(registerResponse);
         assertFalse(registerResponse.trim().isEmpty());
-        assertEquals("Success", registerResponse);
+        assertTrue(registerResponse.trim().toLowerCase().contains("success"));
+
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertNotNull(receivedMessages);
@@ -355,7 +358,8 @@ public class UserTests {
         String registerResponse = registerUser(testEmail, testPassword);
         assertNotNull(registerResponse);
         assertFalse(registerResponse.trim().isEmpty());
-        assertEquals("Success", registerResponse);
+        assertTrue(registerResponse.trim().toLowerCase().contains("success"));
+
 
         String confirmResponse = mvc.perform(get(testLink))
                 .andDo(print())
@@ -377,7 +381,7 @@ public class UserTests {
         String registerResponse = registerUser(testEmail, testPassword);
         assertNotNull(registerResponse);
         assertFalse(registerResponse.trim().isEmpty());
-        assertEquals("Success", registerResponse);
+        assertTrue(registerResponse.trim().toLowerCase().contains("success"));
 
         String confirmResponse = mvc.perform(get(testLink))
                 .andDo(print())
@@ -398,7 +402,8 @@ public class UserTests {
         String registerResponse = registerUser(testEmail, testPassword);
         assertNotNull(registerResponse);
         assertFalse(registerResponse.trim().isEmpty());
-        assertEquals("Success", registerResponse);
+        assertTrue(registerResponse.trim().toLowerCase().contains("success"));
+
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         makeRegistrationTokenExpired(receivedMessages[0].getContent().toString());
@@ -479,7 +484,7 @@ public class UserTests {
                 .andExpect(status().isBadRequest())
                 .andDo(print())
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-        assertTrue(requestResponse.toLowerCase().contains("incorrect"));
+        assertTrue(requestResponse.toLowerCase().contains("not found"));
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertEquals(1, receivedMessages.length);

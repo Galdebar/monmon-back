@@ -10,6 +10,7 @@ import lt.galdebar.monmonmvc.service.exceptions.shoppingitem.ShoppingItemNotFoun
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,22 +57,23 @@ public class ShoppingItemService {
 
     public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
         if(!validateShoppingItemDTO(shoppingItemDTO)){
-            throw new ShoppingItemNotFound();
+            throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
         if(!shoppingItemRepo.existsById(shoppingItemDTO.getId())){
-            throw new ShoppingItemNotFound();
+            throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
         ShoppingItemDAO result = shoppingItemRepo.save(dtoToDao(shoppingItemDTO));
         return daoToDto(result);
     }
 
+    @Transactional
     public List<ShoppingItemDTO> updateItems(List<ShoppingItemDTO> shoppingItemDTOS) throws ShoppingItemNotFound {
         for(ShoppingItemDTO item: shoppingItemDTOS){
             if(!validateShoppingItemDTO(item)){
-                throw new ShoppingItemNotFound();
+                throw new ShoppingItemNotFound(item.getId());
             }
             if(!shoppingItemRepo.existsById(item.getId())){
-                throw new ShoppingItemNotFound();
+                throw new ShoppingItemNotFound(item.getId());
             }
         }
         List<ShoppingItemDAO> updatedItems = shoppingItemRepo.saveAll(dtosToDaos(shoppingItemDTOS));
@@ -80,21 +82,22 @@ public class ShoppingItemService {
 
     public void deleteItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
         if(!validateShoppingItemDTO(shoppingItemDTO)){
-            throw new ShoppingItemNotFound();
+            throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
         if(!shoppingItemRepo.existsById(shoppingItemDTO.getId())){
-            throw new ShoppingItemNotFound();
+            throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
         shoppingItemRepo.delete(dtoToDao(shoppingItemDTO));
     }
 
+    @Transactional
     public void deleteItems(List<ShoppingItemDTO> shoppingItemDTOList) throws ShoppingItemNotFound {
         for(ShoppingItemDTO item: shoppingItemDTOList){
             if(!validateShoppingItemDTO(item)){
-                throw new ShoppingItemNotFound();
+                throw new ShoppingItemNotFound(item.getId());
             }
             if(!shoppingItemRepo.existsById(item.getId())){
-                throw new ShoppingItemNotFound();
+                throw new ShoppingItemNotFound(item.getId());
             }
         }
         shoppingItemRepo.deleteAll(dtosToDaos(shoppingItemDTOList));

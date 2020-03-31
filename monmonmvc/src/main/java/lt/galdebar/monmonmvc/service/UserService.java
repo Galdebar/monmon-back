@@ -1,5 +1,6 @@
 package lt.galdebar.monmonmvc.service;
 
+import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonmvc.persistence.domain.dao.token.LinkUsersTokenDAO;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@Log4j2
 public class UserService {
 
     private static final int EXPIRATION_IN_HOURS = 24;
@@ -62,14 +64,15 @@ public class UserService {
     }
 
     private UserDAO loginUserCheck(LoginAttemptDTO loginAttemptDTO) throws UserNotFound, UserNotValidated {
+        log.info("Checking user login credentials. ");
         UserDAO foundUser = userRepo.findByUserEmail(loginAttemptDTO.getUserEmail());
         if (foundUser == null) {
-            throw new UserNotFound();
+            throw new UserNotFound(loginAttemptDTO.getUserEmail());
         }
         if (!foundUser.isValidated()) {
-            throw new UserNotValidated();
+            throw new UserNotValidated(loginAttemptDTO.getUserEmail());
         }
-        if(!passwordEncoder.matches(loginAttemptDTO.getUserPassword(),foundUser.getUserPassword())){
+        if (!passwordEncoder.matches(loginAttemptDTO.getUserPassword(), foundUser.getUserPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
         return foundUser;
@@ -77,8 +80,8 @@ public class UserService {
 
     public UserDAO findByUserEmail(String userEmail) throws UserNotFound {
         UserDAO foundUser = userRepo.findByUserEmail(userEmail);
-        if(foundUser == null){
-            throw new UserNotFound();
+        if (foundUser == null) {
+            throw new UserNotFound(userEmail);
         }
         return foundUser;
     }
@@ -91,7 +94,7 @@ public class UserService {
         );
         String token = UUID.randomUUID().toString();
         UserRegistrationTokenDAO tokenDAO = tokenService.createRegistrationToken(newUser, token);
-        emailSenderService.sendConfirmationEmail(
+        emailSenderService.sendRegistrationConformationEmail(
                 newUser.getUserEmail(),
                 token
         );
@@ -99,6 +102,7 @@ public class UserService {
 
     @Transactional
     public boolean confirmRegistration(String token) throws TokenNotFound, UserAlreadyValidated, TokenExpired {
+        log.info("Validating user. ");
         UserRegistrationTokenDAO registrationToken = tokenService.checkRegistrationToken(token);
         UserDAO userToValidate = registrationToken.getUser();
         userToValidate.setValidated(true);
@@ -107,13 +111,14 @@ public class UserService {
 
     @Transactional
     public void changeUserEmail(EmailChangeRequest emailChangeRequest) throws UserAlreadyExists {
-        if(checkIfUserExists(emailChangeRequest.getNewEmail())){
-            throw new UserAlreadyExists();
+        if (checkIfUserExists(emailChangeRequest.getNewEmail())) {
+            throw new UserAlreadyExists(emailChangeRequest.getNewEmail());
         }
 
         UserDAO currentUser = getCurrentUserDAO();
         String token = UUID.randomUUID().toString();
-        UserEmailChangeTokenDAO tokenDAO = tokenService.createEmailChangeToken(currentUser,emailChangeRequest.getNewEmail(),token);
+
+        UserEmailChangeTokenDAO tokenDAO = tokenService.createEmailChangeToken(currentUser, emailChangeRequest.getNewEmail(), token);
         emailSenderService.sendEmailChangeConfirmationEmail(
                 emailChangeRequest.getNewEmail(),
                 token
@@ -124,6 +129,13 @@ public class UserService {
     public boolean confirmUserEmailChange(String token) throws TokenNotFound, TokenExpired {
         UserEmailChangeTokenDAO tokenDAO = tokenService.checkEmailChangeToken(token);
         UserDAO userToUpdate = tokenDAO.getUser();
+
+        log.info(String.format(
+                "Updating user email. Old email: %s | New email: %s ",
+                userToUpdate.getUserEmail(),
+                tokenDAO.getNewEmail()
+        ));
+
         userToUpdate.setUserEmail(tokenDAO.getNewEmail());
         return userRepo.save(userToUpdate) != null;
 
@@ -132,7 +144,7 @@ public class UserService {
     @Transactional
     public void renewRegistrationToken(String token) throws UserAlreadyValidated, TokenNotExpired, TokenNotFound {
         UserRegistrationTokenDAO registrationToken = tokenService.renewRegistrationToken(token);
-        emailSenderService.sendConfirmationEmail(
+        emailSenderService.sendRegistrationConformationEmail(
                 registrationToken.getUser().getUserEmail(),
                 registrationToken.getToken()
         );
@@ -141,7 +153,7 @@ public class UserService {
     @Transactional
     public void changePassword(PasswordChangeRequest passwordChangeRequest) throws BadCredentialsException {
         UserDAO currentUser = getCurrentUserDAO();
-        if(!currentUser.getUserEmail().equals(passwordChangeRequest.getUserEmail())){
+        if (!currentUser.getUserEmail().equals(passwordChangeRequest.getUserEmail())) {
             throw new BadCredentialsException("Invalid email");
         }
 
@@ -173,17 +185,17 @@ public class UserService {
     public void linkUserWithCurrent(UserDTO userToConnect) throws UserNotFound, UserNotValidated, LinkUsersMatch {
         UserDAO currentUserDAO = getCurrentUserDAO();
         UserDAO userToConnectDAO = findByUserEmail(userToConnect.getUserEmail());
-        if(!userToConnectDAO.isValidated()){
-            throw new UserNotValidated();
+        if (!userToConnectDAO.isValidated()) {
+            throw new UserNotValidated(userToConnect.getUserEmail());
         }
-        if(currentUserDAO.getId().equals(userToConnectDAO.getId())){
-            throw new LinkUsersMatch();
+        if (currentUserDAO.getId().equals(userToConnectDAO.getId())) {
+            throw new LinkUsersMatch(currentUserDAO.getUserEmail(), userToConnect.getUserEmail());
         }
         String token = UUID.randomUUID().toString();
         LinkUsersTokenDAO connectionTokenDAO = tokenService.createLinkUsersToken(currentUserDAO, userToConnectDAO, token);
 
         if (connectionTokenDAO != null) {
-            emailSenderService.sendUserConnectConfirmationEmail(
+            emailSenderService.sendLinkUsersConfirmationEmail(
                     currentUserDAO.getUserEmail(),
                     token
             );
@@ -193,6 +205,11 @@ public class UserService {
     @Transactional
     public void confirmLinkUsers(String token) throws LinkUsersTokenNotFound, LinkUsersTokenExpired {
         LinkUsersTokenDAO linkUsersTokenDAO = tokenService.checkLinkUsersToken(token);
+        log.info(String.format(
+                "Linking users. User A: %s| User B: %s",
+                linkUsersTokenDAO.getUserA().getUserEmail(),
+                linkUsersTokenDAO.getUserB().getUserEmail()
+        ));
         linkUsers(
                 linkUsersTokenDAO.getUserA(),
                 linkUsersTokenDAO.getUserB()
@@ -211,14 +228,14 @@ public class UserService {
     public void renewLinkUsersToken(String token) throws LinkUsersTokenExpired, LinkUsersTokenNotFound {
         LinkUsersTokenDAO connectionTokenDAO = tokenService.renewLinkUsersToken(token);
         if (connectionTokenDAO != null) {
-            emailSenderService.sendUserConnectConfirmationEmail(
+            emailSenderService.sendLinkUsersConfirmationEmail(
                     connectionTokenDAO.getUserB().getUserEmail(),
                     token
             );
         }
     }
 
-    public UserDAO getCurrentUserDAO() {
+    private UserDAO getCurrentUserDAO() {
         return userRepo.findByUserEmail(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
@@ -245,13 +262,17 @@ public class UserService {
     @Transactional
     private UserDAO createNewUser(String userEmail, String password) throws UserAlreadyExists {
         if (checkIfUserExists(userEmail)) {
-            throw new UserAlreadyExists();
+            throw new UserAlreadyExists(userEmail);
         }
         UserDAO newUser = new UserDAO();
         newUser.setUserEmail(userEmail);
         newUser.setUserPassword(passwordEncoder.encode(password));
         newUser.setValidated(false);
         UserDAO addedUserDAO = userRepo.insert(newUser);
+        log.info(String.format(
+                "New user added to DB. User details: %s",
+                addedUserDAO.toString()
+        ));
         return addedUserDAO;
     }
 }
