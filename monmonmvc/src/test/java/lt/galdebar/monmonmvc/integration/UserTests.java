@@ -174,7 +174,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(secondResponse);
         assertFalse(secondResponse.trim().isEmpty());
@@ -196,7 +196,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(secondResponse);
         assertFalse(secondResponse.trim().isEmpty());
@@ -218,7 +218,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(secondResponse);
         assertFalse(secondResponse.trim().isEmpty());
@@ -240,7 +240,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(secondResponse);
         assertFalse(secondResponse.trim().isEmpty());
@@ -262,7 +262,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(secondResponse);
         assertFalse(secondResponse.trim().isEmpty());
@@ -284,7 +284,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(secondResponse);
         assertFalse(secondResponse.trim().isEmpty());
@@ -312,7 +312,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(registrationLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
@@ -341,7 +341,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(registrationLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
@@ -364,7 +364,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(testLink))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
@@ -386,7 +386,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(testLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
@@ -412,7 +412,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(registrationLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(confirmResponse.toLowerCase().contains("expired"));
 
@@ -434,12 +434,12 @@ public class UserTests {
         mvc.perform(get(registrationLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         String confirmResponse2 = mvc.perform(get(registrationLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(confirmResponse2.toLowerCase().contains("already validated"));
     }
@@ -459,7 +459,7 @@ public class UserTests {
         String requestResponse = mvc.perform(get(renewLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
         receivedMessages = greenMail.getReceivedMessages();
@@ -483,7 +483,7 @@ public class UserTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("not found"));
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
@@ -502,7 +502,7 @@ public class UserTests {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertEquals(1, receivedMessages.length);
@@ -520,7 +520,7 @@ public class UserTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertEquals(1, receivedMessages.length);
@@ -541,7 +541,7 @@ public class UserTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("not expired"));
 
         assertEquals(1, receivedMessages.length);
@@ -576,7 +576,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(responseString.toLowerCase().contains("not validated"));
     }
@@ -597,7 +597,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(responseString.toLowerCase().contains("user not found"));
     }
@@ -619,7 +619,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(responseString.toLowerCase().contains("invalid email"));
     }
@@ -641,7 +641,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(responseString.toLowerCase().contains("invalid email"));
     }
@@ -663,7 +663,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(responseString.toLowerCase().contains("invalid email"));
     }
@@ -685,7 +685,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(responseString.toLowerCase().contains("invalid password"));
     }
@@ -707,7 +707,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(responseString.toLowerCase().contains("invalid password"));
     }
@@ -729,7 +729,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(responseString.toLowerCase().contains("invalid password"));
     }
@@ -749,7 +749,7 @@ public class UserTests {
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+                .getContentAsString();
 
         assertTrue(responseString.contains(testEmail));
     }
@@ -767,7 +767,7 @@ public class UserTests {
                 .andExpect(status().isForbidden())
                 .andReturn()
                 .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+                .getContentAsString();
 
     }
 
@@ -790,7 +790,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
@@ -830,7 +830,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
     }
 
@@ -852,7 +852,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
     }
 
@@ -876,7 +876,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test
@@ -898,7 +898,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertNotNull(receivedMessages);
@@ -924,7 +924,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertNotNull(receivedMessages);
@@ -950,7 +950,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertNotNull(receivedMessages);
@@ -976,7 +976,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertNotNull(receivedMessages);
@@ -1002,7 +1002,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         assertNotNull(receivedMessages);
@@ -1028,7 +1028,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1043,7 +1043,7 @@ public class UserTests {
         String requestResponse2 = mvc.perform(get(confirmLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse2.toLowerCase().contains("success"));
 
         UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
@@ -1072,7 +1072,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1087,7 +1087,7 @@ public class UserTests {
         String requestResponse2 = mvc.perform(get(confirmLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
         assertNotNull(userWithOldEmail);
@@ -1115,7 +1115,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1130,7 +1130,7 @@ public class UserTests {
         String requestResponse2 = mvc.perform(get(confirmLink))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
         assertNotNull(userWithOldEmail);
@@ -1158,7 +1158,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1173,7 +1173,7 @@ public class UserTests {
         String requestResponse2 = mvc.perform(get(confirmLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
         assertNotNull(userWithOldEmail);
@@ -1203,7 +1203,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1233,7 +1233,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
@@ -1261,7 +1261,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
@@ -1289,7 +1289,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1318,7 +1318,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("match"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1347,7 +1347,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1376,7 +1376,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1405,7 +1405,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid email"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1434,7 +1434,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid email"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1463,7 +1463,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid email"));
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
@@ -1492,7 +1492,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
@@ -1520,7 +1520,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
@@ -1548,7 +1548,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
@@ -1577,7 +1577,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
@@ -1613,7 +1613,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(requestResponse.toLowerCase().contains("not found"));
     }
@@ -1639,7 +1639,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(requestResponse.toLowerCase().contains("match"));
 
@@ -1668,7 +1668,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(requestResponse.toLowerCase().contains("validated"));
 
@@ -1698,7 +1698,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
     }
@@ -1725,7 +1725,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
     }
@@ -1752,7 +1752,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
     }
@@ -1779,7 +1779,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test
@@ -1804,7 +1804,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test
@@ -1829,7 +1829,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test
@@ -1854,7 +1854,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmationLink = getRelativeLink(
@@ -1864,7 +1864,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(confirmResponse.toLowerCase().contains("success"));
 
         UserDAO user1 = userRepo.findByUserEmail(user1Email);
@@ -1896,7 +1896,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmToken = getTokenFromString(
@@ -1908,7 +1908,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(confirmResponse.toLowerCase().contains("expired"));
 
         UserDAO user1 = userRepo.findByUserEmail(user1Email);
@@ -1940,7 +1940,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmationLink = "/user/link/confirm/piayhwdoliohaw";
@@ -1948,7 +1948,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(confirmResponse.toLowerCase().contains("not found"));
 
         UserDAO user1 = userRepo.findByUserEmail(user1Email);
@@ -1979,7 +1979,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmationLink = "/user/link/confirm/";
@@ -1987,7 +1987,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         UserDAO user1 = userRepo.findByUserEmail(user1Email);
         UserDAO user2 = userRepo.findByUserEmail(user2Email);
@@ -2017,7 +2017,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmationLink = "/user/link/confirm/     ";
@@ -2025,7 +2025,7 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(confirmResponse.toLowerCase().contains("not found"));
 
         UserDAO user1 = userRepo.findByUserEmail(user1Email);
@@ -2057,7 +2057,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmToken = getTokenFromString(
@@ -2068,14 +2068,14 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
 
         String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         assertTrue(getLinkedUsersResponse.contains(user2Email));
         assertFalse(getLinkedUsersResponse.contains(user1Email));
         assertFalse(getLinkedUsersResponse.contains(user3Email));
@@ -2104,7 +2104,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmToken = getTokenFromString(
@@ -2115,14 +2115,14 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         String badAuthToken = "liuahwdiuhawd";
         String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
                 .header("Authorization", "Bearer " + badAuthToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
     }
 
@@ -2149,7 +2149,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmToken = getTokenFromString(
@@ -2160,14 +2160,14 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         String badAuthToken = "";
         String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
                 .header("Authorization", "Bearer " + badAuthToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
     }
 
@@ -2194,7 +2194,7 @@ public class UserTests {
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         String confirmToken = getTokenFromString(
@@ -2205,14 +2205,14 @@ public class UserTests {
         String confirmResponse = mvc.perform(get(confirmationLink))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         String badAuthToken = "      ";
         String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
                 .header("Authorization", "Bearer " + badAuthToken))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
     }
 
@@ -2267,7 +2267,7 @@ public class UserTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         return responseString;
     }
 
@@ -2314,7 +2314,7 @@ public class UserTests {
                         .contentType("application/json")
                         .content(new ObjectMapper().writeValueAsString(loginAttemptDTO))
                         .header("Content-Type", "application/json")
-        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         JacksonJsonParser jsonParser = new JacksonJsonParser();
         return jsonParser.parseMap(resultString).get("token").toString();

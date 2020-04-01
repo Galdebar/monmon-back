@@ -92,7 +92,7 @@ public class ShoppingItemController {
 
         try {
             returnedItem = shoppingItemService.updateItem(shoppingItemDTO);
-            log.info("Result: " + returnedItem.toString());
+            log.info("Item update success. Result: " + returnedItem.toString());
             return ResponseEntity.ok(returnedItem);
         } catch (ShoppingItemNotFound shoppingItemNotFound) {
             return logAndSendBadRequest(failMessageStart, shoppingItemNotFound);
@@ -117,7 +117,7 @@ public class ShoppingItemController {
 
         try {
             List<ShoppingItemDTO> results = shoppingItemService.updateItems(shoppingItemDTOS);
-            log.info("Results: " + results.toString());
+            log.info("Multiple item update success. Results: " + results.toString());
             return ResponseEntity.ok(results);
         } catch (ShoppingItemNotFound shoppingItemNotFound) {
             return logAndSendBadRequest(failMessageStart, shoppingItemNotFound);

@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-public class PasswordChangeRequest {
+public class PasswordChangeRequestDTO {
     private String userEmail;
     private String oldPassword;
     private String newPassword;

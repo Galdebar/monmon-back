@@ -12,6 +12,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Accessors(fluent = true)
 @Document(collection = "items")
+@ToString
 public class ShoppingItemDAO {
     @Id
     public String id;
@@ -20,18 +21,7 @@ public class ShoppingItemDAO {
     public Integer quantity;
     public String comment;
     public boolean isInCart = false;
+    @ToString.Exclude
     public Set<String> users = new HashSet<>();
 
-
-    @Override
-    public String toString() {
-        return "ShoppingItemDAO{" +
-                "id='" + id + '\'' +
-                ", itemName='" + itemName + '\'' +
-                ", itemCategory=" + itemCategory +
-                ", quantity=" + quantity +
-                ", comment='" + comment + '\'' +
-                ", isInCart=" + isInCart +
-                '}';
-    }
 }

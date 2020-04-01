@@ -148,7 +148,7 @@ public class ShoppingItemCategoryTests {
       String response =mvc.perform(get("/categorysearch/getall")
               .header("Authorization", "Bearer " + authToken))
               .andExpect(status().isOk())
-              .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+              .andReturn().getResponse().getContentAsString();
 
       TypeFactory typeFactory = objectMapper.getTypeFactory();
       List<ShoppingCategoryDTO> shoppingCategoryList = objectMapper.readValue(response, typeFactory.constructCollectionType(List.class, ShoppingCategoryDTO.class));
@@ -173,7 +173,7 @@ public class ShoppingItemCategoryTests {
                 .content(objectMapper.writeValueAsString(requestObject))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     private String getAuthToken(String userName, String userPassword) throws Exception {
@@ -189,7 +189,7 @@ public class ShoppingItemCategoryTests {
                         .contentType("application/json")
                         .content(new ObjectMapper().writeValueAsString(loginAttemptDTO))
                         .header("Content-Type", "application/json")
-        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         JacksonJsonParser jsonParser = new JacksonJsonParser();
         return jsonParser.parseMap(resultString).get("token").toString();

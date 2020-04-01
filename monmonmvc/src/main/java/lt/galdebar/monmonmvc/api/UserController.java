@@ -153,16 +153,16 @@ public class UserController {
 
     @CrossOrigin
     @PostMapping("/changeemail")
-    ResponseEntity changeEmail(@RequestBody EmailChangeRequest emailChangeRequest) {
+    ResponseEntity changeEmail(@RequestBody EmailChangeRequestDTO emailChangeRequestDTO) {
         String failMessageStart = "Change email failed! ";
-        log.info(String.format("Attempting email change. New email: %s. ", emailChangeRequest.getNewEmail()));
+        log.info(String.format("Attempting email change. New email: %s. ", emailChangeRequestDTO.getNewEmail()));
 
-        if (!isEmailValid(emailChangeRequest.getNewEmail())) {
+        if (!isEmailValid(emailChangeRequestDTO.getNewEmail())) {
             return logAndSendBadRequest(failMessageStart, "Invalid email. ");
         }
 
         try {
-            userService.changeUserEmail(emailChangeRequest);
+            userService.changeUserEmail(emailChangeRequestDTO);
             String message = "Email change successful. ";
             log.info(message);
             return ResponseEntity.ok().body(message);
@@ -195,28 +195,28 @@ public class UserController {
 
     @CrossOrigin
     @PostMapping("/changepassword")
-    ResponseEntity changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
+    ResponseEntity changePassword(@RequestBody PasswordChangeRequestDTO passwordChangeRequestDTO) {
         String failMessageStart = "Change password failed! ";
         log.info(String.format(
                 "Password change attempt. User: %s. Old: %s, New: %s",
-                passwordChangeRequest.getUserEmail(),
-                passwordChangeRequest.getOldPassword(),
-                passwordChangeRequest.getNewPassword()
+                passwordChangeRequestDTO.getUserEmail(),
+                passwordChangeRequestDTO.getOldPassword(),
+                passwordChangeRequestDTO.getNewPassword()
         ));
 
-        if (!isEmailValid(passwordChangeRequest.getUserEmail())) {
+        if (!isEmailValid(passwordChangeRequestDTO.getUserEmail())) {
             return logAndSendBadRequest(failMessageStart, "Invalid email. ");
         }
-        if (passwordChangeRequest.getNewPassword().trim().isEmpty()) {
+        if (passwordChangeRequestDTO.getNewPassword().trim().isEmpty()) {
             return logAndSendBadRequest(failMessageStart, "Invalid new password. ");
         }
-        if (passwordChangeRequest.getOldPassword().equals(passwordChangeRequest.getNewPassword())) {
+        if (passwordChangeRequestDTO.getOldPassword().equals(passwordChangeRequestDTO.getNewPassword())) {
             String message = "Old and new passwords match. ";
             log.warn(failMessageStart + message);
             return ResponseEntity.badRequest().body(message);
         }
         try {
-            userService.changePassword(passwordChangeRequest);
+            userService.changePassword(passwordChangeRequestDTO);
             String message = "Password change successful";
             log.info(message);
             return ResponseEntity.ok().body(message);

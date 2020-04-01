@@ -3,6 +3,7 @@ package lt.galdebar.monmonmvc.persistence.domain.dao.token;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -16,6 +17,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Document(collection = "user_sync_tokens")
+@ToString
 public class LinkUsersTokenDAO {
     @Id
     private String id;

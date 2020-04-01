@@ -8,6 +8,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class ShoppingCategoryDTO {
     @NonNull
     private String categoryName;

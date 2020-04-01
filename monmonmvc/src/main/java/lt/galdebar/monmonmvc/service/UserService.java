@@ -110,17 +110,17 @@ public class UserService {
     }
 
     @Transactional
-    public void changeUserEmail(EmailChangeRequest emailChangeRequest) throws UserAlreadyExists {
-        if (checkIfUserExists(emailChangeRequest.getNewEmail())) {
-            throw new UserAlreadyExists(emailChangeRequest.getNewEmail());
+    public void changeUserEmail(EmailChangeRequestDTO emailChangeRequestDTO) throws UserAlreadyExists {
+        if (checkIfUserExists(emailChangeRequestDTO.getNewEmail())) {
+            throw new UserAlreadyExists(emailChangeRequestDTO.getNewEmail());
         }
 
         UserDAO currentUser = getCurrentUserDAO();
         String token = UUID.randomUUID().toString();
 
-        UserEmailChangeTokenDAO tokenDAO = tokenService.createEmailChangeToken(currentUser, emailChangeRequest.getNewEmail(), token);
+        UserEmailChangeTokenDAO tokenDAO = tokenService.createEmailChangeToken(currentUser, emailChangeRequestDTO.getNewEmail(), token);
         emailSenderService.sendEmailChangeConfirmationEmail(
-                emailChangeRequest.getNewEmail(),
+                emailChangeRequestDTO.getNewEmail(),
                 token
         );
     }
@@ -151,16 +151,16 @@ public class UserService {
     }
 
     @Transactional
-    public void changePassword(PasswordChangeRequest passwordChangeRequest) throws BadCredentialsException {
+    public void changePassword(PasswordChangeRequestDTO passwordChangeRequestDTO) throws BadCredentialsException {
         UserDAO currentUser = getCurrentUserDAO();
-        if (!currentUser.getUserEmail().equals(passwordChangeRequest.getUserEmail())) {
+        if (!currentUser.getUserEmail().equals(passwordChangeRequestDTO.getUserEmail())) {
             throw new BadCredentialsException("Invalid email");
         }
 
-        if (passwordEncoder.matches(passwordChangeRequest.getOldPassword(), currentUser.getUserPassword())) {
+        if (passwordEncoder.matches(passwordChangeRequestDTO.getOldPassword(), currentUser.getUserPassword())) {
             currentUser.setUserPassword(
                     passwordEncoder.encode(
-                            passwordChangeRequest.getNewPassword()
+                            passwordChangeRequestDTO.getNewPassword()
                     )
             );
             userRepo.save(currentUser);

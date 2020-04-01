@@ -19,11 +19,11 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ExcelParserTest {
-    private static final String TAXONOMY_FILE_FULL = "src/test/testresources/Excel_test_full.xls";
-    private static final String TAXONOMY_FILE_FEW_ROWS = "src/test/testresources/Excel_test_fewRows.xls";
-    private static final String TAXONOMY_FILE_FEW_ROWS_FOOD = "src/test/testresources/Excel_test_fewRowsFood.xls";
-    private static final String TAXONOMY_FILE_ONE_ROW = "src/test/testresources/Excel_test_oneRow.xls";
-    private static final String TAXONOMY_FILE_ONE_ROW_FOOD = "src/test/testresources/Excel_test_oneRowFood.xls";
+    private static final String TAXONOMY_FILE_FULL = "src/test/resources/Excel_test_full.xls";
+    private static final String TAXONOMY_FILE_FEW_ROWS = "src/test/resources/Excel_test_fewRows.xls";
+    private static final String TAXONOMY_FILE_FEW_ROWS_FOOD = "src/test/resources/Excel_test_fewRowsFood.xls";
+    private static final String TAXONOMY_FILE_ONE_ROW = "src/test/resources/Excel_test_oneRow.xls";
+    private static final String TAXONOMY_FILE_ONE_ROW_FOOD = "src/test/resources/Excel_test_oneRowFood.xls";
     private static final String SHEET_NAME = "Sheet1";
 
 
@@ -38,7 +38,7 @@ class ExcelParserTest {
     void isParserValidFalse(){
 
         Exception exception = assertThrows(FileNotFoundException.class, ()->{
-            new ExcelParser("/monmon/something").isParserValid();
+            new ExcelParser("/monmon/something");
         } );
     }
 
@@ -47,7 +47,7 @@ class ExcelParserTest {
     void getCategories() {
         ExcelParser parser = new ExcelParser(TAXONOMY_FILE_FEW_ROWS);
         List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList = new ArrayList<>();
+        List<CategoryDTO> actualList;
 
         String cell2Keyword = "Arts & Entertainment";
         String cell3Keyword = "Hobbies & Creative Arts";
@@ -99,7 +99,7 @@ class ExcelParserTest {
     void getUnfilteredCategories() {
         ExcelParser parser = new ExcelParser(TAXONOMY_FILE_FEW_ROWS);
         List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList = new ArrayList<>();
+        List<CategoryDTO> actualList;
 
         String cell2Keyword = "Arts & Entertainment";
         String cell3Keyword = "Hobbies & Creative Arts";
@@ -476,7 +476,7 @@ class ExcelParserTest {
         testList.add(testCategoryDTO2);
 
         List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList = new ArrayList<>();
+        List<CategoryDTO> actualList;
         expectedList.add(testCategoryDTO2);
 
         actualList = parser.consolidateSimilarCategories(testList);

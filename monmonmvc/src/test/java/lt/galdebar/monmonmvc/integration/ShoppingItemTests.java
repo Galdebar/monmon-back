@@ -155,12 +155,12 @@ public class ShoppingItemTests {
                 .header("Authorization", "Bearer " + userAAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         String userBresponse = mvc.perform(get("/shoppingitems/getAll")
                 .header("Authorization", "Bearer " + userBAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(userAresponse);
         assertNotNull(userBresponse);
@@ -199,12 +199,12 @@ public class ShoppingItemTests {
                 .header("Authorization", "Bearer " + userAAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         String userBresponse = mvc.perform(get("/shoppingitems/getAll")
                 .header("Authorization", "Bearer " + userBAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(userAresponse);
         assertNotNull(userBresponse);
@@ -240,12 +240,12 @@ public class ShoppingItemTests {
                 .header("Authorization", "Bearer " + userAAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         String userBresponse = mvc.perform(get("/shoppingitems/getAll")
                 .header("Authorization", "Bearer " + userBAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotNull(userAresponse);
         assertNotNull(userBresponse);
@@ -277,7 +277,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertFalse(response.contentEquals("[]"));
         assertTrue(response.contains(itemName));
@@ -307,7 +307,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertFalse(response.contentEquals("[]"));
         assertTrue(response.contains(itemName));
@@ -338,7 +338,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertFalse(response.contentEquals("[]"));
         assertTrue(response.contains(itemName));
@@ -419,7 +419,7 @@ public class ShoppingItemTests {
                 .andDo(print())
                 .andReturn()
                 .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+                .getContentAsString();
 
         assertFalse(updateResponse.trim().isEmpty());
         assertEquals(itemId, objectMapper
@@ -460,7 +460,7 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(requestObject))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         JsonNode jsonNode = objectMapper.readTree(responseString);
         String itemId = jsonNode.get("id").asText();
@@ -616,7 +616,7 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(updateRequestObject1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(getAllResponse.contains(updatedName1));
         assertTrue(getAllResponse.contains(updatedName2));
@@ -1001,14 +1001,14 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(requestObject1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         mvc.perform(post("/shoppingitems/additem")
                 .header("Authorization", "Bearer " + authToken)
                 .content(objectMapper.writeValueAsString(requestObject2))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         JsonNode jsonNode = objectMapper.readTree(responseString);
         String itemId = jsonNode.get("id").asText();
@@ -1019,13 +1019,13 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(requestObject1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         String getAllResponse = mvc.perform(get("/shoppingitems/getAll")
                 .header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertNotEquals(getAllResponse, "");
         assertTrue(getAllResponse.contains(item2Name));
@@ -1053,7 +1053,7 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(requestObject1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test
@@ -1077,7 +1077,7 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(requestObject1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test
@@ -1101,7 +1101,7 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(requestObject1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test
@@ -1125,7 +1125,7 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(requestObject1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test
@@ -1157,7 +1157,7 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(listDeleteObject))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertEquals("[]", getAllResponce);
     }
@@ -1222,7 +1222,7 @@ public class ShoppingItemTests {
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(getAllResponse.contains(item1Name));
         assertTrue(getAllResponse.contains(item2Name));
@@ -1259,7 +1259,7 @@ public class ShoppingItemTests {
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(getAllResponse.contains(item1Name));
         assertTrue(getAllResponse.contains(item2Name));
@@ -1296,7 +1296,7 @@ public class ShoppingItemTests {
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(getAllResponse.contains(item1Name));
         assertTrue(getAllResponse.contains(item2Name));
@@ -1324,7 +1324,7 @@ public class ShoppingItemTests {
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
 
         assertTrue(getAllResponse.contains(item1Name));
         assertTrue(getAllResponse.contains(item2Name));
@@ -1343,7 +1343,7 @@ public class ShoppingItemTests {
                         .contentType("application/json")
                         .content(new ObjectMapper().writeValueAsString(loginAttemptDTO))
                         .header("Content-Type", "application/json")
-        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         JacksonJsonParser jsonParser = new JacksonJsonParser();
         return jsonParser.parseMap(resultString).get("token").toString();
@@ -1376,7 +1376,7 @@ public class ShoppingItemTests {
                 .content(objectMapper.writeValueAsString(requestObject))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+                .andReturn().getResponse().getContentAsString();
         return responseString;
     }
 

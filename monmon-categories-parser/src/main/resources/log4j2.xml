@@ -31,7 +31,7 @@
         </Root>
 
         <!-- LOG "com.baeldung*" at TRACE level -->
-        <Logger name="com.baeldung" level="trace"></Logger>
+        <Logger name="lt.galdebar" level="trace"></Logger>
     </Loggers>
 
 </Configuration>

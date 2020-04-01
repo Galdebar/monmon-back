@@ -6,6 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@ToString
 public class ShoppingItemDTO {
     @JsonProperty
     private String id;
