@@ -1,7 +1,8 @@
 package lt.galdebar.monmonmvc.service;
 
 
-import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingItemDAO;
+import lombok.RequiredArgsConstructor;
+import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
@@ -14,21 +15,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
-//@RequiredArgsConstructor
 public class ShoppingItemService {
-
     @Autowired
     private ShoppingItemRepo shoppingItemRepo;
-
     @Autowired
     private UserService userService;
-
     @Autowired
     private ShoppingItemCategoryService shoppingItemCategoryService;
 
+    public List<ShoppingItemDTO> getItemsByCategory(String requestedCategory) {
+        List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByItemCategory(requestedCategory);
+        return entitiesToDtos(foundItems);
+    }
+
+    public List<ShoppingItemDTO> getAll() {
+        return entitiesToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
+    }
+
+    @Transactional
     public ShoppingItemDTO addItem(ShoppingItemDTO shoppingItemDTO) {
         if (shoppingItemDTO.getItemCategory().trim().isEmpty()) {
             ShoppingCategoryDTO foundCategory = shoppingItemCategoryService.findCategoryByKeyword(
@@ -36,25 +42,12 @@ public class ShoppingItemService {
             );
             shoppingItemDTO.setItemCategory(foundCategory.getCategoryName());
         }
-        ShoppingItemDAO returnedItem = shoppingItemRepo.insert(dtoToDao(shoppingItemDTO));
-        return daoToDto(returnedItem);
-    }
-
-    public Optional<ShoppingItemDAO> getItemById(String id) {
-        return shoppingItemRepo.findById(id);
-    }
-
-    public List<ShoppingItemDTO> getItemsByCategory(String requestedCategory) {
-        List<ShoppingItemDAO> foundItems = shoppingItemRepo.findByItemCategory(requestedCategory);
-        return daosToDtos(foundItems);
-//        return shoppingItemRepo.findByItemCategoryAndUsers(requestedCategory, getCurrentUserAndConnectedUsers());
-    }
-
-    public List<ShoppingItemDTO> getAll() {
-        return daosToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
+        ShoppingItemEntity returnedItem = shoppingItemRepo.insert(dtoToEntity(shoppingItemDTO));
+        return entityToDto(returnedItem);
     }
 
 
+    @Transactional
     public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
         if(!validateShoppingItemDTO(shoppingItemDTO)){
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
@@ -62,8 +55,8 @@ public class ShoppingItemService {
         if(!shoppingItemRepo.existsById(shoppingItemDTO.getId())){
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
-        ShoppingItemDAO result = shoppingItemRepo.save(dtoToDao(shoppingItemDTO));
-        return daoToDto(result);
+        ShoppingItemEntity result = shoppingItemRepo.save(dtoToEntity(shoppingItemDTO));
+        return entityToDto(result);
     }
 
     @Transactional
@@ -76,10 +69,11 @@ public class ShoppingItemService {
                 throw new ShoppingItemNotFound(item.getId());
             }
         }
-        List<ShoppingItemDAO> updatedItems = shoppingItemRepo.saveAll(dtosToDaos(shoppingItemDTOS));
-        return daosToDtos(updatedItems);
+        List<ShoppingItemEntity> updatedItems = shoppingItemRepo.saveAll(dtosToEntities(shoppingItemDTOS));
+        return entitiesToDtos(updatedItems);
     }
 
+    @Transactional
     public void deleteItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
         if(!validateShoppingItemDTO(shoppingItemDTO)){
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
@@ -87,7 +81,7 @@ public class ShoppingItemService {
         if(!shoppingItemRepo.existsById(shoppingItemDTO.getId())){
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
-        shoppingItemRepo.delete(dtoToDao(shoppingItemDTO));
+        shoppingItemRepo.delete(dtoToEntity(shoppingItemDTO));
     }
 
     @Transactional
@@ -100,43 +94,43 @@ public class ShoppingItemService {
                 throw new ShoppingItemNotFound(item.getId());
             }
         }
-        shoppingItemRepo.deleteAll(dtosToDaos(shoppingItemDTOList));
+        shoppingItemRepo.deleteAll(dtosToEntities(shoppingItemDTOList));
     }
 
-    private ShoppingItemDAO dtoToDao(ShoppingItemDTO shoppingItemDTO) {
-        ShoppingItemDAO shoppingItemDAO = new ShoppingItemDAO();
-        shoppingItemDAO.id = shoppingItemDTO.getId();
-        shoppingItemDAO.itemName = shoppingItemDTO.getItemName();
-        shoppingItemDAO.itemCategory = shoppingItemDTO.getItemCategory();
-        shoppingItemDAO.quantity = shoppingItemDTO.getQuantity();
-        shoppingItemDAO.comment = shoppingItemDTO.getComment();
-        shoppingItemDAO.isInCart = shoppingItemDTO.isInCart();
-        shoppingItemDAO.users.add(
+    private ShoppingItemEntity dtoToEntity(ShoppingItemDTO shoppingItemDTO) {
+        ShoppingItemEntity shoppingItemEntity = new ShoppingItemEntity();
+        shoppingItemEntity.id = shoppingItemDTO.getId();
+        shoppingItemEntity.itemName = shoppingItemDTO.getItemName();
+        shoppingItemEntity.itemCategory = shoppingItemDTO.getItemCategory();
+        shoppingItemEntity.quantity = shoppingItemDTO.getQuantity();
+        shoppingItemEntity.comment = shoppingItemDTO.getComment();
+        shoppingItemEntity.isInCart = shoppingItemDTO.isInCart();
+        shoppingItemEntity.users.add(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
-        return shoppingItemDAO;
+        return shoppingItemEntity;
     }
 
-    private List<ShoppingItemDAO> dtosToDaos(List<ShoppingItemDTO> shoppingItemDTOList) {
-        List<ShoppingItemDAO> shoppingItemDAOList = new ArrayList<>();
-        shoppingItemDTOList.forEach(dto -> shoppingItemDAOList.add(dtoToDao(dto)));
-        return shoppingItemDAOList;
+    private List<ShoppingItemEntity> dtosToEntities(List<ShoppingItemDTO> shoppingItemDTOList) {
+        List<ShoppingItemEntity> shoppingItemEntityList = new ArrayList<>();
+        shoppingItemDTOList.forEach(dto -> shoppingItemEntityList.add(dtoToEntity(dto)));
+        return shoppingItemEntityList;
     }
 
-    private ShoppingItemDTO daoToDto(ShoppingItemDAO shoppingItemDAO) {
+    private ShoppingItemDTO entityToDto(ShoppingItemEntity shoppingItemEntity) {
         return new ShoppingItemDTO(
-                shoppingItemDAO.id,
-                shoppingItemDAO.itemName,
-                shoppingItemDAO.itemCategory,
-                shoppingItemDAO.quantity,
-                shoppingItemDAO.comment,
-                shoppingItemDAO.isInCart
+                shoppingItemEntity.id,
+                shoppingItemEntity.itemName,
+                shoppingItemEntity.itemCategory,
+                shoppingItemEntity.quantity,
+                shoppingItemEntity.comment,
+                shoppingItemEntity.isInCart
         );
     }
 
-    private List<ShoppingItemDTO> daosToDtos(List<ShoppingItemDAO> shoppingItemDAOList) {
+    private List<ShoppingItemDTO> entitiesToDtos(List<ShoppingItemEntity> shoppingItemEntityList) {
         List<ShoppingItemDTO> shoppingItemDTOList = new ArrayList<>();
-        shoppingItemDAOList.forEach(dao -> shoppingItemDTOList.add(daoToDto(dao)));
+        shoppingItemEntityList.forEach(dao -> shoppingItemDTOList.add(entityToDto(dao)));
         return shoppingItemDTOList;
     }
 

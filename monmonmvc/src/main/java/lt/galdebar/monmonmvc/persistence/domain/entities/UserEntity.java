@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.persistence.domain.dao;
+package lt.galdebar.monmonmvc.persistence.domain.entities;
 
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -7,12 +7,13 @@ import javax.persistence.Id;
 import java.util.HashSet;
 import java.util.Set;
 
-@NoArgsConstructor
-@Getter
-@Setter
+//@NoArgsConstructor
+//@Getter
+//@Setter
+//@ToString
+@Data
 @Document(collection = "users")
-@ToString
-public class UserDAO {
+public class UserEntity {
     @Id
     private String id;
     private String userEmail;

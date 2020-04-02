@@ -1,10 +1,7 @@
-package lt.galdebar.monmonmvc.persistence.domain.dao.token;
+package lt.galdebar.monmonmvc.persistence.domain.entities.token;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
+import lombok.*;
+import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,22 +10,19 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@NoArgsConstructor
-@Getter
-@Setter
 @Document(collection = "user_sync_tokens")
-@ToString
-public class LinkUsersTokenDAO {
+@Data
+public class LinkUsersTokenEntity {
     @Id
     private String id;
     @Indexed(unique = true)
     private String token;
     @DBRef(lazy = true)
     @NotNull
-    private UserDAO userA;
+    private UserEntity userA;
     @DBRef(lazy = true)
     @NotNull
-    private UserDAO userB;
+    private UserEntity userB;
 
     private Date expiryDate;
 }

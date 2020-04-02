@@ -1,10 +1,7 @@
-package lt.galdebar.monmonmvc.persistence.domain.dao;
+package lt.galdebar.monmonmvc.persistence.domain.entities;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
@@ -17,7 +14,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @ToString
-public class ShoppingKeywordDAO {
+public class ShoppingKeywordEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -26,7 +23,7 @@ public class ShoppingKeywordDAO {
     @JsonManagedReference
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id")
-    private ShoppingCategoryDAO shoppingItemCategory;
+    private ShoppingCategoryEntity shoppingItemCategory;
     @Field
     @Column(name = "keywords")
     private String keyword;

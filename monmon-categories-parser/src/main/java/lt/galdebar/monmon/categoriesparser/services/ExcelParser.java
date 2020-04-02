@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//@Component
 @Log4j2
 public class ExcelParser {
     private static final String SHEET_NAME = "Sheet1";
@@ -37,10 +36,7 @@ public class ExcelParser {
             dataFormatter = new DataFormatter();
             isParserValid = true;
             log.info("Excel Parser loaded.");
-        } catch (IOException e) {
-            e.printStackTrace();
-            isParserValid = false;
-        } catch (InvalidFormatException e) {
+        } catch (IOException | InvalidFormatException e) {
             e.printStackTrace();
             isParserValid = false;
         }
@@ -53,10 +49,7 @@ public class ExcelParser {
             dataFormatter = new DataFormatter();
             isParserValid = true;
             log.info("Excel Parser loaded.");
-        } catch (IOException e) {
-            e.printStackTrace();
-            isParserValid = false;
-        } catch (InvalidFormatException e) {
+        } catch (IOException | InvalidFormatException e) {
             e.printStackTrace();
             isParserValid = false;
         }
@@ -73,7 +66,7 @@ public class ExcelParser {
         return finalList;
     }
 
-    public List<CategoryDTO> getUnfilteredCategories() {
+    List<CategoryDTO> getUnfilteredCategories() {
         List<CategoryDTO> categoryDTOList = new ArrayList<>();
         categoryDTOList.add(createUncategorized());
         for (Row row : sheet) {
@@ -87,7 +80,7 @@ public class ExcelParser {
         return new CategoryDTO(UNCATEGORIZED_TITLE, "", "", new HashSet<String>());
     }
 
-    public CategoryDTO generateDTOFromRow(Row row) {
+    CategoryDTO generateDTOFromRow(Row row) {
         int cellCount = 0; // First cell needs to be ignored, because I don't need the shoppingItemCategory ID
         CategoryDTO categoryDTO = new CategoryDTO();
         Set<String> keywords = new HashSet<>();
@@ -106,7 +99,7 @@ public class ExcelParser {
         return categoryDTO;
     }
 
-    public void addKeywordsIfValid(Set<String> keywords, String cellValue) {
+    void addKeywordsIfValid(Set<String> keywords, String cellValue) {
         if (!cellValue.equals(FOOD_CATEGORY_NAME)
                 && !cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)
                 && !cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)
@@ -115,19 +108,19 @@ public class ExcelParser {
         }
     }
 
-    public void getFoodCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+    void getFoodCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
         if (cellCount == 4 && categoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
             categoryDTO.setFoodCategoryName(cellValue);
         }
     }
 
-    public void getSubcategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+    void getSubcategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
         if (cellCount == 3 && cellValue.equals(FOOD_CATEGORY_NAME)) {
             categoryDTO.setSubcategory(cellValue);
         }
     }
 
-    public void getCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+    void getCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
         if (cellCount == 2) {
             categoryDTO.setCategoryName(cellValue);
         }
@@ -139,7 +132,7 @@ public class ExcelParser {
         }
     }
 
-    public List<CategoryDTO> consolidateSimilarCategories(List<CategoryDTO> unfilteredList) {
+    List<CategoryDTO> consolidateSimilarCategories(List<CategoryDTO> unfilteredList) {
         List<CategoryDTO> filteredList = new ArrayList<>();
 
         for (CategoryDTO unfilteredCategoryDTO : unfilteredList) {
@@ -163,7 +156,7 @@ public class ExcelParser {
         return filteredList;
     }
 
-    public List<CategoryDTO> removeEmptyEntries(List<CategoryDTO> categoryDTOList) {
+    List<CategoryDTO> removeEmptyEntries(List<CategoryDTO> categoryDTOList) {
         List<CategoryDTO> filteredList = categoryDTOList.stream()
                 .filter(item -> !item.getCategoryName().equals(""))
                 .distinct()

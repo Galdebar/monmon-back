@@ -1,4 +1,4 @@
-package lt.galdebar.monmon.categoriesparser;
+package lt.galdebar.monmon.categoriesparser.services;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
 import lt.galdebar.monmon.categoriesparser.services.ExcelParser;

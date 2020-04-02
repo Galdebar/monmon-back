@@ -1,8 +1,7 @@
 package lt.galdebar.monmon.categoriesparser;
 
 
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDAO;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.KeywordsRepo;
 import lt.galdebar.monmon.categoriesparser.services.CategoriesParserMain;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -50,10 +48,10 @@ public class ExcelParserIntegrationTests {
 
     @Test
     public void whenPushToDB_thenValidDBEntries(){
-        List<CategoryDAO> expectedList = converter.convertDTOsToDAOs(excelParser.getCategories());
+        List<CategoryEntity> expectedList = converter.convertDTOsToDAOs(excelParser.getCategories());
         parserMain.pushCategoriesToDB();
 
-        List<CategoryDAO> actualList = categoriesRepo.findAll();
+        List<CategoryEntity> actualList = categoriesRepo.findAll();
         expectedList.sort(this::compareCategoryDAO);
         actualList.sort(this::compareCategoryDAO);
 
@@ -61,7 +59,7 @@ public class ExcelParserIntegrationTests {
 //        assertEquals(expectedList,actualList);
     }
 
-    private int compareCategoryDAO(CategoryDAO categoryA, CategoryDAO categoryB){
+    private int compareCategoryDAO(CategoryEntity categoryA, CategoryEntity categoryB){
         return categoryA.getCategoryName().compareTo(categoryB.getCategoryName());
     }
 }

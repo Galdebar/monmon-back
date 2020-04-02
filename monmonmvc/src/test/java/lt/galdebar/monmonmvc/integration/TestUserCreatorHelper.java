@@ -1,11 +1,9 @@
 package lt.galdebar.monmonmvc.integration;
 
-import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
 public class TestUserCreatorHelper {
 
@@ -13,14 +11,14 @@ public class TestUserCreatorHelper {
 
     private PasswordEncoder passwordEncoder;
 
-    public TestUserCreatorHelper(UserRepo userRepo, PasswordEncoder passwordEncoder) {
+    TestUserCreatorHelper(UserRepo userRepo, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserDAO createSimpleUser(String userEmail, String userPassword) throws UserNotFound {
+    UserEntity createSimpleUser(String userEmail, String userPassword) throws UserNotFound {
         if(userRepo.findByUserEmail(userEmail) == null){
-            UserDAO user = new UserDAO();
+            UserEntity user = new UserEntity();
             user.setUserEmail(userEmail);
             user.setUserPassword(passwordEncoder.encode(userPassword));
             user.setValidated(true);
@@ -28,9 +26,9 @@ public class TestUserCreatorHelper {
         } else return userRepo.findByUserEmail(userEmail);
     }
 
-    public UserDAO createLinkedUsers(String userA, String userB) throws UserNotFound {
-        UserDAO user = userRepo.findByUserEmail(userA);
-        UserDAO userToAdd = userRepo.findByUserEmail(userB);
+    UserEntity createLinkedUsers(String userA, String userB) throws UserNotFound {
+        UserEntity user = userRepo.findByUserEmail(userA);
+        UserEntity userToAdd = userRepo.findByUserEmail(userB);
 
         if(user == null || userToAdd == null){
             throw new UserNotFound(user.getUserEmail());
@@ -42,7 +40,7 @@ public class TestUserCreatorHelper {
         return userRepo.save(user);
     }
 
-    public void clearDB(){
+    void clearDB(){
         userRepo.deleteAll();
     }
 }

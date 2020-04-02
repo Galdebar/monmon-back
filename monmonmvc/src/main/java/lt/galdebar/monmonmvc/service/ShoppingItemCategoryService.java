@@ -1,7 +1,7 @@
 package lt.galdebar.monmonmvc.service;
 
-import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingCategoryDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingKeywordDAO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingCategoryEntity;
+import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingKeywordEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
 import org.apache.lucene.analysis.Analyzer;
@@ -36,12 +36,12 @@ public class ShoppingItemCategoryService {
 
 
     public List<ShoppingKeywordDTO> searchKeywordAutocomplete(ShoppingKeywordDTO keywordDTO) {
-        List<ShoppingKeywordDAO> keywordList = searchKeywords(keywordDTO);
+        List<ShoppingKeywordEntity> keywordList = searchKeywords(keywordDTO);
         return keywordDAOSToDTOS(keywordList);
     }
 
     public ShoppingCategoryDTO findCategoryByKeyword(ShoppingKeywordDTO keywordDTO) {
-        List<ShoppingKeywordDAO> foundKeywords = searchKeywords(keywordDTO);
+        List<ShoppingKeywordEntity> foundKeywords = searchKeywords(keywordDTO);
         if (foundKeywords.size() == 0
         || !foundKeywords.get(0).getKeyword().equalsIgnoreCase(keywordDTO.getKeyword())) {
             return categoryDAOToDTO(getUncategorized());
@@ -51,17 +51,17 @@ public class ShoppingItemCategoryService {
 
     @SuppressWarnings("unchecked")
     @Transactional
-    private List<ShoppingKeywordDAO> searchKeywords(ShoppingKeywordDTO keywordDTO) {
+    private List<ShoppingKeywordEntity> searchKeywords(ShoppingKeywordDTO keywordDTO) {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
-                .getAnalyzer(ShoppingKeywordDAO.class);
+                .getAnalyzer(ShoppingKeywordEntity.class);
         String analyzedString = analyzeString(customAnalyzer, keywordDTO.getKeyword());
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(ShoppingKeywordDAO.class).get();
+                .forEntity(ShoppingKeywordEntity.class).get();
 
         if(analyzedString.trim().isEmpty()){
-            return new ArrayList<ShoppingKeywordDAO>();
+            return new ArrayList<ShoppingKeywordEntity>();
         }
 
         Query query = queryBuilder
@@ -74,7 +74,7 @@ public class ShoppingItemCategoryService {
                 .createQuery();
 
 
-        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingKeywordDAO.class);
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingKeywordEntity.class);
 
         return jpaQuery.setMaxResults(MAX_RESULTS).getResultList();
     }
@@ -99,11 +99,11 @@ public class ShoppingItemCategoryService {
     }
 
     @Transactional
-    private ShoppingCategoryDAO getUncategorized() {
+    private ShoppingCategoryEntity getUncategorized() {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(ShoppingCategoryDAO.class).get();
+                .forEntity(ShoppingCategoryEntity.class).get();
 
         Query query = queryBuilder
                 .keyword()
@@ -111,11 +111,11 @@ public class ShoppingItemCategoryService {
                 .matching("Uncategorized")
                 .createQuery();
 
-        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingCategoryDAO.class);
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingCategoryEntity.class);
 
         Object result = jpaQuery.setMaxResults(1).getResultList().get(0);
-        if (result instanceof ShoppingCategoryDAO) {
-            return (ShoppingCategoryDAO) result;
+        if (result instanceof ShoppingCategoryEntity) {
+            return (ShoppingCategoryEntity) result;
         } else return null;
 
     }
@@ -126,60 +126,60 @@ public class ShoppingItemCategoryService {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(ShoppingCategoryDAO.class).get();
+                .forEntity(ShoppingCategoryEntity.class).get();
 
         Query query = queryBuilder.all().createQuery();
 
-        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingCategoryDAO.class);
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingCategoryEntity.class);
 
-        List<ShoppingCategoryDAO> shoppingItemCategoryList = jpaQuery.getResultList();
+        List<ShoppingCategoryEntity> shoppingItemCategoryList = jpaQuery.getResultList();
 
         return categoryDAOSToDTOS(shoppingItemCategoryList);
     }
 
-    private ShoppingCategoryDTO categoryDAOToDTO(ShoppingCategoryDAO shoppingCategoryDAO) {
+    private ShoppingCategoryDTO categoryDAOToDTO(ShoppingCategoryEntity shoppingCategoryEntity) {
         Set<String> keywords = new HashSet<>();
-        shoppingCategoryDAO.getKeywords().forEach(shoppingKeywordDAO -> keywords.add(shoppingKeywordDAO.getKeyword()));
+        shoppingCategoryEntity.getKeywords().forEach(shoppingKeywordEntity -> keywords.add(shoppingKeywordEntity.getKeyword()));
 
-        return new ShoppingCategoryDTO(shoppingCategoryDAO.getCategoryName(), keywords);
+        return new ShoppingCategoryDTO(shoppingCategoryEntity.getCategoryName(), keywords);
     }
 
-    private List<ShoppingCategoryDTO> categoryDAOSToDTOS(List<ShoppingCategoryDAO> shoppingCategoryDAOList){
+    private List<ShoppingCategoryDTO> categoryDAOSToDTOS(List<ShoppingCategoryEntity> shoppingCategoryEntityList){
         List<ShoppingCategoryDTO> shoppingCategoryDTOList = new ArrayList<>();
-        shoppingCategoryDAOList.forEach(categoryDAO -> shoppingCategoryDTOList.add(categoryDAOToDTO(categoryDAO)));
+        shoppingCategoryEntityList.forEach(categoryDAO -> shoppingCategoryDTOList.add(categoryDAOToDTO(categoryDAO)));
         return shoppingCategoryDTOList;
     }
 
-    private ShoppingCategoryDAO categoryDTOToDAO(ShoppingCategoryDTO shoppingCategoryDTO) {
-        ShoppingCategoryDAO shoppingCategoryDAO = new ShoppingCategoryDAO();
-        shoppingCategoryDAO.setCategoryName(shoppingCategoryDTO.getCategoryName());
+    private ShoppingCategoryEntity categoryDTOToDAO(ShoppingCategoryDTO shoppingCategoryDTO) {
+        ShoppingCategoryEntity shoppingCategoryEntity = new ShoppingCategoryEntity();
+        shoppingCategoryEntity.setCategoryName(shoppingCategoryDTO.getCategoryName());
         for(String keyword: shoppingCategoryDTO.getKeywords()){
-            ShoppingKeywordDAO keywordDAO = new ShoppingKeywordDAO();
+            ShoppingKeywordEntity keywordDAO = new ShoppingKeywordEntity();
             keywordDAO.setKeyword(keyword);
-            shoppingCategoryDAO.getKeywords().add(keywordDAO);
+            shoppingCategoryEntity.getKeywords().add(keywordDAO);
         }
 
-        return shoppingCategoryDAO;
+        return shoppingCategoryEntity;
     }
 
-    private List<ShoppingCategoryDAO> categoryDTOSToDAOS(List<ShoppingCategoryDTO> shoppingCategoryDTOList){
-        List<ShoppingCategoryDAO> shoppingCategoryDAOList = new ArrayList<>();
-        shoppingCategoryDTOList.forEach(categoryDTO -> shoppingCategoryDAOList.add(categoryDTOToDAO(categoryDTO)));
+    private List<ShoppingCategoryEntity> categoryDTOSToDAOS(List<ShoppingCategoryDTO> shoppingCategoryDTOList){
+        List<ShoppingCategoryEntity> shoppingCategoryEntityList = new ArrayList<>();
+        shoppingCategoryDTOList.forEach(categoryDTO -> shoppingCategoryEntityList.add(categoryDTOToDAO(categoryDTO)));
 
-        return shoppingCategoryDAOList;
+        return shoppingCategoryEntityList;
     }
 
-    private List<ShoppingKeywordDTO> keywordDAOSToDTOS(List<ShoppingKeywordDAO> keywordList) {
+    private List<ShoppingKeywordDTO> keywordDAOSToDTOS(List<ShoppingKeywordEntity> keywordList) {
         List<ShoppingKeywordDTO> shoppingKeywordDTOList = new ArrayList<>();
         keywordList.forEach(keywordDAO -> shoppingKeywordDTOList.add(keywordDAOToDTO(keywordDAO)));
 
         return shoppingKeywordDTOList;
     }
 
-    private ShoppingKeywordDTO keywordDAOToDTO(ShoppingKeywordDAO shoppingKeywordDAO) {
+    private ShoppingKeywordDTO keywordDAOToDTO(ShoppingKeywordEntity shoppingKeywordEntity) {
         return new ShoppingKeywordDTO(
-                shoppingKeywordDAO.getShoppingItemCategory().getCategoryName(),
-                shoppingKeywordDAO.getKeyword()
+                shoppingKeywordEntity.getShoppingItemCategory().getCategoryName(),
+                shoppingKeywordEntity.getKeyword()
         );
     }
 

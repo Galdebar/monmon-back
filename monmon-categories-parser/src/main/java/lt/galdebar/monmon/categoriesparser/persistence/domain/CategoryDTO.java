@@ -1,9 +1,15 @@
 package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
+import lombok.*;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
 public class CategoryDTO {
     private String categoryName;
     private String subcategory;
@@ -15,55 +21,6 @@ public class CategoryDTO {
         this.subcategory = "";
         this.foodCategoryName = "";
         this.keywords = new HashSet<>();
-    }
-
-    public CategoryDTO(String categoryName, String subcategory, String foodCategoryName, Set<String> keywords) {
-        this.categoryName = categoryName;
-        this.subcategory = subcategory;
-        this.foodCategoryName = foodCategoryName;
-        this.keywords = keywords;
-    }
-
-    public Set<String> getKeywords() {
-        return keywords;
-    }
-
-    public String getSubcategory() {
-        return subcategory;
-    }
-
-    public String getFoodCategoryName() {
-        return foodCategoryName;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
-    public void setSubcategory(String subcategory) {
-        this.subcategory = subcategory;
-    }
-
-    public void setFoodCategoryName(String foodCategoryName) {
-        this.foodCategoryName = foodCategoryName;
-    }
-
-    public void setKeywords(Set<String> keywords) {
-        this.keywords = keywords;
-    }
-
-    @Override
-    public String toString() {
-        return "CategoryDTO{" +
-                "categoryName='" + categoryName + '\'' +
-                ", subcategory='" + subcategory + '\'' +
-                ", foodCategoryName='" + foodCategoryName + '\'' +
-                ", keywords=" + keywords +
-                '}';
     }
 
     @Override

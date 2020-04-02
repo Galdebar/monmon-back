@@ -1,10 +1,11 @@
 package lt.galdebar.monmonmvc.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.LinkUsersTokenDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserEmailChangeTokenDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserRegistrationTokenDAO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.token.LinkUsersTokenEntity;
+import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
+import lt.galdebar.monmonmvc.persistence.domain.entities.token.UserEmailChangeTokenEntity;
+import lt.galdebar.monmonmvc.persistence.domain.entities.token.UserRegistrationTokenEntity;
 import lt.galdebar.monmonmvc.persistence.repositories.LinkUsersTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserEmailChangeTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRegistrationTokenRepo;
@@ -28,22 +29,19 @@ import java.util.UUID;
 class TokenService {
 
     private static final int EXPIRATION_IN_HOURS = 24;
-
     @Autowired
     private UserRegistrationTokenRepo registrationTokenRepo;
-
     @Autowired
     private UserEmailChangeTokenRepo emailChangeTokenRepo;
-
     @Autowired
     private LinkUsersTokenRepo linkUsersTokenRepo;
 
-    UserRegistrationTokenDAO createRegistrationToken(UserDAO newUser, String token) {
-        UserRegistrationTokenDAO registrationToken = new UserRegistrationTokenDAO();
+    UserRegistrationTokenEntity createRegistrationToken(UserEntity newUser, String token) {
+        UserRegistrationTokenEntity registrationToken = new UserRegistrationTokenEntity();
         registrationToken.setUser(newUser);
         registrationToken.setToken(token);
         registrationToken.setExpiryDate(calculateTokenExpiryDate());
-        UserRegistrationTokenDAO createdToken = registrationTokenRepo.save(registrationToken);
+        UserRegistrationTokenEntity createdToken = registrationTokenRepo.save(registrationToken);
 
         log.info(String.format(
                 "User registration token created. Token details: %s",
@@ -53,14 +51,14 @@ class TokenService {
         return createdToken;
     }
 
-    UserEmailChangeTokenDAO createEmailChangeToken(UserDAO currentUser, String newEmail, String token){
-        UserEmailChangeTokenDAO emailChangeTokenDAO = new UserEmailChangeTokenDAO();
+    UserEmailChangeTokenEntity createEmailChangeToken(UserEntity currentUser, String newEmail, String token){
+        UserEmailChangeTokenEntity emailChangeTokenDAO = new UserEmailChangeTokenEntity();
         emailChangeTokenDAO.setUser(currentUser);
         emailChangeTokenDAO.setNewEmail(newEmail);
         emailChangeTokenDAO.setToken(token);
         emailChangeTokenDAO.setExpiryDate(calculateTokenExpiryDate());
 
-        UserEmailChangeTokenDAO createdToken = emailChangeTokenRepo.save(emailChangeTokenDAO);
+        UserEmailChangeTokenEntity createdToken = emailChangeTokenRepo.save(emailChangeTokenDAO);
 
         log.info(String.format(
                 "User email change token created. Token details: %s",
@@ -70,14 +68,14 @@ class TokenService {
         return createdToken;
     }
 
-    LinkUsersTokenDAO createLinkUsersToken(UserDAO userA, UserDAO userB, String token){
-        LinkUsersTokenDAO connectionTokenDAO = new LinkUsersTokenDAO();
+    LinkUsersTokenEntity createLinkUsersToken(UserEntity userA, UserEntity userB, String token){
+        LinkUsersTokenEntity connectionTokenDAO = new LinkUsersTokenEntity();
         connectionTokenDAO.setToken(token);
         connectionTokenDAO.setUserA(userA);
         connectionTokenDAO.setUserB(userB);
         connectionTokenDAO.setExpiryDate(calculateTokenExpiryDate());
 
-        LinkUsersTokenDAO createdToken = linkUsersTokenRepo.save(connectionTokenDAO);
+        LinkUsersTokenEntity createdToken = linkUsersTokenRepo.save(connectionTokenDAO);
 
         log.info(String.format(
                 "Link users token created. Token details: %s",
@@ -88,8 +86,8 @@ class TokenService {
     }
 
     @Transactional
-    UserRegistrationTokenDAO renewRegistrationToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenNotExpired {
-        UserRegistrationTokenDAO registrationToken = registrationTokenRepo.findByToken(token);
+    UserRegistrationTokenEntity renewRegistrationToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenNotExpired {
+        UserRegistrationTokenEntity registrationToken = registrationTokenRepo.findByToken(token);
         if (registrationToken == null) {
             throw new TokenNotFound(token);
         }
@@ -102,7 +100,7 @@ class TokenService {
         registrationToken.setToken(UUID.randomUUID().toString());
         registrationToken.setExpiryDate(calculateTokenExpiryDate());
 
-        UserRegistrationTokenDAO updatedToken = registrationTokenRepo.save(registrationToken);
+        UserRegistrationTokenEntity updatedToken = registrationTokenRepo.save(registrationToken);
 
         log.info(String.format(
                 "Register user token extended. Token details: %s",
@@ -112,15 +110,15 @@ class TokenService {
         return updatedToken;
     }
 
-    LinkUsersTokenDAO renewLinkUsersToken(String token) throws LinkUsersTokenExpired, LinkUsersTokenNotFound {
-        LinkUsersTokenDAO tokenDAO = checkLinkUsersToken(token);
+    LinkUsersTokenEntity renewLinkUsersToken(String token) throws LinkUsersTokenExpired, LinkUsersTokenNotFound {
+        LinkUsersTokenEntity tokenDAO = checkLinkUsersToken(token);
         String newToken = UUID.randomUUID().toString();
         Date newExpirationDate = calculateTokenExpiryDate();
 
         tokenDAO.setToken(newToken);
         tokenDAO.setExpiryDate(newExpirationDate);
 
-        LinkUsersTokenDAO updatedToken = linkUsersTokenRepo.save(tokenDAO);
+        LinkUsersTokenEntity updatedToken = linkUsersTokenRepo.save(tokenDAO);
 
         log.info(String.format(
                 "Link users token extended. Token details: %s",
@@ -130,9 +128,9 @@ class TokenService {
         return updatedToken;
     }
 
-    UserRegistrationTokenDAO checkRegistrationToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenExpired {
+    UserRegistrationTokenEntity checkRegistrationToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenExpired {
         log.info("Checking registration token. ");
-        UserRegistrationTokenDAO registrationToken = registrationTokenRepo.findByToken(token);
+        UserRegistrationTokenEntity registrationToken = registrationTokenRepo.findByToken(token);
         if (registrationToken == null) {
             throw new TokenNotFound(token);
         }
@@ -145,10 +143,10 @@ class TokenService {
         return registrationToken;
     }
 
-    LinkUsersTokenDAO checkLinkUsersToken(String token) throws LinkUsersTokenNotFound, LinkUsersTokenExpired {
+    LinkUsersTokenEntity checkLinkUsersToken(String token) throws LinkUsersTokenNotFound, LinkUsersTokenExpired {
         log.info("Checking link users token. ");
 
-        LinkUsersTokenDAO foundToken = linkUsersTokenRepo.findByToken(token);
+        LinkUsersTokenEntity foundToken = linkUsersTokenRepo.findByToken(token);
         if (foundToken == null) {
             throw new LinkUsersTokenNotFound(token);
         }
@@ -162,10 +160,10 @@ class TokenService {
         return foundToken;
     }
 
-    UserEmailChangeTokenDAO checkEmailChangeToken(String token) throws TokenNotFound, TokenExpired {
+    UserEmailChangeTokenEntity checkEmailChangeToken(String token) throws TokenNotFound, TokenExpired {
         log.info("Checking email change token. ");
 
-        UserEmailChangeTokenDAO tokenDAO = emailChangeTokenRepo.findByToken(token);
+        UserEmailChangeTokenEntity tokenDAO = emailChangeTokenRepo.findByToken(token);
         if (tokenDAO == null) {
             throw new TokenNotFound(token);
         }

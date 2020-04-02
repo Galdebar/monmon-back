@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.persistence.domain.dao;
+package lt.galdebar.monmonmvc.persistence.domain.entities;
 
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -8,12 +8,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.HashSet;
 import java.util.Set;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 @Accessors(fluent = true)
 @Document(collection = "items")
-@ToString
-public class ShoppingItemDAO {
+@Data
+public class ShoppingItemEntity {
     @Id
     public String id;
     public String itemName;

@@ -3,7 +3,7 @@ package lt.galdebar.monmonmvc.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingItemDAO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
@@ -33,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import javax.servlet.ServletContext;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1349,8 +1348,8 @@ public class ShoppingItemTests {
         return jsonParser.parseMap(resultString).get("token").toString();
     }
 
-    private ShoppingItemDAO createAndSaveShoppingItem(String itemName, String itemCategory, String user) {
-        ShoppingItemDAO item1 = new ShoppingItemDAO();
+    private ShoppingItemEntity createAndSaveShoppingItem(String itemName, String itemCategory, String user) {
+        ShoppingItemEntity item1 = new ShoppingItemEntity();
         item1.itemName = itemName;
         item1.itemCategory = itemCategory;
         item1.quantity = 0;

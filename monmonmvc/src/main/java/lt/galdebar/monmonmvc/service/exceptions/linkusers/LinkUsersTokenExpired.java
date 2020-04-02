@@ -1,7 +1,5 @@
 package lt.galdebar.monmonmvc.service.exceptions.linkusers;
 
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.LinkUsersTokenDAO;
-
 public class LinkUsersTokenExpired extends LinkUsersException {
     private static final String MESSAGE = "Link users token expired. ";
     private final String tokenId;

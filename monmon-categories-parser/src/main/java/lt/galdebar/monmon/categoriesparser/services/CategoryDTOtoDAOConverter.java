@@ -1,8 +1,8 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDAO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDAO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -13,22 +13,22 @@ import java.util.Set;
 @Component
 public class CategoryDTOtoDAOConverter {
 
-    public List<CategoryDAO> convertDTOsToDAOs(List<CategoryDTO> categoryDTOList) {
-        List<CategoryDAO> categoryDAOList = new ArrayList<>();
+    public List<CategoryEntity> convertDTOsToDAOs(List<CategoryDTO> categoryDTOList) {
+        List<CategoryEntity> categoryEntityList = new ArrayList<>();
         for (CategoryDTO categoryDTO : categoryDTOList) {
-            categoryDAOList.add(convertDTOtoDAO(categoryDTO));
+            categoryEntityList.add(convertDTOtoDAO(categoryDTO));
         }
-        return categoryDAOList;
+        return categoryEntityList;
     }
 
-    private CategoryDAO convertDTOtoDAO(CategoryDTO categoryDTO) {
-        Set<KeywordDAO> keywords = new HashSet<>();
+    private CategoryEntity convertDTOtoDAO(CategoryDTO categoryDTO) {
+        Set<KeywordEntity> keywords = new HashSet<>();
         for (String keyword : categoryDTO.getKeywords()) {
-            KeywordDAO keywordDAO = new KeywordDAO();
-            keywordDAO.setKeyword(keyword);
-            keywords.add(keywordDAO);
+            KeywordEntity keywordEntity = new KeywordEntity();
+            keywordEntity.setKeyword(keyword);
+            keywords.add(keywordEntity);
         }
-        return new CategoryDAO(
+        return new CategoryEntity(
                 categoryDTO.getCategoryName(),
                 keywords
         );

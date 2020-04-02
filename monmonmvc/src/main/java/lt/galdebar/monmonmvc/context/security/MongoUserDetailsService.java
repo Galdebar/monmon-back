@@ -1,7 +1,6 @@
 package lt.galdebar.monmonmvc.context.security;
 
-import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
 import lt.galdebar.monmonmvc.service.UserService;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +21,15 @@ public class MongoUserDetailsService implements org.springframework.security.cor
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        UserDAO userDAO = null;
+        UserEntity userEntity = null;
 
         try {
-            userDAO = userService.findByUserEmail(userName);
+            userEntity = userService.findByUserEmail(userName);
         } catch (UserNotFound userNotFound) {
             throw new UsernameNotFoundException("User Not Found");
         }
 
         List<SimpleGrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("user"));
-        return new User(userDAO.getUserEmail(), userDAO.getUserPassword(), authorities);
+        return new User(userEntity.getUserEmail(), userEntity.getUserPassword(), authorities);
     }
 }

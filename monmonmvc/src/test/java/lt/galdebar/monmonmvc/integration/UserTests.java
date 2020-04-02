@@ -3,10 +3,10 @@ package lt.galdebar.monmonmvc.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetupTest;
-import lt.galdebar.monmonmvc.persistence.domain.dao.UserDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.LinkUsersTokenDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserEmailChangeTokenDAO;
-import lt.galdebar.monmonmvc.persistence.domain.dao.token.UserRegistrationTokenDAO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
+import lt.galdebar.monmonmvc.persistence.domain.entities.token.LinkUsersTokenEntity;
+import lt.galdebar.monmonmvc.persistence.domain.entities.token.UserEmailChangeTokenEntity;
+import lt.galdebar.monmonmvc.persistence.domain.entities.token.UserRegistrationTokenEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.LinkUsersTokenRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserEmailChangeTokenRepo;
@@ -127,8 +127,8 @@ public class UserTests {
         String testPassword = "password";
         String registerResponse;
         String registrationTokenIDFromEmail;
-        UserRegistrationTokenDAO registrationToken;
-        UserDAO registeredUser;
+        UserRegistrationTokenEntity registrationToken;
+        UserEntity registeredUser;
         MimeMessage[] receivedMessages;
 
 
@@ -314,7 +314,7 @@ public class UserTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
+        UserEntity registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
         assertTrue(registeredUser.isValidated());
     }
@@ -343,7 +343,7 @@ public class UserTests {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
+        UserEntity registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
         assertFalse(registeredUser.isValidated());
     }
@@ -366,7 +366,7 @@ public class UserTests {
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
+        UserEntity registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
         assertFalse(registeredUser.isValidated());
     }
@@ -388,7 +388,7 @@ public class UserTests {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
+        UserEntity registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
         assertFalse(registeredUser.isValidated());
     }
@@ -416,7 +416,7 @@ public class UserTests {
 
         assertTrue(confirmResponse.toLowerCase().contains("expired"));
 
-        UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
+        UserEntity registeredUser = userRepo.findByUserEmail(testEmail);
         assertNotNull(registeredUser);
         assertFalse(registeredUser.isValidated());
     }
@@ -802,11 +802,11 @@ public class UserTests {
         assertNotNull(registrationTokenIDFromEmail);
         assertFalse(registrationTokenIDFromEmail.trim().isEmpty());
 
-        UserEmailChangeTokenDAO emailChangeTokenDAO = userEmailChangeTokenRepo.findByToken(registrationTokenIDFromEmail);
+        UserEmailChangeTokenEntity emailChangeTokenDAO = userEmailChangeTokenRepo.findByToken(registrationTokenIDFromEmail);
         assertNotNull(emailChangeTokenDAO);
         assertEquals(newEmail, emailChangeTokenDAO.getNewEmail());
 
-        UserDAO registeredUser = userRepo.findByUserEmail(testEmail);
+        UserEntity registeredUser = userRepo.findByUserEmail(testEmail);
 
         assertEquals(emailChangeTokenDAO.getUser().getId(), registeredUser.getId());
     }
@@ -1031,7 +1031,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertNotNull(user);
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
@@ -1046,10 +1046,10 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse2.toLowerCase().contains("success"));
 
-        UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
+        UserEntity userWithOldEmail = userRepo.findByUserEmail(testEmail);
         assertNull(userWithOldEmail);
 
-        UserDAO userWithNewEmail = userRepo.findByUserEmail(newEmail);
+        UserEntity userWithNewEmail = userRepo.findByUserEmail(newEmail);
         assertNotNull(userWithNewEmail);
     }
 
@@ -1075,7 +1075,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertNotNull(user);
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
@@ -1089,10 +1089,10 @@ public class UserTests {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
+        UserEntity userWithOldEmail = userRepo.findByUserEmail(testEmail);
         assertNotNull(userWithOldEmail);
 
-        UserDAO userWithNewEmail = userRepo.findByUserEmail(newEmail);
+        UserEntity userWithNewEmail = userRepo.findByUserEmail(newEmail);
         assertNull(userWithNewEmail);
     }
 
@@ -1118,7 +1118,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertNotNull(user);
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
@@ -1132,10 +1132,10 @@ public class UserTests {
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
+        UserEntity userWithOldEmail = userRepo.findByUserEmail(testEmail);
         assertNotNull(userWithOldEmail);
 
-        UserDAO userWithNewEmail = userRepo.findByUserEmail(newEmail);
+        UserEntity userWithNewEmail = userRepo.findByUserEmail(newEmail);
         assertNull(userWithNewEmail);
     }
 
@@ -1161,7 +1161,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertNotNull(user);
 
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
@@ -1175,10 +1175,10 @@ public class UserTests {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO userWithOldEmail = userRepo.findByUserEmail(testEmail);
+        UserEntity userWithOldEmail = userRepo.findByUserEmail(testEmail);
         assertNotNull(userWithOldEmail);
 
-        UserDAO userWithNewEmail = userRepo.findByUserEmail(newEmail);
+        UserEntity userWithNewEmail = userRepo.findByUserEmail(newEmail);
         assertNull(userWithNewEmail);
     }
 
@@ -1206,7 +1206,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("success"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertNotNull(user);
         assertFalse(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertTrue(passwordEncoder.matches(newPassword, user.getUserPassword()));
@@ -1235,7 +1235,7 @@ public class UserTests {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1263,7 +1263,7 @@ public class UserTests {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1292,7 +1292,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1321,7 +1321,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("match"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1350,7 +1350,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1379,7 +1379,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1408,7 +1408,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid email"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1437,7 +1437,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid email"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1466,7 +1466,7 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(requestResponse.toLowerCase().contains("invalid email"));
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1494,7 +1494,7 @@ public class UserTests {
                 .andExpect(status().isForbidden())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1522,7 +1522,7 @@ public class UserTests {
                 .andExpect(status().isForbidden())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1550,7 +1550,7 @@ public class UserTests {
                 .andExpect(status().isForbidden())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO user = userRepo.findByUserEmail(testEmail);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
         assertTrue(passwordEncoder.matches(testPassword, user.getUserPassword()));
         assertFalse(passwordEncoder.matches(newPassword, user.getUserPassword()));
     }
@@ -1588,10 +1588,10 @@ public class UserTests {
         String linkUsersToken = getTokenFromString(
                 getMessageByContentString(user1Email, "link", Arrays.asList(receivedMessages))
         );
-        LinkUsersTokenDAO linkUsersTokenDAO = linkUsersTokenRepo.findByToken(linkUsersToken);
-        assertNotNull(linkUsersTokenDAO);
-        assertEquals(user1Email, linkUsersTokenDAO.getUserA().getUserEmail());
-        assertEquals(user2Email, linkUsersTokenDAO.getUserB().getUserEmail());
+        LinkUsersTokenEntity linkUsersTokenEntity = linkUsersTokenRepo.findByToken(linkUsersToken);
+        assertNotNull(linkUsersTokenEntity);
+        assertEquals(user1Email, linkUsersTokenEntity.getUserA().getUserEmail());
+        assertEquals(user2Email, linkUsersTokenEntity.getUserB().getUserEmail());
     }
 
     @Test
@@ -1867,8 +1867,8 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(confirmResponse.toLowerCase().contains("success"));
 
-        UserDAO user1 = userRepo.findByUserEmail(user1Email);
-        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        UserEntity user1 = userRepo.findByUserEmail(user1Email);
+        UserEntity user2 = userRepo.findByUserEmail(user2Email);
         assertTrue(user1.getLinkedUsers().contains(user2.getUserEmail()));
         assertTrue(user2.getLinkedUsers().contains(user1.getUserEmail()));
 
@@ -1911,8 +1911,8 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(confirmResponse.toLowerCase().contains("expired"));
 
-        UserDAO user1 = userRepo.findByUserEmail(user1Email);
-        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        UserEntity user1 = userRepo.findByUserEmail(user1Email);
+        UserEntity user2 = userRepo.findByUserEmail(user2Email);
         assertFalse(user1.getLinkedUsers().contains(user2.getUserEmail()));
         assertFalse(user2.getLinkedUsers().contains(user1.getUserEmail()));
 
@@ -1951,8 +1951,8 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(confirmResponse.toLowerCase().contains("not found"));
 
-        UserDAO user1 = userRepo.findByUserEmail(user1Email);
-        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        UserEntity user1 = userRepo.findByUserEmail(user1Email);
+        UserEntity user2 = userRepo.findByUserEmail(user2Email);
         assertFalse(user1.getLinkedUsers().contains(user2.getUserEmail()));
         assertFalse(user2.getLinkedUsers().contains(user1.getUserEmail()));
     }
@@ -1989,8 +1989,8 @@ public class UserTests {
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
 
-        UserDAO user1 = userRepo.findByUserEmail(user1Email);
-        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        UserEntity user1 = userRepo.findByUserEmail(user1Email);
+        UserEntity user2 = userRepo.findByUserEmail(user2Email);
         assertFalse(user1.getLinkedUsers().contains(user2.getUserEmail()));
         assertFalse(user2.getLinkedUsers().contains(user1.getUserEmail()));
     }
@@ -2028,8 +2028,8 @@ public class UserTests {
                 .andReturn().getResponse().getContentAsString();
         assertTrue(confirmResponse.toLowerCase().contains("not found"));
 
-        UserDAO user1 = userRepo.findByUserEmail(user1Email);
-        UserDAO user2 = userRepo.findByUserEmail(user2Email);
+        UserEntity user1 = userRepo.findByUserEmail(user1Email);
+        UserEntity user2 = userRepo.findByUserEmail(user2Email);
         assertFalse(user1.getLinkedUsers().contains(user2.getUserEmail()));
         assertFalse(user2.getLinkedUsers().contains(user1.getUserEmail()));
     }
@@ -2273,7 +2273,7 @@ public class UserTests {
 
     private void makeRegistrationTokenExpired(String registrationLink) {
         String registrationToken = getTokenFromString(registrationLink);
-        UserRegistrationTokenDAO token = userRegistrationTokenRepo.findByToken(registrationToken);
+        UserRegistrationTokenEntity token = userRegistrationTokenRepo.findByToken(registrationToken);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Timestamp(calendar.getTime().getTime()));
         calendar.add(Calendar.HOUR, -1);
@@ -2284,7 +2284,7 @@ public class UserTests {
 
     private void makeLinkUsersTokenExpired(String linkUsersUrl) {
         String token = getTokenFromString(linkUsersUrl);
-        LinkUsersTokenDAO tokenDAO = linkUsersTokenRepo.findByToken(token);
+        LinkUsersTokenEntity tokenDAO = linkUsersTokenRepo.findByToken(token);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Timestamp(calendar.getTime().getTime()));
         calendar.add(Calendar.HOUR, -1);
@@ -2295,7 +2295,7 @@ public class UserTests {
 
     private void registerAndConfirmUser(String email, String password) throws Exception {
         registerUser(email, password);
-        UserDAO user = userRepo.findByUserEmail(email);
+        UserEntity user = userRepo.findByUserEmail(email);
         if (user == null) {
             throw new Exception();
         }

@@ -12,7 +12,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CategoryDAO {
+public class CategoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
@@ -21,17 +21,17 @@ public class CategoryDAO {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="category_id",referencedColumnName="id")
-    private Set<KeywordDAO> keywords;
+    private Set<KeywordEntity> keywords;
 
 
-    public CategoryDAO(String categoryName, Set<KeywordDAO> keywords) {
+    public CategoryEntity(String categoryName, Set<KeywordEntity> keywords) {
         this.categoryName = categoryName;
         this.keywords = keywords;
     }
 
     @Override
     public String toString() {
-        return "CategoryDAO{" +
+        return "CategoryEntity{" +
                 "categoryName='" + categoryName + '\'' +
                 ", keywords=" + keywords +
                 '}';

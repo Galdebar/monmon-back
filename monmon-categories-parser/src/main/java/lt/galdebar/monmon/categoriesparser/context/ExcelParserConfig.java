@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 
 @Configuration
-public class Config {
+public class ExcelParserConfig {
 
     @Autowired
     private ResourceLoader resourceLoader;
