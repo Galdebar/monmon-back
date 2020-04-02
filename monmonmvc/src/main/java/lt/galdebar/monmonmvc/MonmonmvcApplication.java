@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.function.Function;
 
-@SpringBootApplication(scanBasePackages = "lt.galdebar")
+@SpringBootApplication(scanBasePackages = {"lt.galdebar.monmonmvc", "lt.galdebar.monmon.categoriesparser"})
 @Log4j2
 public class MonmonmvcApplication {
 

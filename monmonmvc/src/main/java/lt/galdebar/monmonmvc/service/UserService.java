@@ -1,5 +1,6 @@
 package lt.galdebar.monmonmvc.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonmvc.persistence.domain.dao.token.LinkUsersTokenDAO;

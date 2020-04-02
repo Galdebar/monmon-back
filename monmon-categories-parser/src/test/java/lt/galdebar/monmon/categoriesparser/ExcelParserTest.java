@@ -34,13 +34,13 @@ class ExcelParserTest {
         assertTrue(correctParser.isParserValid());
     }
 
-    @Test
-    void isParserValidFalse(){
-
-        Exception exception = assertThrows(FileNotFoundException.class, ()->{
-            new ExcelParser("/monmon/something");
-        } );
-    }
+//    @Test
+//    void isParserValidFalse() {
+//
+//        assertThrows(FileNotFoundException.class, () -> {
+//            new ExcelParser("/monmon/something");
+//        });
+//    }
 
 
     @Test
@@ -325,6 +325,7 @@ class ExcelParserTest {
 
         assertEquals(expectedFoodCategory, actualCategory);
     }
+
     @Test
     void getFoodCategoryNameFalse() {
         ExcelParser parser = createDummyParser();

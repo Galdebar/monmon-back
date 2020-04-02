@@ -1,5 +1,6 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
+import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 //@Component
+@Log4j2
 public class ExcelParser {
     private static final String SHEET_NAME = "Sheet1";
     private static final String FOOD_CATEGORY_NAME = "Food Items";
@@ -34,6 +36,23 @@ public class ExcelParser {
             sheet = workbook.getSheet(SHEET_NAME);
             dataFormatter = new DataFormatter();
             isParserValid = true;
+            log.info("Excel Parser loaded.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            isParserValid = false;
+        } catch (InvalidFormatException e) {
+            e.printStackTrace();
+            isParserValid = false;
+        }
+    }
+
+    public ExcelParser(File file) {
+        try {
+            workbook = WorkbookFactory.create(file);
+            sheet = workbook.getSheet(SHEET_NAME);
+            dataFormatter = new DataFormatter();
+            isParserValid = true;
+            log.info("Excel Parser loaded.");
         } catch (IOException e) {
             e.printStackTrace();
             isParserValid = false;
