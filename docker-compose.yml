@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+  #  db:
+  postgres:
+    image: postgres:12.2-alpine
+    container_name: postgres
+    restart: always
+    #      network_mode: host
+    ports:
+      - ${Postgres_Port}:${Postgres_Port}
+    environment:
+      POSTGRES_DB: ${Postgres_Name}
+      POSTGRES_USER: ${Postgres_User}
+      POSTGRES_PASSWORD: ${Postgres_Pass}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./pg_data:/var/lib/postgresql/data/pgdata
+  mongo:
+    image: mongo:latest
+    restart: always
+    container_name: mongo
+    environment:
+      NAME: ${MongoDB_Name}
+      MONGO_INITDB_ROOT_USERNAME: ${MongoDB_User}
+      MONGO_INITDB_ROOT_PASSWORD: ${MongoDB_Pass}
+    ports:
+      - ${MongoDB_Port}:${MongoDB_Port}
+    volumes:
+      - ./mongo_data:/data/db
+#volumes:
+#  mongodb_data_container: -./mongo_data
+#  postgres_data_container: -./pg_data
+#networks:
+#  ...
