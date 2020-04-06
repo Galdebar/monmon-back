@@ -60,6 +60,41 @@ public class EmailSenderService {
         javaMailSender.send(message);
     }
 
+    public void sendDeletionWarningEmail(String recepient, int period) {
+        log.info(String.format(
+                "Sending account deletion warning to $s",
+                recepient
+        ));
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recepient);
+        message.setSubject("MonMon Account Deletion Warning");
+        message.setText(String.format(
+                "Warning \n Account deletion requested. \n " +
+                        "The user will be deleted in %d. \n" +
+                        "If you log in at any time during that period, deletion will be cancelled",
+                period
+        ));
+
+        javaMailSender.send(message);
+    }
+
+    public void sendDeletionConfirmationEmail(String recepient) {
+        log.info(String.format(
+                "Sending account deletion confirmation to $s",
+                recepient
+        ));
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recepient);
+        message.setSubject("MonMon Account Deleted");
+        message.setText(String.format(
+                "Your account has been deleted. You will no longer be able to log into MonMon"
+        ));
+
+        javaMailSender.send(message);
+    }
+
     private String generateRegistrationLink(String token) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(REGISTER_CONFIRM)

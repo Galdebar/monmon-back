@@ -159,6 +159,7 @@ public class UserService {
         user.setToBeDeleted(true);
         user.setDeletionDate(getUserDeletionDate());
         userRepo.save(user);
+        emailSenderService.sendDeletionWarningEmail(user.getUserEmail(), USER_DELETION_GRACE_PERIOD);
     }
 
     private void cancelUserDeletion(UserEntity user) {
@@ -184,6 +185,10 @@ public class UserService {
         List<UserEntity> usersToDelete = userRepo.findByUserEmailIn(userEmails);
 
         userRepo.deleteAll(usersToDelete);
+
+        for(String email: userEmails){
+            emailSenderService.sendDeletionConfirmationEmail(email);
+        }
     }
 
 
