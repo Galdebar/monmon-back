@@ -32,4 +32,5 @@ public class MongoUserDetailsService implements org.springframework.security.cor
         List<SimpleGrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("user"));
         return new User(userEntity.getUserEmail(), userEntity.getUserPassword(), authorities);
     }
+
 }

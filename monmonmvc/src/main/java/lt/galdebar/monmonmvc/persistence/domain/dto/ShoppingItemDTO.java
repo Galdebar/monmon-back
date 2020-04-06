@@ -3,6 +3,10 @@ package lt.galdebar.monmonmvc.persistence.domain.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -20,5 +24,7 @@ public class ShoppingItemDTO {
     private String comment;
     @JsonProperty("isInCart")
     private boolean isInCart;
+    public Set<String> users = new HashSet<>();
+
 
 }

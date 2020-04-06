@@ -3,6 +3,7 @@ package lt.galdebar.monmonmvc.integration;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import lt.galdebar.monmon.categoriesparser.services.CategoriesParserMain;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
@@ -16,6 +17,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
@@ -40,6 +45,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ShoppingItemCategoryTests {
     private static final String TEST_USER_EMAIL = "user@somemail.com";
     private static final String TEST_USER_PASS = "password";
+
+    @TestConfiguration
+    @ComponentScan(basePackages = "lt.galdebar.monmon.categoriesparser")
+    @Import(CategoriesParserMain.class)
+    public class Config{
+        @Bean
+        public CategoriesParserMain categoriesParserMain(){
+            return new CategoriesParserMain();
+        }
+    }
+
+    @Autowired
+    private CategoriesParserMain categoriesParserMain;
 
     @Autowired
     private UserRepo userRepo;
@@ -66,6 +84,8 @@ public class ShoppingItemCategoryTests {
         userCreatorHelper = new TestUserCreatorHelper(userRepo, passwordEncoder);
 
         userCreatorHelper.createSimpleUser(TEST_USER_EMAIL, TEST_USER_PASS);
+
+        categoriesParserMain.pushCategoriesToDB();
     }
 
     @After

@@ -227,6 +227,25 @@ public class UserController {
     }
 
     @CrossOrigin
+    @GetMapping("/deleteuser")
+    ResponseEntity markUserForDeletion(@RequestHeader(name = "Authorization") String token){
+        String attemptMessage = String.format(
+                "Attempting to mark user for deletion. User: %s",
+                SecurityContextHolder.getContext().getAuthentication().getName()
+        );
+        log.info(attemptMessage);
+
+        userService.markUserForDeletion(token);
+        String successMessage = String.format(
+                "User successfully marked for deletion. The profile will be deleted in %d hours",
+                userService.getUSER_DELETION_GRACE_PERIOD()
+        );
+
+        log.info(successMessage);
+        return ResponseEntity.ok().body(successMessage);
+    }
+
+    @CrossOrigin
     @GetMapping("/getlinkedusers")
     ResponseEntity getLinkedUsers() {
         String attemptMessage = "Attempting to get linked users";

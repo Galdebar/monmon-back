@@ -1,11 +1,13 @@
 package lt.galdebar.monmonmvc.service;
 
 
-import lombok.RequiredArgsConstructor;
+import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingCategoryEntity;
 import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonmvc.service.exceptions.shoppingitem.ShoppingItemNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -34,6 +38,14 @@ public class ShoppingItemService {
         return entitiesToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
     }
 
+    public List<ShoppingItemDTO> getAll(UserDTO userDTO) {
+        List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByUsersIn(
+                Collections.singletonList(userDTO.getUserEmail())
+        );
+
+        return entitiesToDtos(foundItems);
+    }
+
     @Transactional
     public ShoppingItemDTO addItem(ShoppingItemDTO shoppingItemDTO) {
         if (shoppingItemDTO.getItemCategory().trim().isEmpty()) {
@@ -42,6 +54,17 @@ public class ShoppingItemService {
             );
             shoppingItemDTO.setItemCategory(foundCategory.getCategoryName());
         }
+
+        ShoppingCategoryDTO searchCategory = new ShoppingCategoryDTO();
+        searchCategory.setCategoryName(shoppingItemDTO.getItemCategory());
+        shoppingItemDTO.setItemCategory(
+                shoppingItemCategoryService.searchCategory(
+                        searchCategory
+                ).getCategoryName()
+        );
+
+        shoppingItemDTO = addUsersIfEmpty(shoppingItemDTO);
+
         ShoppingItemEntity returnedItem = shoppingItemRepo.insert(dtoToEntity(shoppingItemDTO));
         return entityToDto(returnedItem);
     }
@@ -49,25 +72,29 @@ public class ShoppingItemService {
 
     @Transactional
     public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
-        if(!validateShoppingItemDTO(shoppingItemDTO)){
+        if (!validateShoppingItemDTO(shoppingItemDTO)) {
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
-        if(!shoppingItemRepo.existsById(shoppingItemDTO.getId())){
+        if (!shoppingItemRepo.existsById(shoppingItemDTO.getId())) {
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
+
+        shoppingItemDTO = addUsersIfEmpty(shoppingItemDTO);
+
         ShoppingItemEntity result = shoppingItemRepo.save(dtoToEntity(shoppingItemDTO));
         return entityToDto(result);
     }
 
     @Transactional
     public List<ShoppingItemDTO> updateItems(List<ShoppingItemDTO> shoppingItemDTOS) throws ShoppingItemNotFound {
-        for(ShoppingItemDTO item: shoppingItemDTOS){
-            if(!validateShoppingItemDTO(item)){
+        for (ShoppingItemDTO item : shoppingItemDTOS) {
+            if (!validateShoppingItemDTO(item)) {
                 throw new ShoppingItemNotFound(item.getId());
             }
-            if(!shoppingItemRepo.existsById(item.getId())){
+            if (!shoppingItemRepo.existsById(item.getId())) {
                 throw new ShoppingItemNotFound(item.getId());
             }
+            addUsersIfEmpty(item);
         }
         List<ShoppingItemEntity> updatedItems = shoppingItemRepo.saveAll(dtosToEntities(shoppingItemDTOS));
         return entitiesToDtos(updatedItems);
@@ -75,10 +102,10 @@ public class ShoppingItemService {
 
     @Transactional
     public void deleteItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
-        if(!validateShoppingItemDTO(shoppingItemDTO)){
+        if (!validateShoppingItemDTO(shoppingItemDTO)) {
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
-        if(!shoppingItemRepo.existsById(shoppingItemDTO.getId())){
+        if (!shoppingItemRepo.existsById(shoppingItemDTO.getId())) {
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
         shoppingItemRepo.delete(dtoToEntity(shoppingItemDTO));
@@ -86,11 +113,11 @@ public class ShoppingItemService {
 
     @Transactional
     public void deleteItems(List<ShoppingItemDTO> shoppingItemDTOList) throws ShoppingItemNotFound {
-        for(ShoppingItemDTO item: shoppingItemDTOList){
-            if(!validateShoppingItemDTO(item)){
+        for (ShoppingItemDTO item : shoppingItemDTOList) {
+            if (!validateShoppingItemDTO(item)) {
                 throw new ShoppingItemNotFound(item.getId());
             }
-            if(!shoppingItemRepo.existsById(item.getId())){
+            if (!shoppingItemRepo.existsById(item.getId())) {
                 throw new ShoppingItemNotFound(item.getId());
             }
         }
@@ -105,9 +132,7 @@ public class ShoppingItemService {
         shoppingItemEntity.quantity = shoppingItemDTO.getQuantity();
         shoppingItemEntity.comment = shoppingItemDTO.getComment();
         shoppingItemEntity.isInCart = shoppingItemDTO.isInCart();
-        shoppingItemEntity.users.add(
-                SecurityContextHolder.getContext().getAuthentication().getName()
-        );
+        shoppingItemEntity.users.addAll(shoppingItemDTO.getUsers());
         return shoppingItemEntity;
     }
 
@@ -124,7 +149,8 @@ public class ShoppingItemService {
                 shoppingItemEntity.itemCategory,
                 shoppingItemEntity.quantity,
                 shoppingItemEntity.comment,
-                shoppingItemEntity.isInCart
+                shoppingItemEntity.isInCart,
+                shoppingItemEntity.users
         );
     }
 
@@ -142,16 +168,26 @@ public class ShoppingItemService {
     }
 
     private boolean validateShoppingItemDTO(ShoppingItemDTO shoppingItemDTO) {
-        if(shoppingItemDTO == null){
+        if (shoppingItemDTO == null) {
             return false;
         }
-        if(shoppingItemDTO.getId() == null){
+        if (shoppingItemDTO.getId() == null) {
             return false;
         }
-        if(shoppingItemDTO.getId().trim().isEmpty()){
+        if (shoppingItemDTO.getId().trim().isEmpty()) {
             return false;
         }
 
         return true;
+    }
+
+    private ShoppingItemDTO addUsersIfEmpty(ShoppingItemDTO shoppingItemDTO){
+        if (shoppingItemDTO.users.size() == 0) {
+            shoppingItemDTO.users.add(
+                    SecurityContextHolder.getContext().getAuthentication().getName()
+            );
+            shoppingItemDTO.users.addAll(userService.getLinkedUsers());
+        }
+        return shoppingItemDTO;
     }
 }

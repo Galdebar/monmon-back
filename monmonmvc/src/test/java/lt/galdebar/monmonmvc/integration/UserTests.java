@@ -44,7 +44,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-//@RunWith(SpringRunner.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test.properties")
 @SpringBootTest
@@ -904,6 +903,129 @@ public class UserTests {
         assertNotNull(receivedMessages);
         assertEquals(1, receivedMessages.length);
     }
+
+    @Test
+    public void givenStandardUser_whenDeleteUser_thenOkAndMarkUserForDeletionAndLogout() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+        String authToken = getAuthToken(testEmail,testPassword);
+
+        String requestResponse = mvc.perform(get("/user/deleteuser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertTrue(requestResponse.toLowerCase().trim().contains("success"));
+
+
+        user = userRepo.findByUserEmail(testEmail);
+        assertTrue(user.isToBeDeleted());
+
+        String getLinkedUsersResponse = mvc.perform(get("/user/getlinkedusers")
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString();
+    }
+
+    @Test
+    public void givenInvalidToken_whenDeleteUser_thenForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+        String authToken = "getAuthToken(testEmail,testPassword)";
+
+        String requestResponse = mvc.perform(get("/user/deleteuser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString();
+
+        user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+    }
+
+    @Test
+    public void givenBlankToken_whenDeleteUser_thenForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+        String authToken = "";
+
+        String requestResponse = mvc.perform(get("/user/deleteuser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString();
+
+
+        user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+    }
+
+    @Test
+    public void givenEmptyToken_whenDeleteUser_thenForbidden() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+        String authToken = "      ";
+
+        String requestResponse = mvc.perform(get("/user/deleteuser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString();
+
+
+        user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+    }
+
+    @Test
+    public void givenUserMarkedForDeletion_whenLogin_thenOkAndCancelDeletion() throws Exception {
+        String testEmail = "email@test.me";
+        String testPassword = "password";
+
+        registerAndConfirmUser(testEmail, testPassword);
+        UserEntity user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+        String authToken = getAuthToken(testEmail,testPassword);
+
+        String requestResponse = mvc.perform(get("/user/deleteuser")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+
+        user = userRepo.findByUserEmail(testEmail);
+        assertTrue(user.isToBeDeleted());
+
+        String anotherAuthToken = getAuthToken(testEmail,testPassword);
+
+        user = userRepo.findByUserEmail(testEmail);
+        assertFalse(user.isToBeDeleted());
+
+    }
+
 
     @Test
     public void givenStandardUserAndEmptyEmail_whenChangeEmail_thenReturnBadRequest() throws Exception {
@@ -2216,10 +2338,6 @@ public class UserTests {
 
     }
 
-    //get linked users
-    // get linked users works both ways
-
-    // error when incorrect auth token
     private String getTokenFromString(String string) {
         String trimmedString = string.substring(string.lastIndexOf('/') + 1);
         return finalStringCleanup(trimmedString);

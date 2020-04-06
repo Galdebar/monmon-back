@@ -5,5 +5,5 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface NewCategoriesRepository extends CrudRepository<ShoppingCategoryEntity, Long> {
+public interface ItemCategoryRepo extends CrudRepository<ShoppingCategoryEntity, Long> {
 }

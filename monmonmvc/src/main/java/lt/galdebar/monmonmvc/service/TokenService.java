@@ -128,6 +128,7 @@ class TokenService {
         return updatedToken;
     }
 
+
     UserRegistrationTokenEntity checkRegistrationToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenExpired {
         log.info("Checking registration token. ");
         UserRegistrationTokenEntity registrationToken = registrationTokenRepo.findByToken(token);

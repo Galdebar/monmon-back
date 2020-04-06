@@ -1,17 +1,15 @@
 version: "3.7"
 services:
-  #  db:
   postgres:
     image: postgres:12.2-alpine
     container_name: postgres
     restart: always
-    #      network_mode: host
     ports:
-      - ${Postgres_Port}:${Postgres_Port}
+      - ${PostgresPort}:${PostgresPort}
     environment:
-      POSTGRES_DB: ${Postgres_Name}
-      POSTGRES_USER: ${Postgres_User}
-      POSTGRES_PASSWORD: ${Postgres_Pass}
+      POSTGRES_DB: ${PostgresName}
+      POSTGRES_USER: ${PostgresUser}
+      POSTGRES_PASSWORD: ${PostgresPass}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -21,13 +19,39 @@ services:
     restart: always
     container_name: mongo
     environment:
-      NAME: ${MongoDB_Name}
-      MONGO_INITDB_ROOT_USERNAME: ${MongoDB_User}
-      MONGO_INITDB_ROOT_PASSWORD: ${MongoDB_Pass}
+      NAME: ${MongoDBName}
+      MONGO_INITDB_ROOT_USERNAME: ${MongoDBUser}
+      MONGO_INITDB_ROOT_PASSWORD: ${MongoDBPass}
     ports:
-      - ${MongoDB_Port}:${MongoDB_Port}
+      - ${MongoDBPort}:${MongoDBPort}
     volumes:
       - ./mongo_data:/data/db
+  postgres_test:
+    image: postgres:12.2-alpine
+    container_name: postgres_test
+    restart: always
+    ports:
+      - ${PostgresTestPort}:${PostgresPort}
+    environment:
+      POSTGRES_DB: ${PostgresTestName}
+      POSTGRES_USER: ${PostgresUser}
+      POSTGRES_PASSWORD: ${PostgresPass}
+      PGDATA: /var/lib/postgresql/data/pgdata
+#    volumes:
+#      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+#      - ./pg_data:/var/lib/postgresql/data/pgdata
+  mongo_test:
+    image: mongo:latest
+    restart: always
+    container_name: mongo_test
+    environment:
+      NAME: ${MongoTestName}
+      MONGO_INITDB_ROOT_USERNAME: ${MongoDBUser}
+      MONGO_INITDB_ROOT_PASSWORD: ${MongoDBPass}
+    ports:
+      - ${MongoTestPort}:${MongoDBPort}
+#    volumes:
+#      - ./mongo_data:/data/db
 #volumes:
 #  mongodb_data_container: -./mongo_data
 #  postgres_data_container: -./pg_data

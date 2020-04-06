@@ -3,6 +3,8 @@ package lt.galdebar.monmonmvc.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lt.galdebar.monmon.categoriesparser.ExcelParserApp;
+import lt.galdebar.monmon.categoriesparser.services.CategoriesParserMain;
 import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
@@ -15,6 +17,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,8 +51,21 @@ public class ShoppingItemTests {
     private static final String TEST_USER_EMAIL = "user@somemail.com";
     private static final String TEST_USER_PASS = "password";
 
+    @TestConfiguration
+    @ComponentScan(basePackages = "lt.galdebar.monmon.categoriesparser")
+    @Import(CategoriesParserMain.class)
+    public class Config{
+        @Bean
+        public CategoriesParserMain categoriesParserMain(){
+            return new CategoriesParserMain();
+        }
+    }
+
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private CategoriesParserMain categoriesParserMain;
 
     @Autowired
     private
@@ -74,6 +93,8 @@ public class ShoppingItemTests {
         userCreatorHelper = new TestUserCreatorHelper(userRepo, passwordEncoder);
 
         userCreatorHelper.createSimpleUser(TEST_USER_EMAIL, TEST_USER_PASS);
+
+        categoriesParserMain.pushCategoriesToDB();
     }
 
     @After
@@ -255,7 +276,7 @@ public class ShoppingItemTests {
     }
 
     @Test
-    public void givenDefaultUser_whenAddItemWithNoCategory_thenReturnUncategorizedItem() throws Exception {
+    public void givenItemWithNoCategory_whenAddItem_thenReturnUncategorizedItem() throws Exception {
         String itemName = "itemName";
 
         Map<String, String> requestObject = new HashMap<>();
@@ -285,9 +306,9 @@ public class ShoppingItemTests {
     }
 
     @Test
-    public void givenDefaultUser_whenAddItemWithSpecificCategory_thenReturnItemWithSameCategory() throws Exception {
+    public void givenItemWithSpecificCategory_whenAddItem_thenReturnItemWithSameCategory() throws Exception {
         String itemName = "itemName";
-        String itemCategory = "Deli";
+        String itemCategory = "Bakery";
 
         Map<String, String> requestObject = new HashMap<>();
         requestObject.put("itemName", itemName);
@@ -314,10 +335,41 @@ public class ShoppingItemTests {
     }
 
     @Test
-    public void givenDefaultUser_whenAddItemWithNoCategory_thenReturnItemWithAssignedCategory() throws Exception {
+    public void givenNoCategory_whenAddItem_thenReturnItemWithAssignedCategory() throws Exception {
         String itemName = "water";
         String itemCategory = "";
         String expectedCategory = "Beverages";
+
+
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("itemName", itemName);
+        requestObject.put("itemCategory", itemCategory);
+        requestObject.put("quantity", "0");
+        requestObject.put("comment", "");
+        requestObject.put("isInCart", "false");
+
+        String authToken = getAuthToken(TEST_USER_EMAIL, TEST_USER_PASS);
+
+        String response = mvc.perform(post("/shoppingitems/additem")
+                .header("Authorization", "Bearer " + authToken)
+                .content(
+                        objectMapper.writeValueAsString(requestObject)
+                )
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
+
+        assertFalse(response.contentEquals("[]"));
+        assertTrue(response.contains(itemName));
+        assertTrue(response.contains(expectedCategory));
+    }
+
+    @Test
+    public void givenIncorrectCategory_whenAddItem_thenReturnUncategorized() throws Exception {
+        String itemName = "water";
+        String itemCategory = "Bevferadges";
+        String expectedCategory = "Uncategorized";
 
 
         Map<String, String> requestObject = new HashMap<>();
@@ -361,7 +413,7 @@ public class ShoppingItemTests {
 
         String itemName = "";
 
-        Map<String, String> requestObject = createDefaultRequestObject(itemName);
+        Map requestObject = createDefaultRequestObject(itemName);
 
         mvc.perform(post("/shoppingitems/additem")
                 .header("Authorization", "Bearer " + authToken)
@@ -376,7 +428,7 @@ public class ShoppingItemTests {
 
         String itemName = "     ";
 
-        Map<String, String> requestObject = createDefaultRequestObject(itemName);
+        Map requestObject = createDefaultRequestObject(itemName);
 
         mvc.perform(post("/shoppingitems/additem")
                 .header("Authorization", "Bearer " + authToken)

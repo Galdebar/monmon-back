@@ -1,9 +1,11 @@
 package lt.galdebar.monmonmvc.persistence.domain.entities;
 
 import lombok.*;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Id;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +23,9 @@ public class UserEntity {
     @ToString.Exclude
     private Set<String> linkedUsers = new HashSet<>();
     private boolean isValidated;
+    private boolean toBeDeleted;
+    private Date deletionDate;
+
 
 }
 

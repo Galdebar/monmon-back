@@ -47,6 +47,7 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
                         "user/changeemail",
                         "user/changepassword",
                         "user/getlinkedusers",
+                        "user/deleteuser",
                         "user/link",
                         "shoppingitems/**",
                         "categorysearch/**"

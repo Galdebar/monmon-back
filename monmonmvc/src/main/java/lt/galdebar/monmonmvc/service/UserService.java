@@ -1,6 +1,6 @@
 package lt.galdebar.monmonmvc.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmonmvc.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonmvc.persistence.domain.entities.token.LinkUsersTokenEntity;
@@ -16,18 +16,22 @@ import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import lt.galdebar.monmonmvc.service.exceptions.registration.*;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotValidated;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
 public class UserService {
+    @Getter
+    private final int USER_DELETION_GRACE_PERIOD = 48;
+
     @Autowired
     private UserRepo userRepo;
     @Autowired
@@ -39,9 +43,12 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
     @Transactional
     public AuthTokenDTO login(LoginAttemptDTO loginAttemptDTO) throws UserNotValidated, UserNotFound {
         UserEntity foundUser = loginUserCheck(loginAttemptDTO);
+        cancelUserDeletion(foundUser);
+
         String token = jwtTokenProvider.createToken(
                 foundUser.getUserEmail(),
                 Collections.singletonList(foundUser.toString())
@@ -68,6 +75,7 @@ public class UserService {
                 registrationAttempt.getUserEmail(),
                 registrationAttempt.getUserPassword()
         );
+
         String token = UUID.randomUUID().toString();
         UserRegistrationTokenEntity tokenDAO = tokenService.createRegistrationToken(newUser, token);
         emailSenderService.sendRegistrationConformationEmail(
@@ -91,7 +99,7 @@ public class UserService {
             throw new UserAlreadyExists(emailChangeRequestDTO.getNewEmail());
         }
 
-        UserEntity currentUser = getCurrentUserDAO();
+        UserEntity currentUser = getCurrentUserEntity();
         String token = UUID.randomUUID().toString();
 
         UserEmailChangeTokenEntity tokenDAO = tokenService.createEmailChangeToken(currentUser, emailChangeRequestDTO.getNewEmail(), token);
@@ -128,7 +136,7 @@ public class UserService {
 
     @Transactional
     public void changePassword(PasswordChangeRequestDTO passwordChangeRequestDTO) throws BadCredentialsException {
-        UserEntity currentUser = getCurrentUserDAO();
+        UserEntity currentUser = getCurrentUserEntity();
         if (!currentUser.getUserEmail().equals(passwordChangeRequestDTO.getUserEmail())) {
             throw new BadCredentialsException("Invalid email");
         }
@@ -143,9 +151,44 @@ public class UserService {
         } else throw new BadCredentialsException("Invalid password supplied");
     }
 
+    public void markUserForDeletion(String token) {
+        UserEntity user = getCurrentUserEntity();
+        if (user.isToBeDeleted()) {
+            return;
+        }
+        user.setToBeDeleted(true);
+        user.setDeletionDate(getUserDeletionDate());
+        userRepo.save(user);
+    }
+
+    private void cancelUserDeletion(UserEntity user) {
+        if (user.isToBeDeleted()) {
+            user.setToBeDeleted(false);
+            userRepo.save(user);
+        }
+    }
+
+    public List<UserDTO> getUsersPendingDeletion() {
+        List<UserEntity> usersToBeDeleted = userRepo.findByToBeDeleted(true).stream()
+                .filter(user -> user.getDeletionDate().before(new Date()))
+                .collect(Collectors.toList());
+        return entitiesToDTOs(usersToBeDeleted);
+    }
+
+    @Transactional
+    public void deleteUsers(List<UserDTO> userDTOS) {
+        List<String> userEmails = new ArrayList<>();
+        for (UserDTO userDTO : userDTOS) {
+            userEmails.add(userDTO.getUserEmail());
+        }
+        List<UserEntity> usersToDelete = userRepo.findByUserEmailIn(userEmails);
+
+        userRepo.deleteAll(usersToDelete);
+    }
+
 
     public List<String> getLinkedUsers() {
-        UserEntity currentUser = getCurrentUserDAO();
+        UserEntity currentUser = getCurrentUserEntity();
         List<String> connectedUserNames = new ArrayList<>();
 
         for (String userName : currentUser.getLinkedUsers()) {
@@ -159,7 +202,7 @@ public class UserService {
 
     @Transactional
     public void linkUserWithCurrent(UserDTO userToConnect) throws UserNotFound, UserNotValidated, LinkUsersMatch {
-        UserEntity currentUserEntity = getCurrentUserDAO();
+        UserEntity currentUserEntity = getCurrentUserEntity();
         UserEntity userToConnectDAO = findByUserEmail(userToConnect.getUserEmail());
         if (!userToConnectDAO.isValidated()) {
             throw new UserNotValidated(userToConnect.getUserEmail());
@@ -196,6 +239,15 @@ public class UserService {
         );
     }
 
+    @Transactional
+    public void unlinkUsers(UserDTO userA, UserDTO userB) {
+        UserEntity userAEntity = userRepo.findByUserEmail(userA.getUserEmail());
+        UserEntity userBEntity = userRepo.findByUserEmail(userB.getUserEmail());
+
+        unlinkUsers(userAEntity, userBEntity);
+        unlinkUsers(userBEntity, userAEntity);
+    }
+
     private UserEntity loginUserCheck(LoginAttemptDTO loginAttemptDTO) throws UserNotFound, UserNotValidated {
         log.info("Checking user login credentials. ");
         UserEntity foundUser = userRepo.findByUserEmail(loginAttemptDTO.getUserEmail());
@@ -208,11 +260,17 @@ public class UserService {
         if (!passwordEncoder.matches(loginAttemptDTO.getUserPassword(), foundUser.getUserPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
+
         return foundUser;
     }
 
     private void linkUsers(UserEntity userA, UserEntity userB) {
         userA.getLinkedUsers().add(userB.getUserEmail());
+        userRepo.save(userA);
+    }
+
+    private void unlinkUsers(UserEntity userA, UserEntity userB) {
+        userA.getLinkedUsers().remove(userB.getUserEmail());
         userRepo.save(userA);
     }
 
@@ -226,6 +284,11 @@ public class UserService {
         }
     }
 
+    public boolean checkIfUserIsPendingDeletion(String subject) {
+        UserEntity user = userRepo.findByUserEmail(subject);
+        return user.isToBeDeleted();
+    }
+
     @Transactional
     private UserEntity createNewUser(String userEmail, String password) throws UserAlreadyExists {
         if (checkIfUserExists(userEmail)) {
@@ -235,6 +298,8 @@ public class UserService {
         newUser.setUserEmail(userEmail);
         newUser.setUserPassword(passwordEncoder.encode(password));
         newUser.setValidated(false);
+        newUser.setToBeDeleted(false); // Might want to change this later on to autodelete not confirmed users
+
         UserEntity addedUserEntity = userRepo.insert(newUser);
         log.info(String.format(
                 "New user added to DB. User details: %s",
@@ -243,7 +308,7 @@ public class UserService {
         return addedUserEntity;
     }
 
-    private UserEntity getCurrentUserDAO() {
+    private UserEntity getCurrentUserEntity() {
         return userRepo.findByUserEmail(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
@@ -251,5 +316,30 @@ public class UserService {
 
     private boolean checkIfUserExists(String userEmail) {
         return userRepo.findByUserEmail(userEmail) != null;
+    }
+
+    private List<UserDTO> entitiesToDTOs(List<UserEntity> userEntities) {
+        List<UserDTO> userDTOS = new ArrayList<>();
+
+        for (UserEntity entity : userEntities) {
+            userDTOS.add(entityToDTO(entity));
+        }
+
+        return userDTOS;
+    }
+
+    private UserDTO entityToDTO(UserEntity entity) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUserEmail(entity.getUserEmail());
+        userDTO.setUserPassword(entity.getUserPassword());
+
+        return userDTO;
+    }
+
+    private Date getUserDeletionDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Timestamp(calendar.getTime().getTime()));
+        calendar.add(Calendar.HOUR, USER_DELETION_GRACE_PERIOD);
+        return new Date(calendar.getTime().getTime());
     }
 }
