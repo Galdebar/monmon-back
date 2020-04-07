@@ -12,7 +12,6 @@ services:
       POSTGRES_PASSWORD: ${PostgresPass}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./pg_data:/var/lib/postgresql/data/pgdata
   mongo:
     image: mongo:latest
@@ -37,9 +36,6 @@ services:
       POSTGRES_USER: ${PostgresUser}
       POSTGRES_PASSWORD: ${PostgresPass}
       PGDATA: /var/lib/postgresql/data/pgdata
-#    volumes:
-#      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-#      - ./pg_data:/var/lib/postgresql/data/pgdata
   mongo_test:
     image: mongo:latest
     restart: always
@@ -50,10 +46,3 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MongoDBPass}
     ports:
       - ${MongoTestPort}:${MongoDBPort}
-#    volumes:
-#      - ./mongo_data:/data/db
-#volumes:
-#  mongodb_data_container: -./mongo_data
-#  postgres_data_container: -./pg_data
-#networks:
-#  ...
