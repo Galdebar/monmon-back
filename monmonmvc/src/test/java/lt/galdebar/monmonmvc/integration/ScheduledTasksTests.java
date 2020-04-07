@@ -121,7 +121,10 @@ public class ScheduledTasksTests {
 
         await().atMost(4, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmail(testEmail2) == null);
 
-        assertNotNull(shoppingItemRepo.findByItemName(remainingItemName));
+        ShoppingItemEntity shoppingItem = shoppingItemRepo.findByItemName(remainingItemName);
+        assertNotNull(shoppingItem);
+        assertEquals(1, shoppingItem.users.size());
+        assertEquals(testEmail1,shoppingItem.users.toArray()[0]);
     }
 
     private UserEntity createAndSaveUser(String email, boolean isToBeDeleted) {
