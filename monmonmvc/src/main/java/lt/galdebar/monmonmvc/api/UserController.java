@@ -28,6 +28,12 @@ import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.toList;
 
+
+/**
+ * User Controller
+ * Used for user registration and login.
+ * Also for handling user email and password change as well as linking two user accounts together.
+ */
 @RestController
 @RequestMapping("/user")
 @Log4j2
@@ -43,6 +49,18 @@ public class UserController {
     private JwtTokenProvider jwtTokenProvider;
 
 
+    /**
+     * Get current user details.
+     * <strong>GET request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * @param userDetails UserDetails after Authorization token has been validated. Taken from the header.
+     * @return current user name and roles.
+     * Returns <strong>HTTP 403</strong> if Authorization token invalid.
+     */
     @GetMapping("/me")
     public ResponseEntity currentUser(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("Attempting to get current user. ");
@@ -58,6 +76,26 @@ public class UserController {
         return ResponseEntity.ok(model);
     }
 
+    /**
+     * Login.
+     * <strong>POST request</strong>
+     *
+     * Login attempt request <strong>JSON</strong> example:
+     *
+     *   {
+     *     "userEmail": "some@email.com",
+     *     "userPassword": "This15APassw0rd",
+     *   }
+     *
+     * @param loginAttemptDTO containing <strong>User Email</strong> and <strong>User Password</strong>
+     * @return User Email and a valid Authorization Token.
+     * Returns <strong>HTTP 400</strong> if
+     * <ul>
+     *     <li>Email format is empty or invalid format</li>
+     *     <li>User email not found.</li>
+     *     <li>Invalid password</li>
+     * </ul>
+     */
     @CrossOrigin
     @PostMapping("/login")
     ResponseEntity login(@RequestBody LoginAttemptDTO loginAttemptDTO) {
@@ -83,6 +121,29 @@ public class UserController {
         }
     }
 
+    /**
+     * Register new User.
+     * <strong>GET request</strong>
+     *
+     * Only begins the registration process.
+     * Creates the user entry in the Database and sends a registration confirmation email to the supplied address.
+     *
+     * Login attempt request <strong>JSON</strong> example:
+     *
+     *   {
+     *     "userEmail": "some@email.com",
+     *     "userPassword": "This15APassw0rd",
+     *   }
+     *
+     * @param loginAttempt containing <strong>User Email</strong> and <strong>User Password</strong>
+     * @return HTTP OK response if successful.
+     * Returns <strong>HTTP 400</strong> if
+     * <ul>
+     *     <li>Email format is empty or invalid format</li>
+     *     <li>User email already taken</li>
+     *     <li>Empty password</li>
+     * </ul>
+     */
     @CrossOrigin
     @PostMapping("/register")
     ResponseEntity signUp(@RequestBody LoginAttemptDTO loginAttempt) {
@@ -105,6 +166,21 @@ public class UserController {
         }
     }
 
+    /**
+     * Confirm user registration.
+     * <strong>GET request</strong>
+     *
+     * Finalizes the registration process. User is allowed to login after this step.
+     *
+     * @param token the registration confirmation token.
+     * @return HTTP OK response if successful.
+     * Returns <strong>HTTP 400</strong> if
+     * <ul>
+     *     <li>Token is empty</li>
+     *     <li>Token invalid</li>
+     *     <li>Token expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @GetMapping(value = "register/confirm/{token}")
     ResponseEntity validateUser(@PathVariable String token) {
@@ -131,6 +207,19 @@ public class UserController {
         }
     }
 
+    /**
+     * Renew user registration token.
+     * <strong>GET request</strong>
+     *
+     * @param token the token
+     * @return HTTP OK response if successful.
+     * Returns <strong>HTTP 400</strong> if
+     * <ul>
+     *     <li>Token is empty</li>
+     *     <li>Token invalid</li>
+     *     <li>Token not expired yet</li>
+     * </ul>
+     */
     @CrossOrigin
     @GetMapping(path = "/register/renew/{token}")
     ResponseEntity requestNewToken(@PathVariable String token) {
@@ -151,6 +240,36 @@ public class UserController {
         }
     }
 
+    /**
+     * Change current user Email.
+     * <strong>POST request</strong>
+     *
+     * User can still login with the old email, until email change is confirmed.
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Email change request <strong>JSON</strong> example:
+     *
+     *   {
+     *     "newEmail": "some@email.com",
+     *   }
+     *
+     * @param emailChangeRequestDTO contains new Email Address.
+     * @return HTTP OK response if successful. Also sends confirmation email to the supplied new address.
+     * Returns <strong>HTTP 400</strong> if
+     * <ul>
+     *     <li>Email empty or invalid format</li>
+     *     <li>Email already taken</li>
+     *     <li>Token not expired yet</li>
+     * </ul>
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @PostMapping("/changeemail")
     ResponseEntity changeEmail(@RequestBody EmailChangeRequestDTO emailChangeRequestDTO) {
@@ -172,6 +291,19 @@ public class UserController {
         }
     }
 
+    /**
+     * Confirm user email change.
+     * <strong>GET request</strong>
+     *
+     * @param token the token
+     * @return HTTP OK response if successful.
+     * Returns <strong>HTTP 400</strong> if
+     * <ul>
+     *     <li>Token is empty</li>
+     *     <li>Token invalid</li>
+     *     <li>Token not expired yet</li>
+     * </ul>
+     */
     @CrossOrigin
     @GetMapping("/changeemail/confirm/{token}")
     ResponseEntity confirmEmailChange(@PathVariable String token) {
@@ -193,6 +325,39 @@ public class UserController {
     }
 
 
+    /**
+     * Change current user Password.
+     * <strong>POST request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Password change request <strong>JSON</strong> example:
+     *
+     *   {
+     *     "userEmail": "some@email.com",
+     *     "oldPassword": "This15APassw0rd",
+     *     "newPassword": "5omeNewPassword",
+     *   }
+     *
+     * @param passwordChangeRequestDTO contains current user Email Address (for verification), old password and new password.
+     * @return HTTP OK response if successful. Also sends confirmation email to the supplied address.
+     * Returns <strong>HTTP 400</strong> if
+     * <ul>
+     *     <li>Email empty or invalid format</li>
+     *     <li>Email doesn't match current user</li>
+     *     <li>Password empty</li>
+     *     <li>Old and new passwords match</li>
+     *     <li>Old password is incorrect</li>
+     * </ul>
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @PostMapping("/changepassword")
     ResponseEntity changePassword(@RequestBody PasswordChangeRequestDTO passwordChangeRequestDTO) {
@@ -226,9 +391,30 @@ public class UserController {
         }
     }
 
+    /**
+     * Request delete current user.
+     * <strong>GET request</strong>
+     *
+     * Only begins the registration process.
+     * Process finishes after time set in UserService.
+     * If the user logs in within the grace period, deletion is cancelled.
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * @param token Authorization token taken from header.
+     * @return HTTP OK response if successful. Also sends warning email to the current user email.
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @GetMapping("/deleteuser")
-    ResponseEntity markUserForDeletion(@RequestHeader(name = "Authorization") String token){
+    ResponseEntity markUserForDeletion(@RequestHeader(name = "Authorization") String token) {
         String attemptMessage = String.format(
                 "Attempting to mark user for deletion. User: %s",
                 SecurityContextHolder.getContext().getAuthentication().getName()
@@ -245,6 +431,17 @@ public class UserController {
         return ResponseEntity.ok().body(successMessage);
     }
 
+    /**
+     * Gets linked users.
+     * <strong>GET request</strong>
+     *
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * @return List (String) of users linked with the current user.
+     */
     @CrossOrigin
     @GetMapping("/getlinkedusers")
     ResponseEntity getLinkedUsers() {
@@ -256,6 +453,37 @@ public class UserController {
         return ResponseEntity.ok(linkedUsers);
     }
 
+    /**
+     * Link users request.
+     * <strong>POST request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Full User <strong>JSON</strong> example:
+     *
+     *   {
+     *     "userEmail": "some@email.com",
+     *     "userPassword": "This15APassw0rd",
+     *     "linkedUsers": "["someother@mail.com", "another@mail.this"]",
+     *   }
+     *
+     * @param userDTO containing email of the other user (other fields can be empty).
+     * @return HTTP OK response if successful. Also sends confirmation link to the user in userDTO.
+     * Returns <strong>HTTP 400</strong> if other user email
+     * <ul>
+     *      <li>Is empty or invalid format</li>
+     *      <li>isn't found in users DB</li>
+     *      <li>matches the current user</li>
+     * </ul>
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @PostMapping("/link")
     ResponseEntity linkUsers(@RequestBody UserDTO userDTO) {
@@ -279,6 +507,20 @@ public class UserController {
         }
     }
 
+    /**
+     * Confirm link users response entity.
+     * <strong>GET request</strong>
+     *
+     *
+     * @param token the token
+     * @return HTTO Ok response if successful
+     * Returns <strong>HTTP 400</strong> if token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @GetMapping("link/confirm/{token}")
     ResponseEntity confirmLinkUsers(@PathVariable String token) {
@@ -299,6 +541,19 @@ public class UserController {
         }
     }
 
+    /**
+     * Renew link users token.
+     * <strong>GET request</strong>
+     *
+     * @param token the token
+     * @return HTTP Ok response
+     * Returns <strong>HTTP 400</strong> if
+     * <ul>
+     *     <li>Token is empty</li>
+     *     <li>Token invalid</li>
+     *     <li>Token not expired yet</li>
+     * </ul>
+     */
     @CrossOrigin
     @GetMapping("link/renew/{token}")
     ResponseEntity renewLinkUsersToken(@PathVariable String token) {
@@ -331,12 +586,12 @@ public class UserController {
         return pat.matcher(userEmail).matches();
     }
 
-    private ResponseEntity logAndSendBadRequest(String messageStart, String message){
+    private ResponseEntity logAndSendBadRequest(String messageStart, String message) {
         log.warn(messageStart + message);
         return ResponseEntity.badRequest().body(message);
     }
 
-    private <T extends Throwable & CanSendResponse> ResponseEntity logAndSendBadRequest(String messageStart, T exception){
+    private <T extends Throwable & CanSendResponse> ResponseEntity logAndSendBadRequest(String messageStart, T exception) {
         log.warn(messageStart + exception.getMessage());
         return ResponseEntity.badRequest().body(exception.getResponseMessage());
     }

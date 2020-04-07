@@ -1,5 +1,6 @@
 package lt.galdebar.monmonmvc.persistence.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.util.Set;
@@ -13,5 +14,6 @@ public class ShoppingCategoryDTO {
     @NonNull
     private String categoryName;
     @NonNull
+    @JsonIgnore
     private Set<String> keywords;
 }

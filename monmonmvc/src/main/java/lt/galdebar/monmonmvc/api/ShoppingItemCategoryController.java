@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shopping Item Category Controller.
+ * Handles getting all categories, category search and shopping item search autocomplete
+ */
 @RestController
 @Log4j2
 @RequestMapping("/categorysearch")
@@ -22,6 +26,39 @@ public class ShoppingItemCategoryController {
     ShoppingItemCategoryService shoppingItemCategoryService;
 
 
+    /**
+     * Search autocomplete.
+     * <strong>POST request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Full Shopping Keyword <strong>JSON</strong> example:
+     *
+     *   {
+     *     "shoppingItemCategory": "Beverages",
+     *     "keyword": "Beer"
+     *   }
+     *
+     * @param shoppingKeywordDTO contains the keyword. Category field can be empty.
+     * @return Array of potential keywords matched with DB. Max of 10 (Number defined in ShoppingCategoriesService)
+     * Returns empty array if keyword is empty or blank.
+     * Returns <strong>HTTP 403</strong> if Auth token
+     * <ul>
+     *     <li>Is empty</li>
+     *     <li>Is invalid</li>
+     *     <li>Has expired yet</li>
+     * </ul>
+     * Returns <strong>HTTP 400</strong> if request is empty.
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     *
+     */
     @CrossOrigin
     @PostMapping
     ResponseEntity searchAutocomplete(@RequestBody ShoppingKeywordDTO shoppingKeywordDTO){
@@ -48,25 +85,22 @@ public class ShoppingItemCategoryController {
         return ResponseEntity.ok(results);
     }
 
-    @CrossOrigin
-    @GetMapping
-    ResponseEntity searchCategory(@RequestBody ShoppingKeywordDTO shoppingKeywordDTO) {
-        String failMessageStart = "Search item category failed! ";
-        log.info(String.format(
-                "Attempting to get items by category. User: %s | Requested details: %s ",
-                SecurityContextHolder.getContext().getAuthentication().getName(),
-                shoppingKeywordDTO
-        ));
-
-        if(shoppingKeywordDTO == null || shoppingKeywordDTO.getKeyword().trim().isEmpty()){
-            return logAndSendBadRequest(failMessageStart, "Invalid request");
-        }
-
-        ShoppingCategoryDTO result = shoppingItemCategoryService.findCategoryByKeyword(shoppingKeywordDTO);
-        log.info("Results: " + result.toString());
-        return ResponseEntity.ok(result);
-    }
-
+    /**
+     * Get all Shopping Categories.
+     * <strong>POST request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * @return Array of ShoppingItemCategory objects.
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @GetMapping("getall")
     ResponseEntity getAllCategories(){
@@ -78,8 +112,4 @@ public class ShoppingItemCategoryController {
         return ResponseEntity.ok(shoppingItemCategoryService.getAllCategories());
     }
 
-    private ResponseEntity logAndSendBadRequest(String messageStart, String message){
-        log.warn(messageStart + message);
-        return ResponseEntity.badRequest().body(message);
-    }
 }

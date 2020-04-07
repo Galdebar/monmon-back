@@ -14,6 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
+/**
+ * Shopping Item Controller.
+ * Handles Shopping item CRUD operations
+ */
 @RestController
 @Log4j2
 @RequestMapping("/shoppingitems")
@@ -23,6 +27,25 @@ public class ShoppingItemController {
     private ShoppingItemService shoppingItemService;
 
 
+    /**
+     * Gets items by category.
+     * <strong>GET request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * @param requestedCategory the requested category
+     * @return Array of items matching the category.
+     * Returns empty array if category match not found against DB.
+     * Returns <strong>HTTP 400</strong> if request is empty
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @GetMapping("getByCategory")
     ResponseEntity getItemsByCategory(@RequestParam(value = "shoppingItemCategory", required = false) String requestedCategory) {
         String failMessageStart = "Get item category failed! ";
@@ -40,6 +63,22 @@ public class ShoppingItemController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * Gets all items for the current user.
+     * <strong>GET request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * @return Array of ShoppingItems (if user has added any)
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @GetMapping("getAll")
     ResponseEntity getAllItems() {
@@ -57,6 +96,42 @@ public class ShoppingItemController {
     }
 
 
+    /**
+     * Add ShoppingItem.
+     * <strong>POST request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Full Shopping Item <strong>JSON</strong> example:
+     *
+     *   {
+     *     "id": "5e6260b97b7ecd1adf7c910e",
+     *     "itemName": "Eggs",
+     *     "itemCategory": "Meat, Seafood & Eggs",
+     *     "quantity": 0,
+     *     "comment": "",
+     *     "isInCart": false
+     *   }
+     *
+     * @param shoppingItemDTO Must contain item name at least.
+     * Can have all other fields (Category, quantity, isInCart, comment).
+     * @return Same shopping item with assigned id.
+     * If category was empty in the request, item will be assigned a category according to request item name.
+     * If no appropriate category was found, item will be assigned "Uncategorized" category.
+     * Returns <strong>HTTP 400</strong> if other request item
+     * <ul>
+     *      <li>Is empty</li>
+     *      <li>Has empty itemName field</li>
+     * </ul>
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @PostMapping("/additem")
     ResponseEntity addItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
@@ -75,6 +150,40 @@ public class ShoppingItemController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * Update Shopping Item.
+     * <strong>PUT request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Full Shopping Item <strong>JSON</strong> example:
+     *
+     *   {
+     *     "id": "5e6260b97b7ecd1adf7c910e",
+     *     "itemName": "Eggs",
+     *     "itemCategory": "Meat, Seafood & Eggs",
+     *     "quantity": 0,
+     *     "comment": "",
+     *     "isInCart": false
+     *   }
+     *
+     * @param shoppingItemDTO Must contain id. All other fields are optional, but the item will be updated with empty fields.
+     * @return The same updated item.
+     * Returns <strong>HTTP 400</strong> if other request item
+     * <ul>
+     *      <li>Is empty</li>
+     *      <li>Has empty itemName field</li>
+     *      <li>Item not found (id field is empty or invalid)</li>
+     * </ul>
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @PutMapping("updateitem")
     ResponseEntity updateItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
@@ -99,6 +208,40 @@ public class ShoppingItemController {
         }
     }
 
+    /**
+     * Update Multiple Shopping Items.
+     * <strong>PUT request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Full Shopping Item <strong>JSON</strong> example:
+     *
+     *   {
+     *     "id": "5e6260b97b7ecd1adf7c910e",
+     *     "itemName": "Eggs",
+     *     "itemCategory": "Meat, Seafood & Eggs",
+     *     "quantity": 0,
+     *     "comment": "",
+     *     "isInCart": false
+     *   }
+     *
+     * @param shoppingItemDTOS Array of Shopping Items. Each item must contain id. All other fields are optional, but the item will be updated with empty fields.
+     * @return Array of the same updated items.
+     * Returns <strong>HTTP 400</strong> if any of the array items
+     * <ul>
+     *      <li>Is empty</li>
+     *      <li>Has empty itemName field</li>
+     *      <li>Item not found (id field is empty or invalid)</li>
+     * </ul>
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @PutMapping("/updateitems")
     ResponseEntity updateItems(@RequestBody List<ShoppingItemDTO> shoppingItemDTOS) {
@@ -124,6 +267,40 @@ public class ShoppingItemController {
         }
     }
 
+    /**
+     * Delete Shopping Item.
+     * <strong>DELETE request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Full Shopping Item <strong>JSON</strong> example:
+     *
+     *   {
+     *     "id": "5e6260b97b7ecd1adf7c910e",
+     *     "itemName": "Eggs",
+     *     "itemCategory": "Meat, Seafood & Eggs",
+     *     "quantity": 0,
+     *     "comment": "",
+     *     "isInCart": false
+     *   }
+     *
+     * @param shoppingItemDTO Must have valid id. All other fields are ignored.
+     * @return HTTP Ok if deletion successful.
+     * Returns <strong>HTTP 400</strong> if any of the array items
+     * <ul>
+     *      <li>Is empty</li>
+     *      <li>Has empty itemName field</li>
+     *      <li>Item not found (id field is empty or invalid)</li>
+     * </ul>
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @DeleteMapping("deleteitem")
     ResponseEntity deleteById(@RequestBody ShoppingItemDTO shoppingItemDTO) {
@@ -147,6 +324,40 @@ public class ShoppingItemController {
         }
     }
 
+    /**
+     * Delete Multiple Shopping Items.
+     * <strong>DELETE request</strong>
+     *
+     * <strong>Requires valid Authorization Token in request header</strong>
+     * Header format:
+     * {Authorization:Bearer [token]}
+     *
+     * Full Shopping Item <strong>JSON</strong> example:
+     *
+     *   {
+     *     "id": "5e6260b97b7ecd1adf7c910e",
+     *     "itemName": "Eggs",
+     *     "itemCategory": "Meat, Seafood & Eggs",
+     *     "quantity": 0,
+     *     "comment": "",
+     *     "isInCart": false
+     *   }
+     *
+     * @param shoppingItemDTOS Array of Shopping items. Each item must have valid id. All other fields are ignored.
+     * @return HTTP Ok if deletion successful.
+     * Returns <strong>HTTP 400</strong> if any of the array items
+     * <ul>
+     *      <li>Is empty</li>
+     *      <li>Has empty itemName field</li>
+     *      <li>Item not found (id field is empty or invalid)</li>
+     * </ul>
+     * Returns <strong>HTTP 403</strong> if Authorization token is
+     * <ul>
+     *      <li>Empty</li>
+     *      <li>Invalid</li>
+     *      <li>Expired</li>
+     * </ul>
+     */
     @CrossOrigin
     @DeleteMapping("/deleteitems")
     ResponseEntity deleteItems(@RequestBody List<ShoppingItemDTO> shoppingItemDTOS) {
