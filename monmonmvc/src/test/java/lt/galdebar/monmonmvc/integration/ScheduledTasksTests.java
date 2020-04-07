@@ -1,15 +1,14 @@
 package lt.galdebar.monmonmvc.integration;
 
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
 import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
-import org.awaitility.Awaitility;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +23,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test.properties")
-@SpringBootTest
+@SpringBootTest(properties = {"task.schedule.period=*/8 * * * * *"})
 public class ScheduledTasksTests {
 
     @Autowired
@@ -51,8 +50,8 @@ public class ScheduledTasksTests {
 
         createAndSaveUser(testEmail, true);
 
-        await().atMost(4, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmail(testEmail) == null);
-        assertNull(userRepo.findByUserEmail(testEmail));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmailIgnoreCase(testEmail) == null);
+        assertNull(userRepo.findByUserEmailIgnoreCase(testEmail));
     }
 
     @Test
@@ -63,7 +62,7 @@ public class ScheduledTasksTests {
         createAndSaveUser(testEmail, true);
         createShoppingItem(testItemName, testEmail);
 
-        await().atMost(4, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmail(testEmail) == null);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmailIgnoreCase(testEmail) == null);
         assertNull(shoppingItemRepo.findByItemName(testItemName));
     }
 
@@ -75,10 +74,10 @@ public class ScheduledTasksTests {
         createAndSaveUser(testEmail1, false);
         createAndSaveUser(testEmail2, true);
 
-        await().atMost(4, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmail(testEmail2) == null);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmailIgnoreCase(testEmail2) == null);
         assertEquals(1, userRepo.findAll().size());
-        assertNotNull(userRepo.findByUserEmail(testEmail1));
-        assertNull(userRepo.findByUserEmail(testEmail2));
+        assertNotNull(userRepo.findByUserEmailIgnoreCase(testEmail1));
+        assertNull(userRepo.findByUserEmailIgnoreCase(testEmail2));
 
     }
 
@@ -95,7 +94,7 @@ public class ScheduledTasksTests {
         createShoppingItem(itemToBeDeleted, testEmail2);
 
 
-        await().atMost(4, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmail(testEmail2) == null);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmailIgnoreCase(testEmail2) == null);
 
         assertNotNull(shoppingItemRepo.findByItemName(remainingItemName));
         assertNull(shoppingItemRepo.findByItemName(itemToBeDeleted));
@@ -119,7 +118,7 @@ public class ScheduledTasksTests {
         shoppingItemRepo.save(item);
 
 
-        await().atMost(4, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmail(testEmail2) == null);
+        await().atMost(10, TimeUnit.SECONDS).until(() -> userRepo.findByUserEmailIgnoreCase(testEmail2) == null);
 
         ShoppingItemEntity shoppingItem = shoppingItemRepo.findByItemName(remainingItemName);
         assertNotNull(shoppingItem);

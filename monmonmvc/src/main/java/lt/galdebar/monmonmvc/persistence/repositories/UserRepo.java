@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface UserRepo extends MongoRepository<UserEntity, String> {
-    UserEntity findByUserEmail(String userEmail);
+    UserEntity findByUserEmailIgnoreCase(String userEmail);
     List<UserEntity> findByToBeDeleted(boolean toBeDeleted);
     List<UserEntity> findByUserEmailIn(List<String> userEmail);
 }

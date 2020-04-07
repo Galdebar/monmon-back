@@ -24,7 +24,6 @@ public class ShoppingItemDTO {
     private String comment;
     @JsonProperty("isInCart")
     private boolean isInCart;
-    public Set<String> users = new HashSet<>();
-
+    private Set<String> users = new HashSet<>();
 
 }

@@ -2,12 +2,10 @@ package lt.galdebar.monmonmvc.service;
 
 
 import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
-import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingCategoryEntity;
 import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
-import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonmvc.service.exceptions.shoppingitem.ShoppingItemNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -63,9 +61,9 @@ public class ShoppingItemService {
                 ).getCategoryName()
         );
 
-        shoppingItemDTO = addUsersIfEmpty(shoppingItemDTO);
+        ShoppingItemDTO itemToAdd = addUsersIfEmpty(shoppingItemDTO);
 
-        ShoppingItemEntity returnedItem = shoppingItemRepo.insert(dtoToEntity(shoppingItemDTO));
+        ShoppingItemEntity returnedItem = shoppingItemRepo.insert(dtoToEntity(itemToAdd));
         return entityToDto(returnedItem);
     }
 
@@ -79,14 +77,15 @@ public class ShoppingItemService {
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
 
-        shoppingItemDTO = addUsersIfEmpty(shoppingItemDTO);
+        ShoppingItemDTO itemToUpdate = addUsersIfEmpty(shoppingItemDTO);
 
-        ShoppingItemEntity result = shoppingItemRepo.save(dtoToEntity(shoppingItemDTO));
+        ShoppingItemEntity result = shoppingItemRepo.save(dtoToEntity(itemToUpdate));
         return entityToDto(result);
     }
 
     @Transactional
     public List<ShoppingItemDTO> updateItems(List<ShoppingItemDTO> shoppingItemDTOS) throws ShoppingItemNotFound {
+        List<ShoppingItemDTO> itemsToUpdate = new ArrayList<>();
         for (ShoppingItemDTO item : shoppingItemDTOS) {
             if (!validateShoppingItemDTO(item)) {
                 throw new ShoppingItemNotFound(item.getId());
@@ -94,9 +93,9 @@ public class ShoppingItemService {
             if (!shoppingItemRepo.existsById(item.getId())) {
                 throw new ShoppingItemNotFound(item.getId());
             }
-            addUsersIfEmpty(item);
+            itemsToUpdate.add(addUsersIfEmpty(item));
         }
-        List<ShoppingItemEntity> updatedItems = shoppingItemRepo.saveAll(dtosToEntities(shoppingItemDTOS));
+        List<ShoppingItemEntity> updatedItems = shoppingItemRepo.saveAll(dtosToEntities(itemsToUpdate));
         return entitiesToDtos(updatedItems);
     }
 
@@ -132,7 +131,9 @@ public class ShoppingItemService {
         shoppingItemEntity.quantity = shoppingItemDTO.getQuantity();
         shoppingItemEntity.comment = shoppingItemDTO.getComment();
         shoppingItemEntity.isInCart = shoppingItemDTO.isInCart();
-        shoppingItemEntity.users.addAll(shoppingItemDTO.getUsers());
+        if(shoppingItemDTO.getUsers() != null){
+            shoppingItemEntity.users.addAll(shoppingItemDTO.getUsers());
+        }
         return shoppingItemEntity;
     }
 
@@ -181,12 +182,17 @@ public class ShoppingItemService {
         return true;
     }
 
-    private ShoppingItemDTO addUsersIfEmpty(ShoppingItemDTO shoppingItemDTO){
-        if (shoppingItemDTO.users.size() == 0) {
-            shoppingItemDTO.users.add(
+    private ShoppingItemDTO addUsersIfEmpty(ShoppingItemDTO shoppingItemDTO) {
+        if(shoppingItemDTO.getUsers() == null){
+            shoppingItemDTO.setUsers(new HashSet<>());
+        }
+        if (shoppingItemDTO.getUsers().size() == 0) {
+            shoppingItemDTO.getUsers().add(
                     SecurityContextHolder.getContext().getAuthentication().getName()
             );
-            shoppingItemDTO.users.addAll(userService.getLinkedUsers());
+            shoppingItemDTO.getUsers().addAll(
+                    userService.getLinkedUsers()
+            );
         }
         return shoppingItemDTO;
     }

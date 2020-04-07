@@ -17,18 +17,18 @@ public class TestUserCreatorHelper {
     }
 
     UserEntity createSimpleUser(String userEmail, String userPassword) throws UserNotFound {
-        if(userRepo.findByUserEmail(userEmail) == null){
+        if(userRepo.findByUserEmailIgnoreCase(userEmail) == null){
             UserEntity user = new UserEntity();
             user.setUserEmail(userEmail);
             user.setUserPassword(passwordEncoder.encode(userPassword));
             user.setValidated(true);
             return userRepo.save(user);
-        } else return userRepo.findByUserEmail(userEmail);
+        } else return userRepo.findByUserEmailIgnoreCase(userEmail);
     }
 
     UserEntity createLinkedUsers(String userA, String userB) throws UserNotFound {
-        UserEntity user = userRepo.findByUserEmail(userA);
-        UserEntity userToAdd = userRepo.findByUserEmail(userB);
+        UserEntity user = userRepo.findByUserEmailIgnoreCase(userA);
+        UserEntity userToAdd = userRepo.findByUserEmailIgnoreCase(userB);
 
         if(user == null || userToAdd == null){
             throw new UserNotFound(user.getUserEmail());

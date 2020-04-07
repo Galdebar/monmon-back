@@ -62,7 +62,7 @@ public class UserService {
     }
 
     public UserEntity findByUserEmail(String userEmail) throws UserNotFound {
-        UserEntity foundUser = userRepo.findByUserEmail(userEmail);
+        UserEntity foundUser = userRepo.findByUserEmailIgnoreCase(userEmail);
         if (foundUser == null) {
             throw new UserNotFound(userEmail);
         }
@@ -246,8 +246,8 @@ public class UserService {
 
     @Transactional
     public void unlinkUsers(UserDTO userA, UserDTO userB) {
-        UserEntity userAEntity = userRepo.findByUserEmail(userA.getUserEmail());
-        UserEntity userBEntity = userRepo.findByUserEmail(userB.getUserEmail());
+        UserEntity userAEntity = userRepo.findByUserEmailIgnoreCase(userA.getUserEmail());
+        UserEntity userBEntity = userRepo.findByUserEmailIgnoreCase(userB.getUserEmail());
 
         unlinkUsers(userAEntity, userBEntity);
         unlinkUsers(userBEntity, userAEntity);
@@ -255,7 +255,7 @@ public class UserService {
 
     private UserEntity loginUserCheck(LoginAttemptDTO loginAttemptDTO) throws UserNotFound, UserNotValidated {
         log.info("Checking user login credentials. ");
-        UserEntity foundUser = userRepo.findByUserEmail(loginAttemptDTO.getUserEmail());
+        UserEntity foundUser = userRepo.findByUserEmailIgnoreCase(loginAttemptDTO.getUserEmail());
         if (foundUser == null) {
             throw new UserNotFound(loginAttemptDTO.getUserEmail());
         }
@@ -290,7 +290,7 @@ public class UserService {
     }
 
     public boolean checkIfUserIsPendingDeletion(String subject) {
-        UserEntity user = userRepo.findByUserEmail(subject);
+        UserEntity user = userRepo.findByUserEmailIgnoreCase(subject);
         return user.isToBeDeleted();
     }
 
@@ -314,13 +314,13 @@ public class UserService {
     }
 
     private UserEntity getCurrentUserEntity() {
-        return userRepo.findByUserEmail(
+        return userRepo.findByUserEmailIgnoreCase(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
     }
 
     private boolean checkIfUserExists(String userEmail) {
-        return userRepo.findByUserEmail(userEmail) != null;
+        return userRepo.findByUserEmailIgnoreCase(userEmail) != null;
     }
 
     private List<UserDTO> entitiesToDTOs(List<UserEntity> userEntities) {

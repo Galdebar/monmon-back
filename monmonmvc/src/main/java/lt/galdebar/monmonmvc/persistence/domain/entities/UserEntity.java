@@ -26,13 +26,7 @@ public class UserEntity {
     private boolean toBeDeleted;
     private Date deletionDate;
 
-    public String getUserEmail() {
-        return userEmail.toLowerCase();
-    }
 
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail.toLowerCase();
-    }
 }
 
 

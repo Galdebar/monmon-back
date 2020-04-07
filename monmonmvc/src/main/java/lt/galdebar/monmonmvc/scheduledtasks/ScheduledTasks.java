@@ -57,8 +57,8 @@ public class ScheduledTasks {
         List<ShoppingItemDTO> shoppingItemsToUpdate = new ArrayList<>();
 
         for (ShoppingItemDTO item : allShoppingItems) {
-            item.users.remove(userDTO.getUserEmail());
-            if (item.users.size() == 0) {
+            item.getUsers().remove(userDTO.getUserEmail());
+            if (item.getUsers().size() == 0) {
                 shoppingItemsToDelete.add(item);
             } else shoppingItemsToUpdate.add(item);
         }
