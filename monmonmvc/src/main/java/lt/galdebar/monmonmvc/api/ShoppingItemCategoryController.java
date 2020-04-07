@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shopping Item Category Controller.
+ * Shopping Item Category Controller.<br>
  * Handles getting all categories, category search and shopping item search autocomplete
  */
 @RestController
@@ -27,30 +27,30 @@ public class ShoppingItemCategoryController {
 
 
     /**
-     * Search autocomplete.
-     * <strong>POST request</strong>
+     * Search autocomplete.<br>
+     * <strong>POST request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * Full Shopping Keyword <strong>JSON</strong> example:
      *
-     *   {
-     *     "shoppingItemCategory": "Beverages",
-     *     "keyword": "Beer"
-     *   }
+     * @param shoppingKeywordDTO contains the keyword. Category field can be empty.<br>
+     * Full Shopping Keyword <strong>JSON</strong> example:<br>
      *
-     * @param shoppingKeywordDTO contains the keyword. Category field can be empty.
+     *   {<br>
+     *     "shoppingItemCategory": "Beverages",<br>
+     *     "keyword": "Beer"<br>
+     *   }<br>
      * @return Array of potential keywords matched with DB. Max of 10 (Number defined in ShoppingCategoriesService)
-     * Returns empty array if keyword is empty or blank.
+     * Returns empty array if keyword is empty or blank.<br>
      * Returns <strong>HTTP 403</strong> if Auth token
      * <ul>
      *     <li>Is empty</li>
      *     <li>Is invalid</li>
      *     <li>Has expired yet</li>
-     * </ul>
-     * Returns <strong>HTTP 400</strong> if request is empty.
+     * </ul><br>
+     * Returns <strong>HTTP 400</strong> if request is empty.<br>
      * Returns <strong>HTTP 403</strong> if Authorization token is
      * <ul>
      *      <li>Empty</li>
@@ -86,14 +86,14 @@ public class ShoppingItemCategoryController {
     }
 
     /**
-     * Get all Shopping Categories.
-     * <strong>POST request</strong>
+     * Get all Shopping Categories.<br>
+     * <strong>POST request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * @return Array of ShoppingItemCategory objects.
+     * @return Array of ShoppingItemCategory objects.<br>
      * Returns <strong>HTTP 403</strong> if Authorization token is
      * <ul>
      *      <li>Empty</li>

@@ -50,15 +50,15 @@ public class UserController {
 
 
     /**
-     * Get current user details.
-     * <strong>GET request</strong>
+     * Get current user details.<br>
+     * <strong>GET request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
      * @param userDetails UserDetails after Authorization token has been validated. Taken from the header.
-     * @return current user name and roles.
+     * @return current user name and roles.<br>
      * Returns <strong>HTTP 403</strong> if Authorization token invalid.
      */
     @GetMapping("/me")
@@ -77,18 +77,18 @@ public class UserController {
     }
 
     /**
-     * Login.
-     * <strong>POST request</strong>
+     * Login.<br>
+     * <strong>POST request</strong><br>
      *
-     * Login attempt request <strong>JSON</strong> example:
      *
-     *   {
-     *     "userEmail": "some@email.com",
-     *     "userPassword": "This15APassw0rd",
-     *   }
+     * @param loginAttemptDTO containing <strong>User Email</strong> and <strong>User Password</strong><br>
+     * Login attempt request <strong>JSON</strong> example:<br>
      *
-     * @param loginAttemptDTO containing <strong>User Email</strong> and <strong>User Password</strong>
-     * @return User Email and a valid Authorization Token.
+     *   {<br>
+     *     "userEmail": "some@email.com",<br>
+     *     "userPassword": "This15APassw0rd",<br>
+     *   }<br>
+     * @return User Email and a valid Authorization Token.<br>
      * Returns <strong>HTTP 400</strong> if
      * <ul>
      *     <li>Email format is empty or invalid format</li>
@@ -122,21 +122,21 @@ public class UserController {
     }
 
     /**
-     * Register new User.
-     * <strong>GET request</strong>
+     * Register new User.<br>
+     * <strong>GET request</strong><br>
      *
-     * Only begins the registration process.
-     * Creates the user entry in the Database and sends a registration confirmation email to the supplied address.
+     * Only begins the registration process.<br>
+     * Creates the user entry in the Database and sends a registration confirmation email to the supplied address.<br>
      *
-     * Login attempt request <strong>JSON</strong> example:
      *
-     *   {
-     *     "userEmail": "some@email.com",
-     *     "userPassword": "This15APassw0rd",
-     *   }
+     * @param loginAttempt containing <strong>User Email</strong> and <strong>User Password</strong><br>
+     * Login attempt request <strong>JSON</strong> example:<br>
      *
-     * @param loginAttempt containing <strong>User Email</strong> and <strong>User Password</strong>
-     * @return HTTP OK response if successful.
+     *   {<br>
+     *     "userEmail": "some@email.com",<br>
+     *     "userPassword": "This15APassw0rd",<br>
+     *   }<br>
+     * @return HTTP OK response if successful.<br>
      * Returns <strong>HTTP 400</strong> if
      * <ul>
      *     <li>Email format is empty or invalid format</li>
@@ -167,13 +167,13 @@ public class UserController {
     }
 
     /**
-     * Confirm user registration.
-     * <strong>GET request</strong>
+     * Confirm user registration.<br>
+     * <strong>GET request</strong><br>
      *
-     * Finalizes the registration process. User is allowed to login after this step.
+     * Finalizes the registration process. User is allowed to login after this step.<br>
      *
      * @param token the registration confirmation token.
-     * @return HTTP OK response if successful.
+     * @return HTTP OK response if successful.<br>
      * Returns <strong>HTTP 400</strong> if
      * <ul>
      *     <li>Token is empty</li>
@@ -208,11 +208,11 @@ public class UserController {
     }
 
     /**
-     * Renew user registration token.
-     * <strong>GET request</strong>
+     * Renew user registration token.<br>
+     * <strong>GET request</strong><br>
      *
      * @param token the token
-     * @return HTTP OK response if successful.
+     * @return HTTP OK response if successful.<br>
      * Returns <strong>HTTP 400</strong> if
      * <ul>
      *     <li>Token is empty</li>
@@ -241,28 +241,28 @@ public class UserController {
     }
 
     /**
-     * Change current user Email.
-     * <strong>POST request</strong>
+     * Change current user Email.<br>
+     * <strong>POST request</strong><br>
      *
-     * User can still login with the old email, until email change is confirmed.
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * User can still login with the old email, until email change is confirmed.<br>
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * Email change request <strong>JSON</strong> example:
      *
-     *   {
-     *     "newEmail": "some@email.com",
-     *   }
+     * @param emailChangeRequestDTO contains new Email Address.<br>
+     * Email change request <strong>JSON</strong> example:<br>
      *
-     * @param emailChangeRequestDTO contains new Email Address.
-     * @return HTTP OK response if successful. Also sends confirmation email to the supplied new address.
+     *   {<br>
+     *     "newEmail": "some@email.com",<br>
+     *   }<br>
+     * @return HTTP OK response if successful. Also sends confirmation email to the supplied new address.<br>
      * Returns <strong>HTTP 400</strong> if
      * <ul>
      *     <li>Email empty or invalid format</li>
      *     <li>Email already taken</li>
      *     <li>Token not expired yet</li>
-     * </ul>
+     * </ul><br>
      * Returns <strong>HTTP 403</strong> if Authorization token is
      * <ul>
      *      <li>Empty</li>
@@ -292,11 +292,11 @@ public class UserController {
     }
 
     /**
-     * Confirm user email change.
-     * <strong>GET request</strong>
+     * Confirm user email change.<br>
+     * <strong>GET request</strong><br>
      *
      * @param token the token
-     * @return HTTP OK response if successful.
+     * @return HTTP OK response if successful.<br>
      * Returns <strong>HTTP 400</strong> if
      * <ul>
      *     <li>Token is empty</li>
@@ -326,23 +326,23 @@ public class UserController {
 
 
     /**
-     * Change current user Password.
-     * <strong>POST request</strong>
+     * Change current user Password.<br>
+     * <strong>POST request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * Password change request <strong>JSON</strong> example:
      *
-     *   {
-     *     "userEmail": "some@email.com",
-     *     "oldPassword": "This15APassw0rd",
-     *     "newPassword": "5omeNewPassword",
-     *   }
+     * @param passwordChangeRequestDTO contains current user Email Address (for verification), old password and new password.<br>
+     * Password change request <strong>JSON</strong> example:<br>
      *
-     * @param passwordChangeRequestDTO contains current user Email Address (for verification), old password and new password.
-     * @return HTTP OK response if successful. Also sends confirmation email to the supplied address.
+     *   {<br>
+     *     "userEmail": "some@email.com",<br>
+     *     "oldPassword": "This15APassw0rd",<br>
+     *     "newPassword": "5omeNewPassword",<br>
+     *   }<br>
+     * @return HTTP OK response if successful. Also sends confirmation email to the supplied address.<br>
      * Returns <strong>HTTP 400</strong> if
      * <ul>
      *     <li>Email empty or invalid format</li>
@@ -350,7 +350,7 @@ public class UserController {
      *     <li>Password empty</li>
      *     <li>Old and new passwords match</li>
      *     <li>Old password is incorrect</li>
-     * </ul>
+     * </ul><br>
      * Returns <strong>HTTP 403</strong> if Authorization token is
      * <ul>
      *      <li>Empty</li>
@@ -392,19 +392,18 @@ public class UserController {
     }
 
     /**
-     * Request delete current user.
-     * <strong>GET request</strong>
+     * Request delete current user.<br>
+     * <strong>GET request</strong><br>
      *
      * Only begins the registration process.
      * Process finishes after time set in UserService.
-     * If the user logs in within the grace period, deletion is cancelled.
+     * If the user logs in within the grace period, deletion is cancelled.<br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {Authorization:Bearer [token]}<br>
      *
-     * @param token Authorization token taken from header.
-     * @return HTTP OK response if successful. Also sends warning email to the current user email.
+     * @return HTTP OK response if successful. Also sends warning email to the current user email.<br>
      * Returns <strong>HTTP 403</strong> if Authorization token is
      * <ul>
      *      <li>Empty</li>
@@ -414,14 +413,14 @@ public class UserController {
      */
     @CrossOrigin
     @GetMapping("/deleteuser")
-    ResponseEntity markUserForDeletion(@RequestHeader(name = "Authorization") String token) {
+    ResponseEntity markUserForDeletion() {
         String attemptMessage = String.format(
                 "Attempting to mark user for deletion. User: %s",
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
         log.info(attemptMessage);
 
-        userService.markUserForDeletion(token);
+        userService.markUserForDeletion();
         String successMessage = String.format(
                 "User successfully marked for deletion. The profile will be deleted in %d hours",
                 userService.getUSER_DELETION_GRACE_PERIOD()
@@ -432,13 +431,13 @@ public class UserController {
     }
 
     /**
-     * Gets linked users.
-     * <strong>GET request</strong>
+     * Gets linked users.<br>
+     * <strong>GET request</strong><br>
      *
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {Authorization:Bearer [token]}<br>
      *
      * @return List (String) of users linked with the current user.
      */
@@ -454,23 +453,23 @@ public class UserController {
     }
 
     /**
-     * Link users request.
-     * <strong>POST request</strong>
+     * Link users request.<br>
+     * <strong>POST request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * Full User <strong>JSON</strong> example:
      *
-     *   {
-     *     "userEmail": "some@email.com",
-     *     "userPassword": "This15APassw0rd",
-     *     "linkedUsers": "["someother@mail.com", "another@mail.this"]",
-     *   }
+     * @param userDTO containing email of the other user (other fields can be empty).<br>
+     * Full User <strong>JSON</strong> example:<br>
      *
-     * @param userDTO containing email of the other user (other fields can be empty).
-     * @return HTTP OK response if successful. Also sends confirmation link to the user in userDTO.
+     *   {<br>
+     *     "userEmail": "some@email.com",<br>
+     *     "userPassword": "This15APassw0rd",<br>
+     *     "linkedUsers": "["someother@mail.com", "another@mail.this"]",<br>
+     *   }<br>
+     * @return HTTP OK response if successful. Also sends confirmation link to the user in userDTO.<br>
      * Returns <strong>HTTP 400</strong> if other user email
      * <ul>
      *      <li>Is empty or invalid format</li>
@@ -508,12 +507,12 @@ public class UserController {
     }
 
     /**
-     * Confirm link users response entity.
-     * <strong>GET request</strong>
+     * Confirm link users response entity.<br>
+     * <strong>GET request</strong><br>
      *
      *
      * @param token the token
-     * @return HTTO Ok response if successful
+     * @return HTTO Ok response if successful<br>
      * Returns <strong>HTTP 400</strong> if token is
      * <ul>
      *      <li>Empty</li>
@@ -542,11 +541,11 @@ public class UserController {
     }
 
     /**
-     * Renew link users token.
-     * <strong>GET request</strong>
+     * Renew link users token.<br>
+     * <strong>GET request</strong><br>
      *
      * @param token the token
-     * @return HTTP Ok response
+     * @return HTTP Ok response<br>
      * Returns <strong>HTTP 400</strong> if
      * <ul>
      *     <li>Token is empty</li>

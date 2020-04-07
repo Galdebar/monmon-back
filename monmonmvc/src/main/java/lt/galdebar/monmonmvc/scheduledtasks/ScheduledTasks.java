@@ -16,6 +16,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Runs periodic scheduled tasks.
+ */
 @Component
 @Log4j2
 public class ScheduledTasks {
@@ -26,6 +29,16 @@ public class ScheduledTasks {
     @Autowired
     private ShoppingItemService shoppingItemService;
 
+    /**
+     * Delete expired users. Executes on a timer set in the application.properties with task.schedule.period property.<br>
+     *     Gathers all users pending deletion (toBeDeleted=true and Grace Period past)
+     *     For each user pending deletion:
+     *     <ul>
+     *         <li>Find all linked users and remove the pending deletion user</li>
+     *         <li>Find all shopping items belonging to the user and remove the pending user from the list</li>
+     *         <li>Call for final user deletion</li>
+     *     </ul>
+     */
     @Scheduled(cron = "${task.schedule.period}")
     public void deleteExpiredUsers() {
         log.info("Scheduled task. Deleting users pending removal. ");

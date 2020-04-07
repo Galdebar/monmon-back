@@ -24,6 +24,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * Handles actual creation, verification and renewal of tokens for user registration, user email change and link users requests.
+ */
 @Log4j2
 @Service
 class TokenService {
@@ -36,7 +39,14 @@ class TokenService {
     @Autowired
     private LinkUsersTokenRepo linkUsersTokenRepo;
 
-    UserRegistrationTokenEntity createRegistrationToken(UserEntity newUser, String token) {
+    /**
+     * Create registration token entity and save to db.
+     *
+     * @param newUser the new user
+     * @return the user registration token entity
+     */
+    UserRegistrationTokenEntity createRegistrationToken(UserEntity newUser) {
+        String token = UUID.randomUUID().toString();
         UserRegistrationTokenEntity registrationToken = new UserRegistrationTokenEntity();
         registrationToken.setUser(newUser);
         registrationToken.setToken(token);
@@ -51,7 +61,15 @@ class TokenService {
         return createdToken;
     }
 
-    UserEmailChangeTokenEntity createEmailChangeToken(UserEntity currentUser, String newEmail, String token){
+    /**
+     * Create email change token entity and saving it to DB.
+     *
+     * @param currentUser the current user
+     * @param newEmail    the new email
+     * @return the user email change token entity
+     */
+    UserEmailChangeTokenEntity createEmailChangeToken(UserEntity currentUser, String newEmail){
+        String token = UUID.randomUUID().toString();
         UserEmailChangeTokenEntity emailChangeTokenDAO = new UserEmailChangeTokenEntity();
         emailChangeTokenDAO.setUser(currentUser);
         emailChangeTokenDAO.setNewEmail(newEmail);
@@ -68,7 +86,15 @@ class TokenService {
         return createdToken;
     }
 
-    LinkUsersTokenEntity createLinkUsersToken(UserEntity userA, UserEntity userB, String token){
+    /**
+     * Create link users token entity and saving to DB.
+     *
+     * @param userA the user a
+     * @param userB the user b
+     * @return the link users token entity
+     */
+    LinkUsersTokenEntity createLinkUsersToken(UserEntity userA, UserEntity userB){
+        String token = UUID.randomUUID().toString();
         LinkUsersTokenEntity connectionTokenDAO = new LinkUsersTokenEntity();
         connectionTokenDAO.setToken(token);
         connectionTokenDAO.setUserA(userA);
@@ -85,6 +111,15 @@ class TokenService {
         return createdToken;
     }
 
+    /**
+     * Renew registration token user registration token entity.
+     *
+     * @param token expired registration token
+     * @return the user registration token entity
+     * @throws UserAlreadyValidated the user already validated
+     * @throws TokenNotFound        the token not found
+     * @throws TokenNotExpired      the token not expired
+     */
     @Transactional
     UserRegistrationTokenEntity renewRegistrationToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenNotExpired {
         UserRegistrationTokenEntity registrationToken = registrationTokenRepo.findByToken(token);
@@ -110,6 +145,14 @@ class TokenService {
         return updatedToken;
     }
 
+    /**
+     * Renew link users token link users token entity.
+     *
+     * @param token the token
+     * @return the link users token entity
+     * @throws LinkUsersTokenExpired  the link users token expired
+     * @throws LinkUsersTokenNotFound the link users token not found
+     */
     LinkUsersTokenEntity renewLinkUsersToken(String token) throws LinkUsersTokenExpired, LinkUsersTokenNotFound {
         LinkUsersTokenEntity tokenDAO = checkLinkUsersToken(token);
         String newToken = UUID.randomUUID().toString();
@@ -129,6 +172,15 @@ class TokenService {
     }
 
 
+    /**
+     * Check registration token exists and is not expired.
+     *
+     * @param token the token
+     * @return the user registration token entity
+     * @throws UserAlreadyValidated the user already validated
+     * @throws TokenNotFound        the token not found
+     * @throws TokenExpired         the token expired
+     */
     UserRegistrationTokenEntity checkRegistrationToken(String token) throws UserAlreadyValidated, TokenNotFound, TokenExpired {
         log.info("Checking registration token. ");
         UserRegistrationTokenEntity registrationToken = registrationTokenRepo.findByToken(token);
@@ -144,6 +196,14 @@ class TokenService {
         return registrationToken;
     }
 
+    /**
+     * Check if link users token exists and is not expired.
+     *
+     * @param token the token
+     * @return the link users token entity
+     * @throws LinkUsersTokenNotFound the link users token not found
+     * @throws LinkUsersTokenExpired  the link users token expired
+     */
     LinkUsersTokenEntity checkLinkUsersToken(String token) throws LinkUsersTokenNotFound, LinkUsersTokenExpired {
         log.info("Checking link users token. ");
 
@@ -161,6 +221,14 @@ class TokenService {
         return foundToken;
     }
 
+    /**
+     * Check email change token user email change token entity.
+     *
+     * @param token the token
+     * @return the user email change token entity
+     * @throws TokenNotFound the token not found
+     * @throws TokenExpired  the token expired
+     */
     UserEmailChangeTokenEntity checkEmailChangeToken(String token) throws TokenNotFound, TokenExpired {
         log.info("Checking email change token. ");
 

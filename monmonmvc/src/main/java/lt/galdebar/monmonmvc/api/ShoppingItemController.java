@@ -15,7 +15,7 @@ import java.util.List;
 
 
 /**
- * Shopping Item Controller.
+ * Shopping Item Controller.<br>
  * Handles Shopping item CRUD operations
  */
 @RestController
@@ -28,17 +28,17 @@ public class ShoppingItemController {
 
 
     /**
-     * Gets items by category.
-     * <strong>GET request</strong>
+     * Gets items by category.<br>
+     * <strong>GET request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
      * @param requestedCategory the requested category
-     * @return Array of items matching the category.
-     * Returns empty array if category match not found against DB.
-     * Returns <strong>HTTP 400</strong> if request is empty
+     * @return Array of items matching the category.<br>
+     * Returns empty array if category match not found against DB.<br>
+     * Returns <strong>HTTP 400</strong> if request is empty<br>
      * Returns <strong>HTTP 403</strong> if Authorization token is
      * <ul>
      *      <li>Empty</li>
@@ -64,14 +64,14 @@ public class ShoppingItemController {
     }
 
     /**
-     * Gets all items for the current user.
-     * <strong>GET request</strong>
+     * Gets all items for the current user.<br>
+     * <strong>GET request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * @return Array of ShoppingItems (if user has added any)
+     * @return Array of ShoppingItems (if user has added any)<br>
      * Returns <strong>HTTP 403</strong> if Authorization token is
      * <ul>
      *      <li>Empty</li>
@@ -97,29 +97,29 @@ public class ShoppingItemController {
 
 
     /**
-     * Add ShoppingItem.
-     * <strong>POST request</strong>
+     * Add ShoppingItem.<br>
+     * <strong>POST request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * Full Shopping Item <strong>JSON</strong> example:
      *
-     *   {
-     *     "id": "5e6260b97b7ecd1adf7c910e",
-     *     "itemName": "Eggs",
-     *     "itemCategory": "Meat, Seafood & Eggs",
-     *     "quantity": 0,
-     *     "comment": "",
-     *     "isInCart": false
-     *   }
+     * @param shoppingItemDTO Must contain item name at least.<br>
+     * Can have all other fields (Category, quantity, isInCart, comment).<br>
+     * Full Shopping Item <strong>JSON</strong> example:<br>
      *
-     * @param shoppingItemDTO Must contain item name at least.
-     * Can have all other fields (Category, quantity, isInCart, comment).
-     * @return Same shopping item with assigned id.
-     * If category was empty in the request, item will be assigned a category according to request item name.
-     * If no appropriate category was found, item will be assigned "Uncategorized" category.
+     *   {<br>
+     *     "id": "5e6260b97b7ecd1adf7c910e",<br>
+     *     "itemName": "Beer",<br>
+     *     "itemCategory": "Beverages",<br>
+     *     "quantity": 0,<br>
+     *     "comment": "",<br>
+     *     "isInCart": false<br>
+     *   }<br>
+     * @return Same shopping item with assigned id.<br>
+     * If category was empty in the request, item will be assigned a category according to request item name.<br>
+     * If no appropriate category was found, item will be assigned "Uncategorized" category.<br>
      * Returns <strong>HTTP 400</strong> if other request item
      * <ul>
      *      <li>Is empty</li>
@@ -151,26 +151,27 @@ public class ShoppingItemController {
     }
 
     /**
-     * Update Shopping Item.
-     * <strong>PUT request</strong>
+     * Update Shopping Item.<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {Authorization:Bearer [token]}<br>
      *
-     * Full Shopping Item <strong>JSON</strong> example:
+     * Full Shopping Item <strong>JSON</strong> example:<br>
      *
-     *   {
-     *     "id": "5e6260b97b7ecd1adf7c910e",
-     *     "itemName": "Eggs",
-     *     "itemCategory": "Meat, Seafood & Eggs",
-     *     "quantity": 0,
-     *     "comment": "",
-     *     "isInCart": false
-     *   }
+     * @param shoppingItemDTO Must contain id. All other fields are optional, but the item will be updated with empty fields.<br>
+     * Full Shopping Item <strong>JSON</strong> example:<br>
      *
-     * @param shoppingItemDTO Must contain id. All other fields are optional, but the item will be updated with empty fields.
-     * @return The same updated item.
+     *   {<br>
+     *     "id": "5e6260b97b7ecd1adf7c910e",<br>
+     *     "itemName": "Beer",<br>
+     *     "itemCategory": "Beverages",<br>
+     *     "quantity": 0,<br>
+     *     "comment": "",<br>
+     *     "isInCart": false<br>
+     *   }<br>
+     * @return The same updated item.<br>
      * Returns <strong>HTTP 400</strong> if other request item
      * <ul>
      *      <li>Is empty</li>
@@ -209,26 +210,25 @@ public class ShoppingItemController {
     }
 
     /**
-     * Update Multiple Shopping Items.
-     * <strong>PUT request</strong>
+     * Update Multiple Shopping Items.<br>
+     * <strong>PUT request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * Full Shopping Item <strong>JSON</strong> example:
+     * @param shoppingItemDTOS Array of Shopping Items. Each item must contain id. All other fields are optional, but the item will be updated with empty fields.<br>
+     * Full Shopping Item <strong>JSON</strong> example:<br>
      *
-     *   {
-     *     "id": "5e6260b97b7ecd1adf7c910e",
-     *     "itemName": "Eggs",
-     *     "itemCategory": "Meat, Seafood & Eggs",
-     *     "quantity": 0,
-     *     "comment": "",
-     *     "isInCart": false
-     *   }
-     *
-     * @param shoppingItemDTOS Array of Shopping Items. Each item must contain id. All other fields are optional, but the item will be updated with empty fields.
-     * @return Array of the same updated items.
+     *   {<br>
+     *     "id": "5e6260b97b7ecd1adf7c910e",<br>
+     *     "itemName": "Beer",<br>
+     *     "itemCategory": "Beverages",<br>
+     *     "quantity": 0,<br>
+     *     "comment": "",<br>
+     *     "isInCart": false<br>
+     *   }<br>
+     * @return Array of the same updated items.<br>
      * Returns <strong>HTTP 400</strong> if any of the array items
      * <ul>
      *      <li>Is empty</li>
@@ -268,26 +268,26 @@ public class ShoppingItemController {
     }
 
     /**
-     * Delete Shopping Item.
-     * <strong>DELETE request</strong>
+     * Delete Shopping Item.<br>
+     * <strong>DELETE request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * Full Shopping Item <strong>JSON</strong> example:
      *
-     *   {
-     *     "id": "5e6260b97b7ecd1adf7c910e",
-     *     "itemName": "Eggs",
-     *     "itemCategory": "Meat, Seafood & Eggs",
-     *     "quantity": 0,
-     *     "comment": "",
-     *     "isInCart": false
-     *   }
+     * @param shoppingItemDTO Must have valid id. All other fields are ignored.<br>
+     * Full Shopping Item <strong>JSON</strong> example:<br>
      *
-     * @param shoppingItemDTO Must have valid id. All other fields are ignored.
-     * @return HTTP Ok if deletion successful.
+     *   {<br>
+     *     "id": "5e6260b97b7ecd1adf7c910e",<br>
+     *     "itemName": "Beer",<br>
+     *     "itemCategory": "Beverages",<br>
+     *     "quantity": 0,<br>
+     *     "comment": "",<br>
+     *     "isInCart": false<br>
+     *   }<br>
+     * @return HTTP Ok if deletion successful.<br>
      * Returns <strong>HTTP 400</strong> if any of the array items
      * <ul>
      *      <li>Is empty</li>
@@ -325,26 +325,26 @@ public class ShoppingItemController {
     }
 
     /**
-     * Delete Multiple Shopping Items.
-     * <strong>DELETE request</strong>
+     * Delete Multiple Shopping Items.<br>
+     * <strong>DELETE request</strong><br>
      *
-     * <strong>Requires valid Authorization Token in request header</strong>
-     * Header format:
-     * {Authorization:Bearer [token]}
+     * <strong>Requires valid Authorization Token in request header</strong><br>
+     * Header format:<br>
+     * {"Authorization":"Bearer [token]"}<br>
      *
-     * Full Shopping Item <strong>JSON</strong> example:
      *
-     *   {
-     *     "id": "5e6260b97b7ecd1adf7c910e",
-     *     "itemName": "Eggs",
-     *     "itemCategory": "Meat, Seafood & Eggs",
-     *     "quantity": 0,
-     *     "comment": "",
-     *     "isInCart": false
-     *   }
+     * @param shoppingItemDTOS Array of Shopping items. Each item must have valid id. All other fields are ignored.<br>
+     * Full Shopping Item <strong>JSON</strong> example:<br>
      *
-     * @param shoppingItemDTOS Array of Shopping items. Each item must have valid id. All other fields are ignored.
-     * @return HTTP Ok if deletion successful.
+     *   {<br>
+     *     "id": "5e6260b97b7ecd1adf7c910e",<br>
+     *     "itemName": "Beer",<br>
+     *     "itemCategory": "Beverages",<br>
+     *     "quantity": 0,<br>
+     *     "comment": "",<br>
+     *     "isInCart": false<br>
+     *   }<br>
+     * @return HTTP Ok if deletion successful.<br>
      * Returns <strong>HTTP 400</strong> if any of the array items
      * <ul>
      *      <li>Is empty</li>

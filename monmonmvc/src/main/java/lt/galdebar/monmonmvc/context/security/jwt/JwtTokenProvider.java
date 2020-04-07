@@ -19,6 +19,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Handles creation and verification of Authorization tokens
+ */
 @Component
 public class JwtTokenProvider {
     @Value("${security.jwt.token.secret-key:secret}")
@@ -32,11 +35,21 @@ public class JwtTokenProvider {
     @Autowired
     private UserService userService;
 
+    /**
+     * Init. Set encoder
+     */
     @PostConstruct
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
+    /**
+     * Create Authorization token.
+     *
+     * @param username the username
+     * @param roles    the roles
+     * @return the string
+     */
     public String createToken(String username, List<String> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("roles", roles);
@@ -50,6 +63,12 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    /**
+     * Gets authentication.
+     *
+     * @param token the token
+     * @return the authentication
+     */
     Authentication getAuthentication(String token) {
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(getUsername(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
@@ -59,6 +78,12 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
+    /**
+     * Parses Authorization header and retrieves the token.
+     *
+     * @param req the req
+     * @return the string
+     */
     String resolveToken(HttpServletRequest req) {
         String bearerToken = req.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
@@ -67,6 +92,13 @@ public class JwtTokenProvider {
         return null;
     }
 
+    /**
+     * Validate token.
+     *
+     * @param token the token
+     * @return the boolean
+     * @throws InvalidJwtAuthenticationException the invalid jwt authentication exception
+     */
     boolean validateToken(String token) throws InvalidJwtAuthenticationException {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);

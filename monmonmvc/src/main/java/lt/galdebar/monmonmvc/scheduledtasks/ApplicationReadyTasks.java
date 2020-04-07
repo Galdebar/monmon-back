@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.context;
+package lt.galdebar.monmonmvc.scheduledtasks;
 
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -11,8 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+/**
+ * Handles tasks scheduled for application ready.<br>
+ *     Runs Search indexer
+ */
 @Component
-public class SearchIndexer implements ApplicationListener<ApplicationReadyEvent> {
+public class ApplicationReadyTasks implements ApplicationListener<ApplicationReadyEvent> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -22,6 +26,5 @@ public class SearchIndexer implements ApplicationListener<ApplicationReadyEvent>
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
             FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
             fullTextEntityManager.createIndexer().start();
-
     }
 }

@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Overrides the loadUserByUsername method needed for JwtTokenProvider.
+ */
 @Component
 public class MongoUserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 

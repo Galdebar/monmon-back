@@ -13,10 +13,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Handles implkementation of the doFilter method for handling user authorization.
+ */
 public class JwtTokenFilter extends GenericFilterBean {
 
     private JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * Instantiates a new Jwt token filter.
+     *
+     * @param jwtTokenProvider the jwt token provider
+     */
     public JwtTokenFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
     }

@@ -7,6 +7,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
+/**
+ * Utilizes javaMailSender to send user registration confirmation, email change and link users emails.
+ */
 @Log4j2
 @Service
 public class EmailSenderService {
@@ -18,6 +21,12 @@ public class EmailSenderService {
     @Autowired
     private JavaMailSender javaMailSender;
 
+    /**
+     * Send registration conformation email.
+     *
+     * @param recepient the recepient
+     * @param token     the token
+     */
     public void sendRegistrationConformationEmail(String recepient, String token) {
         log.info(String.format(
                 "Sending registration email to: ",
@@ -32,6 +41,12 @@ public class EmailSenderService {
         javaMailSender.send(message);
     }
 
+    /**
+     * Send link users confirmation email.
+     *
+     * @param recepient the recepient
+     * @param token     the token
+     */
     public void sendLinkUsersConfirmationEmail(String recepient, String token) {
         log.info(String.format(
                 "Sending link users email to: ",
@@ -46,6 +61,12 @@ public class EmailSenderService {
         javaMailSender.send(message);
     }
 
+    /**
+     * Send email change confirmation email.
+     *
+     * @param recepient the recepient
+     * @param token     the token
+     */
     public void sendEmailChangeConfirmationEmail(String recepient, String token) {
         log.info(String.format(
                 "Sending email change email to: ",
@@ -60,6 +81,12 @@ public class EmailSenderService {
         javaMailSender.send(message);
     }
 
+    /**
+     * Send deletion warning email.
+     *
+     * @param recepient the recepient
+     * @param period    the period
+     */
     public void sendDeletionWarningEmail(String recepient, int period) {
         log.info(String.format(
                 "Sending account deletion warning to $s",
@@ -79,6 +106,11 @@ public class EmailSenderService {
         javaMailSender.send(message);
     }
 
+    /**
+     * Send deletion confirmation email.
+     *
+     * @param recepient the recepient
+     */
     public void sendDeletionConfirmationEmail(String recepient) {
         log.info(String.format(
                 "Sending account deletion confirmation to $s",

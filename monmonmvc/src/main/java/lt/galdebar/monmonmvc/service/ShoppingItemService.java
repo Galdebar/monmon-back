@@ -18,6 +18,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Handles checks and verifications before shopping item CRUD operations.
+ */
 @Service
 public class ShoppingItemService {
     @Autowired
@@ -27,15 +30,32 @@ public class ShoppingItemService {
     @Autowired
     private ShoppingItemCategoryService shoppingItemCategoryService;
 
+    /**
+     * Gets items by category.
+     *
+     * @param requestedCategory the requested category
+     * @return Shopping Item list. Empty if nothing found.
+     */
     public List<ShoppingItemDTO> getItemsByCategory(String requestedCategory) {
         List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByItemCategory(requestedCategory);
         return entitiesToDtos(foundItems);
     }
 
+    /**
+     * Gets all shopping items for current user and linked users (if there are any).
+     *
+     * @return List of Shopping items. Empty if nothing found.
+     */
     public List<ShoppingItemDTO> getAll() {
         return entitiesToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
     }
 
+    /**
+     * Gets all shopping items when given a user.
+     *
+     * @param userDTO the user dto. Should contain valid email adress.
+     * @return List of Shopping Items. Empty if nothing found, or in any way incorrect email address given.
+     */
     public List<ShoppingItemDTO> getAll(UserDTO userDTO) {
         List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByUsersIn(
                 Collections.singletonList(userDTO.getUserEmail())
@@ -44,6 +64,13 @@ public class ShoppingItemService {
         return entitiesToDtos(foundItems);
     }
 
+    /**
+     * Add a new Shopping item to DB. Assigns a category if there is none based on the item name.
+     * If there's no valid category to be found, assigns "Uncategorized"
+     *
+     * @param shoppingItemDTO the shopping item dto
+     * @return the saved Shopping item with assigned category and id.
+     */
     @Transactional
     public ShoppingItemDTO addItem(ShoppingItemDTO shoppingItemDTO) {
         if (shoppingItemDTO.getItemCategory().trim().isEmpty()) {
@@ -68,6 +95,14 @@ public class ShoppingItemService {
     }
 
 
+    /**
+     * Update item shopping item dto. Carries all fields over.
+     * If fields are null or empty- item in DB will be updated accordingly.
+     *
+     * @param shoppingItemDTO the shopping item dto
+     * @return the shopping item dto
+     * @throws ShoppingItemNotFound the shopping item not found (invalid id)
+     */
     @Transactional
     public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
         if (!validateShoppingItemDTO(shoppingItemDTO)) {
@@ -83,6 +118,13 @@ public class ShoppingItemService {
         return entityToDto(result);
     }
 
+    /**
+     * Update items list.
+     *
+     * @param shoppingItemDTOS the shopping item dtos
+     * @return the list
+     * @throws ShoppingItemNotFound Any shopping item not found.
+     */
     @Transactional
     public List<ShoppingItemDTO> updateItems(List<ShoppingItemDTO> shoppingItemDTOS) throws ShoppingItemNotFound {
         List<ShoppingItemDTO> itemsToUpdate = new ArrayList<>();
@@ -99,6 +141,12 @@ public class ShoppingItemService {
         return entitiesToDtos(updatedItems);
     }
 
+    /**
+     * Delete item.
+     *
+     * @param shoppingItemDTO the shopping item dto
+     * @throws ShoppingItemNotFound the shopping item not found (invalid id).
+     */
     @Transactional
     public void deleteItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
         if (!validateShoppingItemDTO(shoppingItemDTO)) {
@@ -110,6 +158,12 @@ public class ShoppingItemService {
         shoppingItemRepo.delete(dtoToEntity(shoppingItemDTO));
     }
 
+    /**
+     * Delete items.
+     *
+     * @param shoppingItemDTOList the shopping item dto list
+     * @throws ShoppingItemNotFound any item not found.
+     */
     @Transactional
     public void deleteItems(List<ShoppingItemDTO> shoppingItemDTOList) throws ShoppingItemNotFound {
         for (ShoppingItemDTO item : shoppingItemDTOList) {

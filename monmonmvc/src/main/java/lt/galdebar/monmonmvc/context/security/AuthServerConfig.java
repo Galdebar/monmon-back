@@ -15,6 +15,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
+/**
+ * Authentication configuration. Sets up password encoder to use BCrypt, use UserDetailsService and JwtTokenService for authentication.
+ * Configures session management to be Stateless, configures API entry points to require authentication.
+ * Enables cors policy.
+ * Disables basic authentication and CSRF
+ */
 @Configuration
 @EnableConfigurationProperties
 public class AuthServerConfig extends WebSecurityConfigurerAdapter {
@@ -23,13 +29,19 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
     private MongoUserDetailsService mongoUserDetailsService;
 
 
+    /**
+     * Configure global authentication using UserDetailsService.
+     *
+     * @param auth the auth
+     * @throws Exception the exception
+     */
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(mongoUserDetailsService);
     }
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
+    private JwtTokenProvider jwtTokenProvider;
 
 
     @Override
@@ -66,6 +78,11 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
     }
 
 
+    /**
+     * Raise password encoder bean utilizing BCrypt.
+     *
+     * @return the password encoder
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

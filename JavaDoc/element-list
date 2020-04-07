@@ -1,0 +1,16 @@
+lt.galdebar.monmonmvc
+lt.galdebar.monmonmvc.api
+lt.galdebar.monmonmvc.context.security
+lt.galdebar.monmonmvc.context.security.exceptions
+lt.galdebar.monmonmvc.context.security.jwt
+lt.galdebar.monmonmvc.persistence.domain.dto
+lt.galdebar.monmonmvc.persistence.domain.entities
+lt.galdebar.monmonmvc.persistence.domain.entities.token
+lt.galdebar.monmonmvc.persistence.repositories
+lt.galdebar.monmonmvc.scheduledtasks
+lt.galdebar.monmonmvc.service
+lt.galdebar.monmonmvc.service.exceptions
+lt.galdebar.monmonmvc.service.exceptions.linkusers
+lt.galdebar.monmonmvc.service.exceptions.login
+lt.galdebar.monmonmvc.service.exceptions.registration
+lt.galdebar.monmonmvc.service.exceptions.shoppingitem

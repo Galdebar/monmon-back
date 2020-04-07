@@ -7,12 +7,17 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+/**
+ * Handles tasks scheduled for context refresh.<br>
+ *     Runs the categories parser in case the application starts in an environment where the categories DB is empty.
+ */
 @Component
 @Log4j2
-public class StartupEvent implements ApplicationListener<ContextRefreshedEvent> {
+public class ContextRefreshTasks implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
     private CategoriesParserMain categoriesParser;
+
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
