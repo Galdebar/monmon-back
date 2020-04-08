@@ -1,3 +1,8 @@
+lt.galdebar.monmon.categoriesparser
+lt.galdebar.monmon.categoriesparser.context
+lt.galdebar.monmon.categoriesparser.persistence.domain
+lt.galdebar.monmon.categoriesparser.persistence.repositories
+lt.galdebar.monmon.categoriesparser.services
 lt.galdebar.monmonmvc
 lt.galdebar.monmonmvc.api
 lt.galdebar.monmonmvc.context.security
@@ -14,3 +19,6 @@ lt.galdebar.monmonmvc.service.exceptions.linkusers
 lt.galdebar.monmonmvc.service.exceptions.login
 lt.galdebar.monmonmvc.service.exceptions.registration
 lt.galdebar.monmonmvc.service.exceptions.shoppingitem
+lt.galdebar.monmonscraper
+lt.galdebar.monmonscraper.domain
+lt.galdebar.monmonscraper.services

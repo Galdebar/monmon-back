@@ -16,6 +16,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Parses the supplied Excel file into a list of CategoryDTO objects.<br>
+ *     Also adds "Uncategorized"
+ *     Whilst parsing splits the "Food,Beverages {@literal &} Tobacco" category into three separate categories.
+ *     Also expands Food Items with subcategories, because the aim of the app is everyday shopping.
+ *     Sheet name "Food,Beverages {@literal &} Tobacco" category name and names of categories to split it into are provided as private static final String fields.
+ *
+ */
 @Log4j2
 public class ExcelParser {
     private static final String SHEET_NAME = "Sheet1";
@@ -29,6 +37,11 @@ public class ExcelParser {
     private DataFormatter dataFormatter;
     private boolean isParserValid;
 
+    /**
+     * Instantiates a new Excel parser.If file isn't found, sets isParserValid = false;
+     *
+     * @param filePath the file path String
+     */
     public ExcelParser(String filePath) {
         try {
             workbook = WorkbookFactory.create(new File(filePath));
@@ -42,6 +55,11 @@ public class ExcelParser {
         }
     }
 
+    /**
+     * Instantiates a new Excel parser.If file isn't found, sets isParserValid = false;
+     *
+     * @param file the file
+     */
     public ExcelParser(File file) {
         try {
             workbook = WorkbookFactory.create(file);
@@ -55,10 +73,20 @@ public class ExcelParser {
         }
     }
 
+    /**
+     * Checks if the parser is valid. Method should be called before executing the parser, otherwise will throw IOException.
+     *
+     * @return the boolean
+     */
     public boolean isParserValid() {
         return isParserValid;
     }
 
+    /**
+     * Main Excel Parser method. Calls all other methods to generate CategoryDTO list.
+     *
+     * @return the categories
+     */
     public List<CategoryDTO> getCategories() {
         List<CategoryDTO> unfilteredList = getUnfilteredCategories();
         List<CategoryDTO> consolidatedList = consolidateSimilarCategories(unfilteredList);
@@ -66,6 +94,11 @@ public class ExcelParser {
         return finalList;
     }
 
+    /**
+     * First parsing step. Simply reads the sheet into an unfiltered, unparsed list of CategoryDTO objects.
+     *
+     * @return the unfiltered categories
+     */
     List<CategoryDTO> getUnfilteredCategories() {
         List<CategoryDTO> categoryDTOList = new ArrayList<>();
         categoryDTOList.add(createUncategorized());
@@ -80,18 +113,24 @@ public class ExcelParser {
         return new CategoryDTO(UNCATEGORIZED_TITLE, "", "", new HashSet<String>());
     }
 
+    /**
+     * Reads a single Row object and produces a CategoryDTO object from it. Ignores the first column, because I don't need the category ID in Google nomenclature.
+     *
+     * @param row the row
+     * @return the category dto
+     */
     CategoryDTO generateDTOFromRow(Row row) {
-        int cellCount = 0; // First cell needs to be ignored, because I don't need the shoppingItemCategory ID
+        int column = 0; // First cell needs to be ignored, because I don't need the shoppingItemCategory ID
         CategoryDTO categoryDTO = new CategoryDTO();
         Set<String> keywords = new HashSet<>();
 
         for (Cell cell : row) {
-            cellCount++;
+            column++;
             String cellValue = dataFormatter.formatCellValue(cell);
-            if (cellCount != 1 && !cellValue.equals("")) {
-                getCategoryName(cellCount, categoryDTO, cellValue);
-                getSubcategoryName(cellCount, categoryDTO, cellValue);
-                getFoodCategoryName(cellCount, categoryDTO, cellValue);
+            if (column != 1 && !cellValue.equals("")) {
+                getCategoryName(column, categoryDTO, cellValue);
+                getSubcategoryName(column, categoryDTO, cellValue);
+                getFoodCategoryName(column, categoryDTO, cellValue);
                 addKeywordsIfValid(categoryDTO.getKeywords(), cellValue);
             }
         }
@@ -99,6 +138,15 @@ public class ExcelParser {
         return categoryDTO;
     }
 
+    /**
+     * Adds the cell value to a set of category keywords
+     * if the cell value is NOT "Food Items", "Tobacco Products", "Beverages" or "Food, Beverages {@literal &} Tobacco".
+     * This ensures that category names are not amongst the keywords.
+     * The category names are set as private final static String fields for the class.
+     *
+     * @param keywords  the keywords
+     * @param cellValue the cell value
+     */
     void addKeywordsIfValid(Set<String> keywords, String cellValue) {
         if (!cellValue.equals(FOOD_CATEGORY_NAME)
                 && !cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)
@@ -108,30 +156,64 @@ public class ExcelParser {
         }
     }
 
-    void getFoodCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
-        if (cellCount == 4 && categoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
+    /**
+     * Sets food category name. Will onl execute if CategoryDTO subcategory is "Food Items" and the supplied cell count is 4.<br>
+     *     Since I've decided to split food items, tobacco products and beverages into separate categories, I had to shift where the category name is found by one column.
+     *
+     * @param column   the column
+     * @param categoryDTO the category dto
+     * @param cellValue   the cell value
+     */
+    void getFoodCategoryName(int column, CategoryDTO categoryDTO, String cellValue) {
+        if (column == 4 && categoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
             categoryDTO.setFoodCategoryName(cellValue);
         }
     }
 
+    /**
+     * Only sets "Food Items".<br>
+     *     This is neccessary because I wanted to expand the Food Items category.
+     *
+     * @param cellCount   the cell count
+     * @param categoryDTO the category dto
+     * @param cellValue   the cell value
+     */
     void getSubcategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
         if (cellCount == 3 && cellValue.equals(FOOD_CATEGORY_NAME)) {
             categoryDTO.setSubcategory(cellValue);
         }
     }
 
-    void getCategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
-        if (cellCount == 2) {
+    /**
+     * Gets category name.<br>
+     *     If column is 2, sets whatever cell value provided.
+     *     If column is 3, checks whether it's a tobacco or beverages category and sets appropriately.
+     *
+     * @param column   the column count
+     * @param categoryDTO the category dto
+     * @param cellValue   the cell value
+     */
+    void getCategoryName(int column, CategoryDTO categoryDTO, String cellValue) {
+        if (column == 2) {
             categoryDTO.setCategoryName(cellValue);
         }
 
-        if (cellCount == 3 && cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)) {
+        if (column == 3 && cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)) {
             categoryDTO.setCategoryName(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS);
-        } else if (cellCount == 3 && cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)) {
+        } else if (column == 3 && cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)) {
             categoryDTO.setCategoryName(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS);
         }
     }
 
+    /**
+     * First filtering step.<br>
+     *     If subcategory is "Food Items", then updates subcategory with whatever Food category was asigned.
+     *     Checks unfiltered CategoryDTO objects in pairs.
+     *     If object categories match, then keywords from object 2 are added to are added to object1, object1 is saved to filtered list whilst object 2 is discarded.
+     *
+     * @param unfilteredList the unfiltered list
+     * @return filtered list
+     */
     List<CategoryDTO> consolidateSimilarCategories(List<CategoryDTO> unfilteredList) {
         List<CategoryDTO> filteredList = new ArrayList<>();
 
@@ -156,6 +238,18 @@ public class ExcelParser {
         return filteredList;
     }
 
+    /**
+     * Additional list filtering step.<br>
+     *     Disregards all CategoryDTO objects that
+     *     <ul>
+     *         <li>have empty category names</li>
+     *         <li>are uncategorized and have more than 1 keyword</li>
+     *         <li>category name is "Food, Beverages {@literal &} Tobacco"</li>
+     *     </ul>
+     *
+     * @param categoryDTOList the category dto list
+     * @return the filtered
+     */
     List<CategoryDTO> removeEmptyEntries(List<CategoryDTO> categoryDTOList) {
         List<CategoryDTO> filteredList = categoryDTOList.stream()
                 .filter(item -> !item.getCategoryName().equals(""))

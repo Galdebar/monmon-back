@@ -1,5 +1,6 @@
 package lt.galdebar.monmonscraper.services;
 
+import lt.galdebar.monmonscraper.domain.ScrapedShoppingItem;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 

@@ -5,7 +5,7 @@ import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.KeywordsRepo;
 import lt.galdebar.monmon.categoriesparser.services.CategoriesParserMain;
-import lt.galdebar.monmon.categoriesparser.services.CategoryDTOtoDAOConverter;
+import lt.galdebar.monmon.categoriesparser.services.CategoryDTOToEntityConverter;
 import lt.galdebar.monmon.categoriesparser.services.ExcelParser;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +35,7 @@ public class ExcelParserIntegrationTests {
     private ExcelParser excelParser;
 
     @Autowired
-    private CategoryDTOtoDAOConverter converter;
+    private CategoryDTOToEntityConverter converter;
 
     @Test
     public void givenContext_whenLoaded_thenParserValid(){
@@ -48,7 +48,7 @@ public class ExcelParserIntegrationTests {
 
     @Test
     public void whenPushToDB_thenValidDBEntries(){
-        List<CategoryEntity> expectedList = converter.convertDTOsToDAOs(excelParser.getCategories());
+        List<CategoryEntity> expectedList = converter.convertDTOsToEntities(excelParser.getCategories());
         parserMain.pushCategoriesToDB();
 
         List<CategoryEntity> actualList = categoriesRepo.findAll();

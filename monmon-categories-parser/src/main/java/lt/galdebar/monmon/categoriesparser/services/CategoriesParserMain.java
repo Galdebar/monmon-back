@@ -10,6 +10,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Categories parser parent class.<br>
+ *     Uses ExcelParser, CategoryDTOToEntityConverter to read the excel file, ready entities and push to DB.
+ *     The parser is meant to be run once on the app initiation.
+ */
 @Log4j2
 @Component
 public class CategoriesParserMain {
@@ -21,12 +26,21 @@ public class CategoriesParserMain {
     private ExcelParser excelParser;
 
     @Autowired
-    private CategoryDTOtoDAOConverter converter;
+    private CategoryDTOToEntityConverter converter;
 
 
+    /**
+     * Checks if the Autowired ExcelParser is valid.
+     *
+     * @return the boolean
+     */
     public boolean isParserValid(){
         return excelParser.isParserValid();
     }
+
+    /**
+     * Push categories to db. Stops if matching categories are found.
+     */
     public void pushCategoriesToDB() {
         List<CategoryEntity> categoryEntityList = convertToDAO(getCategories());
         try{
@@ -45,6 +59,6 @@ public class CategoriesParserMain {
     }
 
     private List<CategoryEntity> convertToDAO(List<CategoryDTO> categoryDTOList) {
-        return converter.convertDTOsToDAOs(categoryDTOList);
+        return converter.convertDTOsToEntities(categoryDTOList);
     }
 }

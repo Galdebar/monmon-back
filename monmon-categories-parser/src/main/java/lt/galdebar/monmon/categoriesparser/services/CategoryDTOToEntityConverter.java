@@ -10,18 +10,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Helper class. Converts Category DTO objects into entities ready for storage in DB.
+ */
 @Component
-public class CategoryDTOtoDAOConverter {
+public class CategoryDTOToEntityConverter {
 
-    public List<CategoryEntity> convertDTOsToDAOs(List<CategoryDTO> categoryDTOList) {
+    /**
+     * Convert DTO list into Entity list.
+     *
+     * @param categoryDTOList the category dto list
+     * @return the list
+     */
+    public List<CategoryEntity> convertDTOsToEntities(List<CategoryDTO> categoryDTOList) {
         List<CategoryEntity> categoryEntityList = new ArrayList<>();
         for (CategoryDTO categoryDTO : categoryDTOList) {
-            categoryEntityList.add(convertDTOtoDAO(categoryDTO));
+            categoryEntityList.add(convertDTOtoEntity(categoryDTO));
         }
         return categoryEntityList;
     }
 
-    private CategoryEntity convertDTOtoDAO(CategoryDTO categoryDTO) {
+    private CategoryEntity convertDTOtoEntity(CategoryDTO categoryDTO) {
         Set<KeywordEntity> keywords = new HashSet<>();
         for (String keyword : categoryDTO.getKeywords()) {
             KeywordEntity keywordEntity = new KeywordEntity();
