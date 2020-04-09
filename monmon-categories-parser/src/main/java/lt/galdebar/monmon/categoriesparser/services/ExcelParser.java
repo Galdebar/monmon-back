@@ -254,7 +254,7 @@ public class ExcelParser {
         List<CategoryDTO> filteredList = categoryDTOList.stream()
                 .filter(item -> !item.getCategoryName().equals(""))
                 .distinct()
-                .filter(item -> item.getKeywords().size() > 1 || item.getCategoryName().equals(UNCATEGORIZED_TITLE))
+                .filter(item -> item.getKeywords().size() > 0 || item.getCategoryName().equals(UNCATEGORIZED_TITLE))
                 .filter(item -> !item.getCategoryName().equals(FOOD_BEVERAGES_TOBACCO))
                 .collect(Collectors.toList());
         return filteredList;

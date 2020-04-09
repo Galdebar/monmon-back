@@ -43,8 +43,18 @@ public class CategoriesParserMain {
      */
     public void pushCategoriesToDB() {
         List<CategoryEntity> categoryEntityList = convertToDAO(getCategories());
+//        try{
+//            categoriesRepo.saveAll(categoryEntityList);
+//        }catch (DataIntegrityViolationException e){
+//            log.error("Categories parser failed to push to DB. Cause: " + e.getMessage());
+//        }
+
+        categoryEntityList.forEach(this::pushSingleCategory);
+    }
+
+    private void pushSingleCategory(CategoryEntity entity){
         try{
-            categoriesRepo.saveAll(categoryEntityList);
+            categoriesRepo.save(entity);
         }catch (DataIntegrityViolationException e){
             log.error("Categories parser failed to push to DB. Cause: " + e.getMessage());
         }

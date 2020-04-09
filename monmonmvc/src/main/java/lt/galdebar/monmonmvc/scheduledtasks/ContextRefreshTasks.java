@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmon.categoriesparser.services.CategoriesParserMain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
  *     Runs the categories parser in case the application starts in an environment where the categories DB is empty.
  */
 @Component
+//@ComponentScan(basePackages = "lt.galdebar.monmon.categoriesparser")
 @Log4j2
 public class ContextRefreshTasks implements ApplicationListener<ContextRefreshedEvent> {
 

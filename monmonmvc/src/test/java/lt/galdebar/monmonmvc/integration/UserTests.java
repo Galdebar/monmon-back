@@ -39,8 +39,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -914,7 +913,7 @@ public class UserTests {
         assertFalse(user.isToBeDeleted());
         String authToken = getAuthToken(testEmail,testPassword);
 
-        String requestResponse = mvc.perform(get("/user/deleteuser")
+        String requestResponse = mvc.perform(delete("/user/deleteuser")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
@@ -943,7 +942,7 @@ public class UserTests {
         assertFalse(user.isToBeDeleted());
         String authToken = "getAuthToken(testEmail,testPassword)";
 
-        String requestResponse = mvc.perform(get("/user/deleteuser")
+        String requestResponse = mvc.perform(delete("/user/deleteuser")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
@@ -964,7 +963,7 @@ public class UserTests {
         assertFalse(user.isToBeDeleted());
         String authToken = "";
 
-        String requestResponse = mvc.perform(get("/user/deleteuser")
+        String requestResponse = mvc.perform(delete("/user/deleteuser")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
@@ -986,7 +985,7 @@ public class UserTests {
         assertFalse(user.isToBeDeleted());
         String authToken = "      ";
 
-        String requestResponse = mvc.perform(get("/user/deleteuser")
+        String requestResponse = mvc.perform(delete("/user/deleteuser")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
@@ -1008,7 +1007,7 @@ public class UserTests {
         assertFalse(user.isToBeDeleted());
         String authToken = getAuthToken(testEmail,testPassword);
 
-        String requestResponse = mvc.perform(get("/user/deleteuser")
+        String requestResponse = mvc.perform(delete("/user/deleteuser")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + authToken))
                 .andDo(print())

@@ -163,7 +163,7 @@ public class ShoppingItemCategoryTests {
 
   @Test
   public void whenGetAllCategories_thenReturnLargeArray() throws Exception {
-        int expectedCategoriesCount = 36;
+        int expectedCategoriesCount = 42;
         String authToken = getAuthToken(TEST_USER_EMAIL,TEST_USER_PASS);
       String response =mvc.perform(get("/categorysearch/getall")
               .header("Authorization", "Bearer " + authToken))

@@ -29,7 +29,7 @@ public class EmailSenderService {
      */
     public void sendRegistrationConformationEmail(String recepient, String token) {
         log.info(String.format(
-                "Sending registration email to: ",
+                "Sending registration email to: %s",
                 recepient
         ));
 
@@ -49,7 +49,7 @@ public class EmailSenderService {
      */
     public void sendLinkUsersConfirmationEmail(String recepient, String token) {
         log.info(String.format(
-                "Sending link users email to: ",
+                "Sending link users email to: %s",
                 recepient
         ));
 
@@ -69,7 +69,7 @@ public class EmailSenderService {
      */
     public void sendEmailChangeConfirmationEmail(String recepient, String token) {
         log.info(String.format(
-                "Sending email change email to: ",
+                "Sending email change email to: %s",
                 recepient
         ));
 
@@ -89,7 +89,7 @@ public class EmailSenderService {
      */
     public void sendDeletionWarningEmail(String recepient, int period) {
         log.info(String.format(
-                "Sending account deletion warning to $s",
+                "Sending account deletion warning to %s",
                 recepient
         ));
 
@@ -113,7 +113,7 @@ public class EmailSenderService {
      */
     public void sendDeletionConfirmationEmail(String recepient) {
         log.info(String.format(
-                "Sending account deletion confirmation to $s",
+                "Sending account deletion confirmation to %s",
                 recepient
         ));
 

@@ -412,7 +412,7 @@ public class UserController {
      * </ul>
      */
     @CrossOrigin
-    @GetMapping("/deleteuser")
+    @DeleteMapping("/deleteuser")
     ResponseEntity markUserForDeletion() {
         String attemptMessage = String.format(
                 "Attempting to mark user for deletion. User: %s",
