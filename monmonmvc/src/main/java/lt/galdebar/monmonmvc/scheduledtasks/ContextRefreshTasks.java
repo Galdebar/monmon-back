@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  *     Runs the categories parser in case the application starts in an environment where the categories DB is empty.
  */
 @Component
-//@ComponentScan(basePackages = "lt.galdebar.monmon.categoriesparser")
+@ComponentScan(basePackages = "lt.galdebar.monmon.categoriesparser")
 @Log4j2
 public class ContextRefreshTasks implements ApplicationListener<ContextRefreshedEvent> {
 

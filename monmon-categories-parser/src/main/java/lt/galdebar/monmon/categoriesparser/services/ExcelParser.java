@@ -5,6 +5,7 @@ import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -60,9 +61,9 @@ public class ExcelParser {
      *
      * @param file the file
      */
-    public ExcelParser(File file) {
+    public ExcelParser(Resource file) {
         try {
-            workbook = WorkbookFactory.create(file);
+            workbook = WorkbookFactory.create(file.getInputStream());
             sheet = workbook.getSheet(SHEET_NAME);
             dataFormatter = new DataFormatter();
             isParserValid = true;

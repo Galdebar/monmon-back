@@ -52,15 +52,6 @@ public class ShoppingItemTests {
     private static final String TEST_USER_EMAIL = "user@somemail.com";
     private static final String TEST_USER_PASS = "password";
 
-    @TestConfiguration
-    @ComponentScan(basePackages = "lt.galdebar.monmon.categoriesparser")
-    @Import(CategoriesParserMain.class)
-    public class Config{
-        @Bean
-        public CategoriesParserMain categoriesParserMain(){
-            return new CategoriesParserMain();
-        }
-    }
 
     @Autowired
     private UserRepo userRepo;

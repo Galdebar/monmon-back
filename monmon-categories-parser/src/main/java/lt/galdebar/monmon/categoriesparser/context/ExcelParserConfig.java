@@ -28,6 +28,6 @@ public class ExcelParserConfig {
     @Bean
     public ExcelParser excelParser() throws IOException {
         Resource resource = resourceLoader.getResource("classpath:taxonomy-with-ids.en-US.xls");
-        return new ExcelParser(resource.getFile());
+        return new ExcelParser(resource);
     }
 }
