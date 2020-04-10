@@ -305,7 +305,7 @@ public class UserService {
 
         if (connectionTokenDAO != null) {
             emailSenderService.sendLinkUsersConfirmationEmail(
-                    currentUserEntity.getUserEmail(),
+                    connectionTokenDAO.getUserB().getUserEmail(),
                     connectionTokenDAO.getToken()
             );
         }

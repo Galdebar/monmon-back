@@ -114,7 +114,7 @@ public class ShoppingItemTests {
         createAndSaveShoppingItem(item1Name, item1Category, TEST_USER_EMAIL);
         createAndSaveShoppingItem(item2Name, item1Category, TEST_USER_EMAIL);
 
-        mvc.perform(get("/shoppingitems/getAll").header("Authorization", "Bearer " + authToken))
+        mvc.perform(get("/shoppingitems/getall").header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(item1Name)))
                 .andExpect(content().string(containsString(item2Name)))
@@ -136,7 +136,7 @@ public class ShoppingItemTests {
         createAndSaveShoppingItem(item1Name, item1Category, TEST_USER_EMAIL);
         createAndSaveShoppingItem(item2Name, item1Category, TEST_USER_EMAIL);
 
-        mvc.perform(get("/shoppingitems/getAll")
+        mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
                 .andExpect(content().string(expectedEmptyArray));
@@ -163,12 +163,12 @@ public class ShoppingItemTests {
         String userAAuthToken = getAuthToken(userAEmail, userAPassword);
         String userBAuthToken = getAuthToken(userBEmail, userBPassword);
 
-        String userAresponse = mvc.perform(get("/shoppingitems/getAll")
+        String userAresponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + userAAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn().getResponse().getContentAsString();
-        String userBresponse = mvc.perform(get("/shoppingitems/getAll")
+        String userBresponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + userBAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -207,12 +207,12 @@ public class ShoppingItemTests {
         String userAAuthToken = getAuthToken(userAEmail, userAPassword);
         String userBAuthToken = getAuthToken(userBEmail, userBPassword);
 
-        String userAresponse = mvc.perform(get("/shoppingitems/getAll")
+        String userAresponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + userAAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn().getResponse().getContentAsString();
-        String userBresponse = mvc.perform(get("/shoppingitems/getAll")
+        String userBresponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + userBAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -248,12 +248,12 @@ public class ShoppingItemTests {
         String userAAuthToken = getAuthToken(userAEmail, userAPassword);
         String userBAuthToken = getAuthToken(userBEmail, userBPassword);
 
-        String userAresponse = mvc.perform(get("/shoppingitems/getAll")
+        String userAresponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + userAAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn().getResponse().getContentAsString();
-        String userBresponse = mvc.perform(get("/shoppingitems/getAll")
+        String userBresponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + userBAuthToken))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -654,7 +654,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        String getAllResponse = mvc.perform(get("/shoppingitems/getAll")
+        String getAllResponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + authToken)
                 .content(objectMapper.writeValueAsString(updateRequestObject1))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -1064,7 +1064,7 @@ public class ShoppingItemTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        String getAllResponse = mvc.perform(get("/shoppingitems/getAll")
+        String getAllResponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + authToken))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -1195,7 +1195,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        String getAllResponce = mvc.perform(get("/shoppingitems/getAll")
+        String getAllResponce = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + authToken)
                 .content(objectMapper.writeValueAsString(listDeleteObject))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -1261,7 +1261,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        String getAllResponse = mvc.perform(get("/shoppingitems/getAll")
+        String getAllResponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1298,7 +1298,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        String getAllResponse = mvc.perform(get("/shoppingitems/getAll")
+        String getAllResponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1335,7 +1335,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        String getAllResponse = mvc.perform(get("/shoppingitems/getAll")
+        String getAllResponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1363,7 +1363,7 @@ public class ShoppingItemTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        String getAllResponse = mvc.perform(get("/shoppingitems/getAll")
+        String getAllResponse = mvc.perform(get("/shoppingitems/getall")
                 .header("Authorization", "Bearer " + authToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

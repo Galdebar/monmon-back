@@ -80,7 +80,7 @@ public class ShoppingItemController {
      * </ul>
      */
     @CrossOrigin
-    @GetMapping("getAll")
+    @GetMapping("getall")
     ResponseEntity getAllItems() {
         log.info(String.format(
                 "Attempting to get all items. User: %s",
