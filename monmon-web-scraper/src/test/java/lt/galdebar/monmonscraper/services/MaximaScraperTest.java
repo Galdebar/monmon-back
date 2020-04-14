@@ -1,5 +1,6 @@
 package lt.galdebar.monmonscraper.services;
 
+import lt.galdebar.monmonscraper.domain.ScrapedShoppingItem;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

@@ -1,101 +1,253 @@
 package lt.galdebar.monmonmvc.service;
 
 
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lt.galdebar.monmonmvc.persistence.domain.dao.ShoppingItemDAO;
+import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
+import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
-import lt.galdebar.monmonmvc.persistence.repositories.MongoDBRepo;
+import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
+import lt.galdebar.monmonmvc.service.exceptions.shoppingitem.ShoppingItemNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Handles checks and verifications before shopping item CRUD operations.
+ */
 @Service
-//@RequiredArgsConstructor
 public class ShoppingItemService {
-
     @Autowired
-    private MongoDBRepo mongoDBRepo;
-
+    private ShoppingItemRepo shoppingItemRepo;
+    @Autowired
+    private UserService userService;
     @Autowired
     private ShoppingItemCategoryService shoppingItemCategoryService;
 
-    public ShoppingItemDTO addItem(ShoppingItemDTO shoppingItemDTO) {
-        ShoppingCategoryDTO foundCategory = shoppingItemCategoryService.findCategoryByKeyword(
-                new ShoppingKeywordDTO("",shoppingItemDTO.getItemName())
-        );
-        shoppingItemDTO.setItemCategory(foundCategory.getCategoryName());
-        ShoppingItemDAO returnedItem = mongoDBRepo.insert(dtoToDao(shoppingItemDTO));
-        return daoToDto(returnedItem);
+    /**
+     * Gets items by category.
+     *
+     * @param requestedCategory the requested category
+     * @return Shopping Item list. Empty if nothing found.
+     */
+    public List<ShoppingItemDTO> getItemsByCategory(String requestedCategory) {
+        List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByItemCategory(requestedCategory);
+        return entitiesToDtos(foundItems);
     }
 
-    public Optional<ShoppingItemDAO> getItemById(String id) {
-        return mongoDBRepo.findById(id);
-    }
-
-    public List<ShoppingItemDAO> getItemsByCategory(String requestedCategory) {
-        return mongoDBRepo.findByItemCategory(requestedCategory);
-    }
-
+    /**
+     * Gets all shopping items for current user and linked users (if there are any).
+     *
+     * @return List of Shopping items. Empty if nothing found.
+     */
     public List<ShoppingItemDTO> getAll() {
-        return daosToDtos(mongoDBRepo.findAll());
+        return entitiesToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
     }
 
-
-    public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) {
-        ShoppingItemDAO result = mongoDBRepo.save(dtoToDao(shoppingItemDTO));
-        return daoToDto(result);
-    }
-
-    public List<ShoppingItemDTO> updateItems(List<ShoppingItemDTO> shoppingItemDTOS) {
-        List<ShoppingItemDAO> updatedItems = mongoDBRepo.saveAll(dtosToDaos(shoppingItemDTOS));
-        return daosToDtos(updatedItems);
-    }
-
-    public void deleteItem(ShoppingItemDTO shoppingItemDTO) {
-        mongoDBRepo.delete(dtoToDao(shoppingItemDTO));
-    }
-
-    public void deleteItems(List<ShoppingItemDTO> shoppingItemDTOList) {
-        mongoDBRepo.deleteAll(dtosToDaos(shoppingItemDTOList));
-    }
-
-    private ShoppingItemDAO dtoToDao(ShoppingItemDTO shoppingItemDTO) {
-        return new ShoppingItemDAO(
-                shoppingItemDTO.getId(),
-                shoppingItemDTO.getItemName(),
-                shoppingItemDTO.getItemCategory(),
-                shoppingItemDTO.getQuantity(),
-                shoppingItemDTO.getComment(),
-                shoppingItemDTO.isInCart()
+    /**
+     * Gets all shopping items when given a user.
+     *
+     * @param userDTO the user dto. Should contain valid email adress.
+     * @return List of Shopping Items. Empty if nothing found, or in any way incorrect email address given.
+     */
+    public List<ShoppingItemDTO> getAll(UserDTO userDTO) {
+        List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByUsersIn(
+                Collections.singletonList(userDTO.getUserEmail())
         );
+
+        return entitiesToDtos(foundItems);
     }
 
-    private List<ShoppingItemDAO> dtosToDaos(List<ShoppingItemDTO> shoppingItemDTOList) {
-        List<ShoppingItemDAO> shoppingItemDAOList = new ArrayList<>();
-        shoppingItemDTOList.forEach(dto -> shoppingItemDAOList.add(dtoToDao(dto)));
-        return shoppingItemDAOList;
+    /**
+     * Add a new Shopping item to DB. Assigns a category if there is none based on the item name.
+     * If there's no valid category to be found, assigns "Uncategorized"
+     *
+     * @param shoppingItemDTO the shopping item dto
+     * @return the saved Shopping item with assigned category and id.
+     */
+    @Transactional
+    public ShoppingItemDTO addItem(ShoppingItemDTO shoppingItemDTO) {
+        if (shoppingItemDTO.getItemCategory().trim().isEmpty()) {
+            ShoppingCategoryDTO foundCategory = shoppingItemCategoryService.findCategoryByKeyword(
+                    new ShoppingKeywordDTO("", shoppingItemDTO.getItemName())
+            );
+            shoppingItemDTO.setItemCategory(foundCategory.getCategoryName());
+        }
+
+        ShoppingCategoryDTO searchCategory = new ShoppingCategoryDTO();
+        searchCategory.setCategoryName(shoppingItemDTO.getItemCategory());
+        shoppingItemDTO.setItemCategory(
+                shoppingItemCategoryService.searchCategory(
+                        searchCategory
+                ).getCategoryName()
+        );
+
+        ShoppingItemDTO itemToAdd = addUsersIfEmpty(shoppingItemDTO);
+
+        ShoppingItemEntity returnedItem = shoppingItemRepo.insert(dtoToEntity(itemToAdd));
+        return entityToDto(returnedItem);
     }
 
-    private ShoppingItemDTO daoToDto(ShoppingItemDAO shoppingItemDAO) {
+
+    /**
+     * Update item shopping item dto. Carries all fields over.
+     * If fields are null or empty- item in DB will be updated accordingly.
+     *
+     * @param shoppingItemDTO the shopping item dto
+     * @return the shopping item dto
+     * @throws ShoppingItemNotFound the shopping item not found (invalid id)
+     */
+    @Transactional
+    public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
+        if (!validateShoppingItemDTO(shoppingItemDTO)) {
+            throw new ShoppingItemNotFound(shoppingItemDTO.getId());
+        }
+        if (!shoppingItemRepo.existsById(shoppingItemDTO.getId())) {
+            throw new ShoppingItemNotFound(shoppingItemDTO.getId());
+        }
+
+        ShoppingItemDTO itemToUpdate = addUsersIfEmpty(shoppingItemDTO);
+
+        ShoppingItemEntity result = shoppingItemRepo.save(dtoToEntity(itemToUpdate));
+        return entityToDto(result);
+    }
+
+    /**
+     * Update items list.
+     *
+     * @param shoppingItemDTOS the shopping item dtos
+     * @return the list
+     * @throws ShoppingItemNotFound Any shopping item not found.
+     */
+    @Transactional
+    public List<ShoppingItemDTO> updateItems(List<ShoppingItemDTO> shoppingItemDTOS) throws ShoppingItemNotFound {
+        List<ShoppingItemDTO> itemsToUpdate = new ArrayList<>();
+        for (ShoppingItemDTO item : shoppingItemDTOS) {
+            if (!validateShoppingItemDTO(item)) {
+                throw new ShoppingItemNotFound(item.getId());
+            }
+            if (!shoppingItemRepo.existsById(item.getId())) {
+                throw new ShoppingItemNotFound(item.getId());
+            }
+            itemsToUpdate.add(addUsersIfEmpty(item));
+        }
+        List<ShoppingItemEntity> updatedItems = shoppingItemRepo.saveAll(dtosToEntities(itemsToUpdate));
+        return entitiesToDtos(updatedItems);
+    }
+
+    /**
+     * Delete item.
+     *
+     * @param shoppingItemDTO the shopping item dto
+     * @throws ShoppingItemNotFound the shopping item not found (invalid id).
+     */
+    @Transactional
+    public void deleteItem(ShoppingItemDTO shoppingItemDTO) throws ShoppingItemNotFound {
+        if (!validateShoppingItemDTO(shoppingItemDTO)) {
+            throw new ShoppingItemNotFound(shoppingItemDTO.getId());
+        }
+        if (!shoppingItemRepo.existsById(shoppingItemDTO.getId())) {
+            throw new ShoppingItemNotFound(shoppingItemDTO.getId());
+        }
+        shoppingItemRepo.delete(dtoToEntity(shoppingItemDTO));
+    }
+
+    /**
+     * Delete items.
+     *
+     * @param shoppingItemDTOList the shopping item dto list
+     * @throws ShoppingItemNotFound any item not found.
+     */
+    @Transactional
+    public void deleteItems(List<ShoppingItemDTO> shoppingItemDTOList) throws ShoppingItemNotFound {
+        for (ShoppingItemDTO item : shoppingItemDTOList) {
+            if (!validateShoppingItemDTO(item)) {
+                throw new ShoppingItemNotFound(item.getId());
+            }
+            if (!shoppingItemRepo.existsById(item.getId())) {
+                throw new ShoppingItemNotFound(item.getId());
+            }
+        }
+        shoppingItemRepo.deleteAll(dtosToEntities(shoppingItemDTOList));
+    }
+
+    private ShoppingItemEntity dtoToEntity(ShoppingItemDTO shoppingItemDTO) {
+        ShoppingItemEntity shoppingItemEntity = new ShoppingItemEntity();
+        shoppingItemEntity.id = shoppingItemDTO.getId();
+        shoppingItemEntity.itemName = shoppingItemDTO.getItemName();
+        shoppingItemEntity.itemCategory = shoppingItemDTO.getItemCategory();
+        shoppingItemEntity.quantity = shoppingItemDTO.getQuantity();
+        shoppingItemEntity.comment = shoppingItemDTO.getComment();
+        shoppingItemEntity.isInCart = shoppingItemDTO.isInCart();
+        if(shoppingItemDTO.getUsers() != null){
+            shoppingItemEntity.users.addAll(shoppingItemDTO.getUsers());
+        }
+        return shoppingItemEntity;
+    }
+
+    private List<ShoppingItemEntity> dtosToEntities(List<ShoppingItemDTO> shoppingItemDTOList) {
+        List<ShoppingItemEntity> shoppingItemEntityList = new ArrayList<>();
+        shoppingItemDTOList.forEach(dto -> shoppingItemEntityList.add(dtoToEntity(dto)));
+        return shoppingItemEntityList;
+    }
+
+    private ShoppingItemDTO entityToDto(ShoppingItemEntity shoppingItemEntity) {
         return new ShoppingItemDTO(
-                shoppingItemDAO.id,
-                shoppingItemDAO.itemName,
-                shoppingItemDAO.itemCategory,
-                shoppingItemDAO.quantity,
-                shoppingItemDAO.comment,
-                shoppingItemDAO.isInCart
+                shoppingItemEntity.id,
+                shoppingItemEntity.itemName,
+                shoppingItemEntity.itemCategory,
+                shoppingItemEntity.quantity,
+                shoppingItemEntity.comment,
+                shoppingItemEntity.isInCart,
+                shoppingItemEntity.users
         );
     }
 
-    private List<ShoppingItemDTO> daosToDtos(List<ShoppingItemDAO> shoppingItemDAOList) {
+    private List<ShoppingItemDTO> entitiesToDtos(List<ShoppingItemEntity> shoppingItemEntityList) {
         List<ShoppingItemDTO> shoppingItemDTOList = new ArrayList<>();
-        shoppingItemDAOList.forEach(dao -> shoppingItemDTOList.add(daoToDto(dao)));
+        shoppingItemEntityList.forEach(dao -> shoppingItemDTOList.add(entityToDto(dao)));
         return shoppingItemDTOList;
+    }
+
+    private List<String> getCurrentUserAndConnectedUsers() {
+        List<String> users = userService.getLinkedUsers();
+        users.add(SecurityContextHolder.getContext().getAuthentication().getName());
+        System.out.println(users);
+        return users;
+    }
+
+    private boolean validateShoppingItemDTO(ShoppingItemDTO shoppingItemDTO) {
+        if (shoppingItemDTO == null) {
+            return false;
+        }
+        if (shoppingItemDTO.getId() == null) {
+            return false;
+        }
+        if (shoppingItemDTO.getId().trim().isEmpty()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private ShoppingItemDTO addUsersIfEmpty(ShoppingItemDTO shoppingItemDTO) {
+        if(shoppingItemDTO.getUsers() == null){
+            shoppingItemDTO.setUsers(new HashSet<>());
+        }
+        if (shoppingItemDTO.getUsers().size() == 0) {
+            shoppingItemDTO.getUsers().add(
+                    SecurityContextHolder.getContext().getAuthentication().getName()
+            );
+            shoppingItemDTO.getUsers().addAll(
+                    userService.getLinkedUsers()
+            );
+        }
+        return shoppingItemDTO;
     }
 }
