@@ -1,6 +1,5 @@
 package lt.galdebar.monmonscraper.services;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lt.galdebar.monmonscraper.domain.ScrapedShoppingItem;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,7 +86,8 @@ public class MaximaScraper {
     Element getContainer() {
         return document.getElementById(CONTAINER_NAME);
     }
-    Element getContainer(Document document){
+
+    Element getContainer(Document document) {
         return document.getElementById(CONTAINER_NAME);
     }
 
@@ -98,10 +97,18 @@ public class MaximaScraper {
      * @return the items on offer
      */
     Elements getItemsOnOffer() {
-        return getContainer().getElementsByClass(ITEM_NAME);
+//        return getContainer().getElementsByClass(ITEM_NAME);
+        int pagesCount = countPages();
+        Elements totalElements = new Elements();
+        for (int i = 0; i < pagesCount; i++) {
+            Elements fetchedPage = fetchItemsWithOffset(i);
+            totalElements.addAll(fetchedPage);
+        }
+//        return fetchItemsWithOffset();
+        return totalElements;
     }
 
-    Elements getItemsOnOffer(Document document){
+    Elements getItemsOnOffer(Document document) {
         return document.getElementsByClass(ITEM_NAME);
     }
 
@@ -116,9 +123,8 @@ public class MaximaScraper {
     }
 
 
-
-    public int countNumOfRequiredRequests() {
-        int itemsCount = 0;
+    public int countPages() {
+        int pagesCount = 0;
         int totalItemsCount;
         try {
             totalItemsCount = Integer.parseInt(document.getElementById("items_cnt").text());
@@ -127,30 +133,22 @@ public class MaximaScraper {
             totalItemsCount = 0;
         }
         if (totalItemsCount % ITEMS_PER_PAGE > 0) {
-            itemsCount = (totalItemsCount / ITEMS_PER_PAGE) + 1;
-        } else itemsCount = totalItemsCount / ITEMS_PER_PAGE;
+            pagesCount = (totalItemsCount / ITEMS_PER_PAGE) + 1;
+        } else pagesCount = totalItemsCount / ITEMS_PER_PAGE;
 
-        return itemsCount;
+        return pagesCount;
     }
 
-    public Elements fetchItemsWithOffset() {
+    public Elements fetchItemsWithOffset(int pagesCount) {
         String url = "https://www.maxima.lt/ajax/saleloadmore";
         Document fetchedDoc = null;
-        MaximaRequestObject requestObj = new MaximaRequestObject();
-        requestObj.addToMap("orderBy", "discount");
-        requestObj.addToMap("offset", "0");
-        String test = requestObj.toString();
+        int offset = pagesCount * ITEMS_PER_PAGE;
 
         try {
-            Connection.Response response= Jsoup.connect(url)
-//                    .data("orderBy", "discount")
-//                    .data("offset", "0")
+            Connection.Response response = Jsoup.connect(url)
                     .ignoreContentType(true)
                     .method(Connection.Method.POST)
-//                    .header("Accept", "application/json")
-//                    .header("Content-Type", "application/json")
-                    .requestBody(requestObj.toString())
-//                    .userAgent(USER_AGENT)
+                    .data("orderBy","discount","offset",Integer.toString(offset))
                     .cookie("SESSIONID", sessionID)
                     .execute();
             String responseString = response.body();
@@ -160,6 +158,7 @@ public class MaximaScraper {
             fetchedDoc = Jsoup.parse(htmlString);
         } catch (IOException e) {
             e.printStackTrace();
+            return new Elements();
         }
 
         Elements items = getItemsOnOffer(fetchedDoc);
