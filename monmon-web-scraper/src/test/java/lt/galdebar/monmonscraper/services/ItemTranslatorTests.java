@@ -79,8 +79,8 @@ public class ItemTranslatorTests {
     @Test
     void givenItemWithNoName_whenTranslate_returnTranslatedBrand(){
         ScrapedShoppingItem itemToTranslate = new ScrapedShoppingItem(
-                "",
                 "KONSERVUOTOMS DARŽOVĖMS, VAISIAMS IR UOGIENĖMS",
+                "",
                 1
         );
         String expectedName = "PRESERVED VEGETABLES, FRUIT AND JAM";
@@ -96,8 +96,8 @@ public class ItemTranslatorTests {
     @Test
     void givenItemWithNoName_whenTranslate_returnTranslatedBrandFiltered(){
         ScrapedShoppingItem itemToTranslate = new ScrapedShoppingItem(
-                "",
                 "KOJINĖMS IR PĖDKELNĖMS",
+                "",
                 1
         );
         String expectedName = "SOCKS AND TIGHTS";

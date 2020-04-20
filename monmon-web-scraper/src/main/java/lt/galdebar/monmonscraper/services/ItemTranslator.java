@@ -16,10 +16,7 @@ public class ItemTranslator {
     private final String[] wordsToFilter = {"for"};
 
     public ScrapedShoppingItem translate(ScrapedShoppingItem itemToTranslate) {
-        String translatedName = "";
-        if (itemToTranslate.getName().trim().isEmpty()) {
-            translatedName = translateString(itemToTranslate.getBrand());
-        } else translatedName = translateString(itemToTranslate.getName());
+        String translatedName = translateString(itemToTranslate.getName());
 
         return new ScrapedShoppingItem(
                 translatedName,

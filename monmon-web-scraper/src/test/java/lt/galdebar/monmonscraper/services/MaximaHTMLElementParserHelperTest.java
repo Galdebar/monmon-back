@@ -66,8 +66,8 @@ class MaximaHTMLElementParserHelperTest {
     @Test
     void parseSingleCategoryElementTest() {
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/SingleCategoryElement.html");
-        String expectedName = "";
-        String expectedBrand = "KOJINĖMS IR PĖDKELNĖMS";
+        String expectedName = "KOJINĖMS IR PĖDKELNĖMS";
+        String expectedBrand = "";
         float expectedPrice = 0;
 
         ScrapedShoppingItem actualItem = parser.parseElement(testElement);
@@ -80,8 +80,8 @@ class MaximaHTMLElementParserHelperTest {
     @Test
     void parseSeveralCategorieselementTest() {
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/SeveralCategoriesElement.html");
-        String expectedName = "";
-        String expectedBrand = "KONSERVUOTOMS DARŽOVĖMS, VAISIAMS IR UOGIENĖMS";
+        String expectedName = "KONSERVUOTOMS DARŽOVĖMS, VAISIAMS IR UOGIENĖMS";
+        String expectedBrand = "";
         float expectedPrice = 0;
 
         ScrapedShoppingItem actualItem = parser.parseElement(testElement);

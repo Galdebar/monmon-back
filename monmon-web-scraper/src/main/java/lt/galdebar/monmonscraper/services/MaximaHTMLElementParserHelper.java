@@ -16,7 +16,10 @@ class MaximaHTMLElementParserHelper {
         String name = getItemName(getTitleElement(element));
         String brand = getItemBrand(getTitleElement(element));
         float price = getItemPrice(element);
-        return new ScrapedShoppingItem(name, brand, price);
+        ScrapedShoppingItem itemToReturn;
+        if(name.equalsIgnoreCase("")) {
+            return new ScrapedShoppingItem(brand, "", price);
+        } else return new ScrapedShoppingItem(name,brand,price);
     }
 
     private String getItemName(Element titleElement) {
