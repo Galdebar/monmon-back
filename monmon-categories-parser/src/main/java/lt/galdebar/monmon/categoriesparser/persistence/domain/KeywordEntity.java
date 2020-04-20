@@ -1,8 +1,12 @@
 package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+
 import javax.persistence.*;
 
 @Entity
+@Indexed
 @Table(name = "keywords")
 public class KeywordEntity {
     @Id
@@ -12,6 +16,7 @@ public class KeywordEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
+    @Field
     @Column(name = "keywords")
     private String keyword;
 

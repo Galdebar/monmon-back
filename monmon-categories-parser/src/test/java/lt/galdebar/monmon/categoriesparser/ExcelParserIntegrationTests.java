@@ -56,7 +56,6 @@ public class ExcelParserIntegrationTests {
         actualList.sort(this::compareCategoryDAO);
 
         assertEquals(expectedList.size(), actualList.size());
-//        assertEquals(expectedList,actualList);
     }
 
     private int compareCategoryDAO(CategoryEntity categoryA, CategoryEntity categoryB){

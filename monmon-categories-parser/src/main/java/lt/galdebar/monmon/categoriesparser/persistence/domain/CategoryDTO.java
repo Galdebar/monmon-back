@@ -2,38 +2,18 @@ package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
+//@RequiredArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
 @Getter
 @Setter
 @ToString
 public class CategoryDTO {
+//    @NonNull
     private String categoryName;
-    private String subcategory;
-    private String foodCategoryName;
+//    @NonNull
     private Set<String> keywords;
-
-    public CategoryDTO() {
-        this.categoryName = "";
-        this.subcategory = "";
-        this.foodCategoryName = "";
-        this.keywords = new HashSet<>();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CategoryDTO that = (CategoryDTO) o;
-        return categoryName.equals(that.categoryName) &&
-                Objects.equals(keywords, that.keywords);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(categoryName, keywords);
-    }
 }

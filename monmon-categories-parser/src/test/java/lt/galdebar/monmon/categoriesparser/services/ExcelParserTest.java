@@ -1,7 +1,7 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
-import lt.galdebar.monmon.categoriesparser.services.ExcelParser;
+import lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -9,7 +9,6 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -79,12 +78,10 @@ class ExcelParserTest {
         expectedCategoryKeywords.add(cell7Keyword7);
         expectedCategoryKeywords.add(cell7Keyword8);
 
-        expectedList.add(createUncategorizedDTO());
+        expectedList.add(new CategoryDTO("Uncategorized", new HashSet<String>()));
         expectedList.add(
                 new CategoryDTO(
                         cell2Keyword,
-                        "",
-                        "",
                         expectedCategoryKeywords
                 )
         );
@@ -98,8 +95,8 @@ class ExcelParserTest {
     @Test
     void getUnfilteredCategories() {
         ExcelParser parser = new ExcelParser(TAXONOMY_FILE_FEW_ROWS);
-        List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList;
+        List<ParsedExcelRow> expectedList = new ArrayList<>();
+        List<ParsedExcelRow> actualList;
 
         String cell2Keyword = "Arts & Entertainment";
         String cell3Keyword = "Hobbies & Creative Arts";
@@ -173,49 +170,49 @@ class ExcelParserTest {
         category8Keywords.add(cell6Keyword);
         category8Keywords.add(cell7Keyword8);
 
-        CategoryDTO expectedCategory1 = new CategoryDTO(
+        ParsedExcelRow expectedCategory1 = new ParsedExcelRow(
                 cell2Keyword,
                 "",
                 "",
                 category1Keywords
         );
-        CategoryDTO expectedCategory2 = new CategoryDTO(
+        ParsedExcelRow expectedCategory2 = new ParsedExcelRow(
                 cell2Keyword,
                 "",
                 "",
                 category2Keywords
         );
-        CategoryDTO expectedCategory3 = new CategoryDTO(
+        ParsedExcelRow expectedCategory3 = new ParsedExcelRow(
                 cell2Keyword,
                 "",
                 "",
                 category3Keywords
         );
-        CategoryDTO expectedCategory4 = new CategoryDTO(
+        ParsedExcelRow expectedCategory4 = new ParsedExcelRow(
                 cell2Keyword,
                 "",
                 "",
                 category4Keywords
         );
-        CategoryDTO expectedCategory5 = new CategoryDTO(
+        ParsedExcelRow expectedCategory5 = new ParsedExcelRow(
                 cell2Keyword,
                 "",
                 "",
                 category5Keywords
         );
-        CategoryDTO expectedCategory6 = new CategoryDTO(
+        ParsedExcelRow expectedCategory6 = new ParsedExcelRow(
                 cell2Keyword,
                 "",
                 "",
                 category6Keywords
         );
-        CategoryDTO expectedCategory7 = new CategoryDTO(
+        ParsedExcelRow expectedCategory7 = new ParsedExcelRow(
                 cell2Keyword,
                 "",
                 "",
                 category7Keywords
         );
-        CategoryDTO expectedCategory8 = new CategoryDTO(
+        ParsedExcelRow expectedCategory8 = new ParsedExcelRow(
                 cell2Keyword,
                 "",
                 "",
@@ -248,14 +245,14 @@ class ExcelParserTest {
         expectedKeywords.add("Art & Crafting Tools");
         expectedKeywords.add("Thread & Yarn Tools");
         expectedKeywords.add("Fiber Cards & Brushes");
-        CategoryDTO expectedDTO = new CategoryDTO(
+        ParsedExcelRow expectedDTO = new ParsedExcelRow(
                 "Arts & Entertainment",
                 "",
                 "",
                 expectedKeywords
         );
 
-        CategoryDTO actualDTO = parser.generateDTOFromRow(sheet.getRow(0));
+        ParsedExcelRow actualDTO = parser.generateObjectFromRow(sheet.getRow(0));
 
         assertEquals(expectedDTO, actualDTO);
     }
@@ -268,14 +265,14 @@ class ExcelParserTest {
         expectedKeywords.add("Condiments & Sauces");
         expectedKeywords.add("Dessert Toppings");
         expectedKeywords.add("Ice Cream Syrup");
-        CategoryDTO expectedDTO = new CategoryDTO(
+        ParsedExcelRow expectedDTO = new ParsedExcelRow(
                 "Food, Beverages & Tobacco",
                 "Food Items",
                 "Condiments & Sauces",
                 expectedKeywords
         );
 
-        CategoryDTO actualDTO = parser.generateDTOFromRow(sheet.getRow(0));
+        ParsedExcelRow actualDTO = parser.generateObjectFromRow(sheet.getRow(0));
 
         assertEquals(expectedDTO, actualDTO);
     }
@@ -310,18 +307,18 @@ class ExcelParserTest {
         String cellValue2 = "aoknkkdiajwn";
         String cellValue3 = "paoiwjdpoawjd";
         String cellValue4 = "oknolkamnw";
-        CategoryDTO testCategoryDTO = new CategoryDTO();
-        testCategoryDTO.setSubcategory(categoryName);
+        ParsedExcelRow testParsedExcelRow = new ParsedExcelRow();
+        testParsedExcelRow.setSubcategory(categoryName);
         String expectedFoodCategory = categoryName;
         String actualCategory;
 
-        parser.getFoodCategoryName(1, testCategoryDTO, cellValue1);
-        parser.getFoodCategoryName(2, testCategoryDTO, cellValue2);
-        parser.getFoodCategoryName(3, testCategoryDTO, cellValue3);
-        parser.getFoodCategoryName(4, testCategoryDTO, categoryName);
-        parser.getFoodCategoryName(5, testCategoryDTO, cellValue4);
+        parser.getFoodCategoryName(1, testParsedExcelRow, cellValue1);
+        parser.getFoodCategoryName(2, testParsedExcelRow, cellValue2);
+        parser.getFoodCategoryName(3, testParsedExcelRow, cellValue3);
+        parser.getFoodCategoryName(4, testParsedExcelRow, categoryName);
+        parser.getFoodCategoryName(5, testParsedExcelRow, cellValue4);
 
-        actualCategory = testCategoryDTO.getFoodCategoryName();
+        actualCategory = testParsedExcelRow.getFoodCategoryName();
 
         assertEquals(expectedFoodCategory, actualCategory);
     }
@@ -334,18 +331,18 @@ class ExcelParserTest {
         String cellValue2 = "aoknkkdiajwn";
         String cellValue3 = "paoiwjdpoawjd";
         String cellValue4 = "oknolkamnw";
-        CategoryDTO testCategoryDTO = new CategoryDTO();
-        testCategoryDTO.setSubcategory(categoryName);
+        ParsedExcelRow testParsedExcelRow = new ParsedExcelRow();
+        testParsedExcelRow.setSubcategory(categoryName);
         String expectedFoodCategory = "";
         String actualCategory;
 
-        parser.getFoodCategoryName(1, testCategoryDTO, cellValue1);
-        parser.getFoodCategoryName(2, testCategoryDTO, cellValue2);
-        parser.getFoodCategoryName(3, testCategoryDTO, cellValue3);
-        parser.getFoodCategoryName(4, testCategoryDTO, cellValue4);
-        parser.getFoodCategoryName(5, testCategoryDTO, categoryName);
+        parser.getFoodCategoryName(1, testParsedExcelRow, cellValue1);
+        parser.getFoodCategoryName(2, testParsedExcelRow, cellValue2);
+        parser.getFoodCategoryName(3, testParsedExcelRow, cellValue3);
+        parser.getFoodCategoryName(4, testParsedExcelRow, cellValue4);
+        parser.getFoodCategoryName(5, testParsedExcelRow, categoryName);
 
-        actualCategory = testCategoryDTO.getFoodCategoryName();
+        actualCategory = testParsedExcelRow.getFoodCategoryName();
 
         assertEquals(expectedFoodCategory, actualCategory);
     }
@@ -360,18 +357,18 @@ class ExcelParserTest {
         String cellValue3 = "paoiwjdpoawjd";
         String cellValue4 = "oknolkamnw";
 
-        CategoryDTO testCategoryDTO = new CategoryDTO();
-        testCategoryDTO.setSubcategory(categoryName);
+        ParsedExcelRow testParsedExcelRow = new ParsedExcelRow();
+        testParsedExcelRow.setSubcategory(categoryName);
         String expectedCategory = foodCategoryName;
         String actualCategory;
 
-        parser.getFoodCategoryName(1, testCategoryDTO, cellValue1);
-        parser.getFoodCategoryName(2, testCategoryDTO, cellValue2);
-        parser.getFoodCategoryName(3, testCategoryDTO, cellValue3);
-        parser.getFoodCategoryName(4, testCategoryDTO, foodCategoryName);
-        parser.getFoodCategoryName(5, testCategoryDTO, cellValue4);
+        parser.getFoodCategoryName(1, testParsedExcelRow, cellValue1);
+        parser.getFoodCategoryName(2, testParsedExcelRow, cellValue2);
+        parser.getFoodCategoryName(3, testParsedExcelRow, cellValue3);
+        parser.getFoodCategoryName(4, testParsedExcelRow, foodCategoryName);
+        parser.getFoodCategoryName(5, testParsedExcelRow, cellValue4);
 
-        actualCategory = testCategoryDTO.getFoodCategoryName();
+        actualCategory = testParsedExcelRow.getFoodCategoryName();
 
         assertEquals(expectedCategory, actualCategory);
     }
@@ -388,17 +385,17 @@ class ExcelParserTest {
         String expectedSubcategoryName = "";
         String actualSubcategoryName;
 
-        CategoryDTO testCategoryDTO = new CategoryDTO();
+        ParsedExcelRow testParsedExcelRow = new ParsedExcelRow();
 
 
-        parser.getSubcategoryName(1, testCategoryDTO, cellValue1);
-        parser.getSubcategoryName(2, testCategoryDTO, cellValue2);
-        parser.getSubcategoryName(3, testCategoryDTO, cellValue3);
-        parser.getSubcategoryName(4, testCategoryDTO, cellValue4);
-        parser.getSubcategoryName(5, testCategoryDTO, cellValue5);
-        parser.getSubcategoryName(5, testCategoryDTO, defaultFoodCategoryName);
+        parser.getSubcategoryName(1, testParsedExcelRow, cellValue1);
+        parser.getSubcategoryName(2, testParsedExcelRow, cellValue2);
+        parser.getSubcategoryName(3, testParsedExcelRow, cellValue3);
+        parser.getSubcategoryName(4, testParsedExcelRow, cellValue4);
+        parser.getSubcategoryName(5, testParsedExcelRow, cellValue5);
+        parser.getSubcategoryName(5, testParsedExcelRow, defaultFoodCategoryName);
 
-        actualSubcategoryName = testCategoryDTO.getSubcategory();
+        actualSubcategoryName = testParsedExcelRow.getSubcategory();
 
         assertEquals(expectedSubcategoryName, actualSubcategoryName);
 
@@ -416,17 +413,17 @@ class ExcelParserTest {
         String expectedSubcategoryName = defaultFoodCategoryName;
         String actualSubcategoryName;
 
-        CategoryDTO testCategoryDTO = new CategoryDTO();
+        ParsedExcelRow testParsedExcelRow = new ParsedExcelRow();
 
 
-        parser.getSubcategoryName(1, testCategoryDTO, cellValue1);
-        parser.getSubcategoryName(2, testCategoryDTO, cellValue2);
-        parser.getSubcategoryName(3, testCategoryDTO, defaultFoodCategoryName);
-        parser.getSubcategoryName(4, testCategoryDTO, cellValue3);
-        parser.getSubcategoryName(5, testCategoryDTO, cellValue4);
-        parser.getSubcategoryName(5, testCategoryDTO, cellValue5);
+        parser.getSubcategoryName(1, testParsedExcelRow, cellValue1);
+        parser.getSubcategoryName(2, testParsedExcelRow, cellValue2);
+        parser.getSubcategoryName(3, testParsedExcelRow, defaultFoodCategoryName);
+        parser.getSubcategoryName(4, testParsedExcelRow, cellValue3);
+        parser.getSubcategoryName(5, testParsedExcelRow, cellValue4);
+        parser.getSubcategoryName(5, testParsedExcelRow, cellValue5);
 
-        actualSubcategoryName = testCategoryDTO.getSubcategory();
+        actualSubcategoryName = testParsedExcelRow.getSubcategory();
 
         assertEquals(expectedSubcategoryName, actualSubcategoryName);
 
@@ -435,7 +432,7 @@ class ExcelParserTest {
     @Test
     void getCategoryName() {
         ExcelParser parser = createDummyParser();
-        CategoryDTO testCategoryDTO = new CategoryDTO();
+        ParsedExcelRow testParsedExcelRow = new ParsedExcelRow();
         String expectedCategoryName;
         String actualCategoryName;
 
@@ -445,14 +442,14 @@ class ExcelParserTest {
         String cellValue4 = "oknolkamnw";
         String cellValue5 = "oiwd";
 
-        parser.getCategoryName(1, testCategoryDTO, cellValue1);
-        parser.getCategoryName(2, testCategoryDTO, cellValue2);
-        parser.getCategoryName(3, testCategoryDTO, cellValue3);
-        parser.getCategoryName(4, testCategoryDTO, cellValue4);
-        parser.getCategoryName(5, testCategoryDTO, cellValue5);
+        parser.getCategoryName(1, testParsedExcelRow, cellValue1);
+        parser.getCategoryName(2, testParsedExcelRow, cellValue2);
+        parser.getCategoryName(3, testParsedExcelRow, cellValue3);
+        parser.getCategoryName(4, testParsedExcelRow, cellValue4);
+        parser.getCategoryName(5, testParsedExcelRow, cellValue5);
 
         expectedCategoryName = cellValue2;
-        actualCategoryName = testCategoryDTO.getCategoryName();
+        actualCategoryName = testParsedExcelRow.getCategoryName();
 
         assertEquals(expectedCategoryName, actualCategoryName);
     }
@@ -460,25 +457,25 @@ class ExcelParserTest {
     @Test
     void consolidateSimilarCategoriesSimple() {
         ExcelParser parser = createDummyParser();
-        CategoryDTO testCategoryDTO1 = new CategoryDTO();
-        testCategoryDTO1.setCategoryName("TestCategory1");
-        testCategoryDTO1.getKeywords().add("Keyword1");
+        ParsedExcelRow testParsedExcelRow1 = new ParsedExcelRow();
+        testParsedExcelRow1.setCategoryName("TestCategory1");
+        testParsedExcelRow1.getKeywords().add("Keyword1");
 
-        CategoryDTO testCategoryDTO2 = new CategoryDTO(
-                testCategoryDTO1.getCategoryName(),
-                testCategoryDTO1.getSubcategory(),
-                testCategoryDTO1.getFoodCategoryName(),
-                testCategoryDTO1.getKeywords()
+        ParsedExcelRow testParsedExcelRow2 = new ParsedExcelRow(
+                testParsedExcelRow1.getCategoryName(),
+                testParsedExcelRow1.getSubcategory(),
+                testParsedExcelRow1.getFoodCategoryName(),
+                testParsedExcelRow1.getKeywords()
         );
-        testCategoryDTO2.getKeywords().add("Keyword2");
+        testParsedExcelRow2.getKeywords().add("Keyword2");
 
-        List<CategoryDTO> testList = new ArrayList<>();
-        testList.add(testCategoryDTO1);
-        testList.add(testCategoryDTO2);
+        List<ParsedExcelRow> testList = new ArrayList<>();
+        testList.add(testParsedExcelRow1);
+        testList.add(testParsedExcelRow2);
 
-        List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList;
-        expectedList.add(testCategoryDTO2);
+        List<ParsedExcelRow> expectedList = new ArrayList<>();
+        List<ParsedExcelRow> actualList;
+        expectedList.add(testParsedExcelRow2);
 
         actualList = parser.consolidateSimilarCategories(testList);
 
@@ -489,9 +486,9 @@ class ExcelParserTest {
     @Test
     void consolidateSimilarCategories() {
         ExcelParser parser = new ExcelParser(TAXONOMY_FILE_FEW_ROWS);
-        List<CategoryDTO> unfilteredList = new ArrayList<>();
-        List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList = new ArrayList<>();
+        List<ParsedExcelRow> unfilteredList = new ArrayList<>();
+        List<ParsedExcelRow> expectedList = new ArrayList<>();
+        List<ParsedExcelRow> actualList = new ArrayList<>();
         String categoryName = "Arts & Entertainment";
         String subcategory = "";
         String foodCategoryName = "";
@@ -513,7 +510,7 @@ class ExcelParserTest {
 
 
         expectedList.add(createUncategorizedDTO());
-        expectedList.add(new CategoryDTO(
+        expectedList.add(new ParsedExcelRow(
                 categoryName,
                 subcategory,
                 foodCategoryName,
@@ -531,16 +528,16 @@ class ExcelParserTest {
     @Test
     void consolidateSimilarCategoriesFood() {
         ExcelParser parser = new ExcelParser(TAXONOMY_FILE_FEW_ROWS_FOOD);
-        List<CategoryDTO> unfilteredList = new ArrayList<>();
-        List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList = new ArrayList<>();
+        List<ParsedExcelRow> unfilteredList = new ArrayList<>();
+        List<ParsedExcelRow> expectedList = new ArrayList<>();
+        List<ParsedExcelRow> actualList = new ArrayList<>();
 
         Set<String> foodCategoryKeywords = new HashSet<>();
         foodCategoryKeywords.add("Condiments & Sauces");
         foodCategoryKeywords.add("Cocktail Sauce");
         foodCategoryKeywords.add("Curry Sauce");
         foodCategoryKeywords.add("Dessert Toppings");
-        CategoryDTO expectedFoodCategory = new CategoryDTO(
+        ParsedExcelRow expectedFoodCategory = new ParsedExcelRow(
                 "Condiments & Sauces",
                 "Food Items",
                 "Condiments & Sauces",
@@ -551,7 +548,7 @@ class ExcelParserTest {
         tobaccoCategoryKeywords.add("Chewing Tobacco");
         tobaccoCategoryKeywords.add("Cigarettes");
         tobaccoCategoryKeywords.add("Cigars");
-        CategoryDTO expectedTobaccoCategory1 = new CategoryDTO(
+        ParsedExcelRow expectedTobaccoCategory1 = new ParsedExcelRow(
                 "Tobacco Products",
                 "",
                 "",
@@ -564,7 +561,7 @@ class ExcelParserTest {
         beverageKeywords.add("Flavored Carbonated Water");
         beverageKeywords.add("Unflavored Carbonated Water");
         beverageKeywords.add("Vinegar Drinks");
-        CategoryDTO expectedBeveragesCategory = new CategoryDTO(
+        ParsedExcelRow expectedBeveragesCategory = new ParsedExcelRow(
                 "Beverages",
                 "",
                 "",
@@ -587,16 +584,16 @@ class ExcelParserTest {
     @Test
     void removeEmptyEntries() {
         ExcelParser parser = createDummyParser();
-        List<CategoryDTO> fullList = new ArrayList<>();
-        List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList = new ArrayList<>();
+        List<ParsedExcelRow> fullList = new ArrayList<>();
+        List<ParsedExcelRow> expectedList = new ArrayList<>();
+        List<ParsedExcelRow> actualList = new ArrayList<>();
 
         Set<String> foodCategoryKeywords = new HashSet<>();
         foodCategoryKeywords.add("Condiments & Sauces");
         foodCategoryKeywords.add("Cocktail Sauce");
         foodCategoryKeywords.add("Curry Sauce");
         foodCategoryKeywords.add("Dessert Toppings");
-        CategoryDTO expectedFoodCategory = new CategoryDTO(
+        ParsedExcelRow expectedFoodCategory = new ParsedExcelRow(
                 "Condiments & Sauces",
                 "Food Items",
                 "Condiments & Sauces",
@@ -607,26 +604,26 @@ class ExcelParserTest {
         tobaccoCategoryKeywords.add("Chewing Tobacco");
         tobaccoCategoryKeywords.add("Cigarettes");
         tobaccoCategoryKeywords.add("Cigars");
-        CategoryDTO expectedTobaccoCategory1 = new CategoryDTO(
+        ParsedExcelRow expectedTobaccoCategory1 = new ParsedExcelRow(
                 "Tobacco Products",
                 "",
                 "",
                 tobaccoCategoryKeywords
         );
 
-        CategoryDTO emptyCategory1 = new CategoryDTO(
+        ParsedExcelRow emptyCategory1 = new ParsedExcelRow(
                 "",
                 "",
                 "",
                 new HashSet<>()
         );
-        CategoryDTO emptyCategory2 = new CategoryDTO(
+        ParsedExcelRow emptyCategory2 = new ParsedExcelRow(
                 "Tobacco Products",
                 "",
                 "",
                 new HashSet<>()
         );
-        CategoryDTO emptyCategory3 = new CategoryDTO(
+        ParsedExcelRow emptyCategory3 = new ParsedExcelRow(
                 "Food, Beverages & Tobacco",
                 "",
                 "anything",
@@ -653,10 +650,10 @@ class ExcelParserTest {
         return new ExcelParser(TAXONOMY_FILE_ONE_ROW_FOOD);
     }
 
-    private CategoryDTO createUncategorizedDTO() {
-        CategoryDTO categoryDTO = new CategoryDTO();
-        categoryDTO.setCategoryName("Uncategorized");
-        return categoryDTO;
+    private ParsedExcelRow createUncategorizedDTO() {
+        ParsedExcelRow parsedExcelRow = new ParsedExcelRow();
+        parsedExcelRow.setCategoryName("Uncategorized");
+        return parsedExcelRow;
     }
 
     private Sheet getSheet(String filePath) {

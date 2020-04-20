@@ -2,12 +2,10 @@ package lt.galdebar.monmon.categoriesparser.services;
 
 import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
+import lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Parses the supplied Excel file into a list of CategoryDTO objects.<br>
+ * Parses the supplied Excel file into a list of ParsedExcelRow objects.<br>
  *     Also adds "Uncategorized"
  *     Whilst parsing splits the "Food,Beverages {@literal &} Tobacco" category into three separate categories.
  *     Also expands Food Items with subcategories, because the aim of the app is everyday shopping.
@@ -84,59 +82,60 @@ public class ExcelParser {
     }
 
     /**
-     * Main Excel Parser method. Calls all other methods to generate CategoryDTO list.
+     * Main Excel Parser method. Calls all other methods to generate ParsedExcelRow list.
      *
      * @return the categories
      */
     public List<CategoryDTO> getCategories() {
-        List<CategoryDTO> unfilteredList = getUnfilteredCategories();
-        List<CategoryDTO> consolidatedList = consolidateSimilarCategories(unfilteredList);
-        List<CategoryDTO> finalList = removeEmptyEntries(consolidatedList);
-        return finalList;
+        List<ParsedExcelRow> unfilteredList = getUnfilteredCategories();
+        List<ParsedExcelRow> consolidatedList = consolidateSimilarCategories(unfilteredList);
+        List<ParsedExcelRow> finalList = removeEmptyEntries(consolidatedList);
+        List<CategoryDTO> dtoList = rowsToDTOs(finalList);
+        return dtoList;
     }
 
     /**
-     * First parsing step. Simply reads the sheet into an unfiltered, unparsed list of CategoryDTO objects.
+     * First parsing step. Simply reads the sheet into an unfiltered, unparsed list of ParsedExcelRow objects.
      *
      * @return the unfiltered categories
      */
-    List<CategoryDTO> getUnfilteredCategories() {
-        List<CategoryDTO> categoryDTOList = new ArrayList<>();
-        categoryDTOList.add(createUncategorized());
+    List<ParsedExcelRow> getUnfilteredCategories() {
+        List<ParsedExcelRow> parsedExcelRowList = new ArrayList<>();
+        parsedExcelRowList.add(createUncategorized());
         for (Row row : sheet) {
-            CategoryDTO generatedDTO = generateDTOFromRow(row);
-            categoryDTOList.add(generatedDTO);
+            ParsedExcelRow generatedDTO = generateObjectFromRow(row);
+            parsedExcelRowList.add(generatedDTO);
         }
-        return categoryDTOList;
+        return parsedExcelRowList;
     }
 
-    private CategoryDTO createUncategorized() {
-        return new CategoryDTO(UNCATEGORIZED_TITLE, "", "", new HashSet<String>());
+    private ParsedExcelRow createUncategorized() {
+        return new ParsedExcelRow(UNCATEGORIZED_TITLE, "", "", new HashSet<String>());
     }
 
     /**
-     * Reads a single Row object and produces a CategoryDTO object from it. Ignores the first column, because I don't need the category ID in Google nomenclature.
+     * Reads a single Row object and produces a ParsedExcelRow object from it. Ignores the first column, because I don't need the category ID in Google nomenclature.
      *
      * @param row the row
      * @return the category dto
      */
-    CategoryDTO generateDTOFromRow(Row row) {
+    ParsedExcelRow generateObjectFromRow(Row row) {
         int column = 0; // First cell needs to be ignored, because I don't need the shoppingItemCategory ID
-        CategoryDTO categoryDTO = new CategoryDTO();
+        ParsedExcelRow parsedExcelRow = new ParsedExcelRow();
         Set<String> keywords = new HashSet<>();
 
         for (Cell cell : row) {
             column++;
             String cellValue = dataFormatter.formatCellValue(cell);
             if (column != 1 && !cellValue.equals("")) {
-                getCategoryName(column, categoryDTO, cellValue);
-                getSubcategoryName(column, categoryDTO, cellValue);
-                getFoodCategoryName(column, categoryDTO, cellValue);
-                addKeywordsIfValid(categoryDTO.getKeywords(), cellValue);
+                getCategoryName(column, parsedExcelRow, cellValue);
+                getSubcategoryName(column, parsedExcelRow, cellValue);
+                getFoodCategoryName(column, parsedExcelRow, cellValue);
+                addKeywordsIfValid(parsedExcelRow.getKeywords(), cellValue);
             }
         }
 
-        return categoryDTO;
+        return parsedExcelRow;
     }
 
     /**
@@ -158,16 +157,16 @@ public class ExcelParser {
     }
 
     /**
-     * Sets food category name. Will onl execute if CategoryDTO subcategory is "Food Items" and the supplied cell count is 4.<br>
+     * Sets food category name. Will onl execute if ParsedExcelRow subcategory is "Food Items" and the supplied cell count is 4.<br>
      *     Since I've decided to split food items, tobacco products and beverages into separate categories, I had to shift where the category name is found by one column.
      *
      * @param column   the column
-     * @param categoryDTO the category dto
+     * @param parsedExcelRow the category dto
      * @param cellValue   the cell value
      */
-    void getFoodCategoryName(int column, CategoryDTO categoryDTO, String cellValue) {
-        if (column == 4 && categoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
-            categoryDTO.setFoodCategoryName(cellValue);
+    void getFoodCategoryName(int column, ParsedExcelRow parsedExcelRow, String cellValue) {
+        if (column == 4 && parsedExcelRow.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
+            parsedExcelRow.setFoodCategoryName(cellValue);
         }
     }
 
@@ -176,12 +175,12 @@ public class ExcelParser {
      *     This is neccessary because I wanted to expand the Food Items category.
      *
      * @param cellCount   the cell count
-     * @param categoryDTO the category dto
+     * @param parsedExcelRow the category dto
      * @param cellValue   the cell value
      */
-    void getSubcategoryName(int cellCount, CategoryDTO categoryDTO, String cellValue) {
+    void getSubcategoryName(int cellCount, ParsedExcelRow parsedExcelRow, String cellValue) {
         if (cellCount == 3 && cellValue.equals(FOOD_CATEGORY_NAME)) {
-            categoryDTO.setSubcategory(cellValue);
+            parsedExcelRow.setSubcategory(cellValue);
         }
     }
 
@@ -191,48 +190,48 @@ public class ExcelParser {
      *     If column is 3, checks whether it's a tobacco or beverages category and sets appropriately.
      *
      * @param column   the column count
-     * @param categoryDTO the category dto
+     * @param parsedExcelRow the category dto
      * @param cellValue   the cell value
      */
-    void getCategoryName(int column, CategoryDTO categoryDTO, String cellValue) {
+    void getCategoryName(int column, ParsedExcelRow parsedExcelRow, String cellValue) {
         if (column == 2) {
-            categoryDTO.setCategoryName(cellValue);
+            parsedExcelRow.setCategoryName(cellValue);
         }
 
         if (column == 3 && cellValue.equals(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS)) {
-            categoryDTO.setCategoryName(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS);
+            parsedExcelRow.setCategoryName(TOBACCO_SUBCATEGORY_NAME_IN_SHEETS);
         } else if (column == 3 && cellValue.equals(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS)) {
-            categoryDTO.setCategoryName(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS);
+            parsedExcelRow.setCategoryName(BEVERAGES_SUBCATEGORY_NAME_IN_SHEETS);
         }
     }
 
     /**
      * First filtering step.<br>
      *     If subcategory is "Food Items", then updates subcategory with whatever Food category was asigned.
-     *     Checks unfiltered CategoryDTO objects in pairs.
+     *     Checks unfiltered ParsedExcelRow objects in pairs.
      *     If object categories match, then keywords from object 2 are added to are added to object1, object1 is saved to filtered list whilst object 2 is discarded.
      *
      * @param unfilteredList the unfiltered list
      * @return filtered list
      */
-    List<CategoryDTO> consolidateSimilarCategories(List<CategoryDTO> unfilteredList) {
-        List<CategoryDTO> filteredList = new ArrayList<>();
+    List<ParsedExcelRow> consolidateSimilarCategories(List<ParsedExcelRow> unfilteredList) {
+        List<ParsedExcelRow> filteredList = new ArrayList<>();
 
-        for (CategoryDTO unfilteredCategoryDTO : unfilteredList) {
+        for (ParsedExcelRow unfilteredParsedExcelRow : unfilteredList) {
             if (filteredList.size() == 0) {
-                filteredList.add(unfilteredCategoryDTO);
+                filteredList.add(unfilteredParsedExcelRow);
                 continue;
             }
 
 
-            CategoryDTO lastObjectInFilteredList = filteredList.get(filteredList.size() - 1);
-            if (unfilteredCategoryDTO.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
-                unfilteredCategoryDTO.setCategoryName(unfilteredCategoryDTO.getFoodCategoryName());
+            ParsedExcelRow lastObjectInFilteredList = filteredList.get(filteredList.size() - 1);
+            if (unfilteredParsedExcelRow.getSubcategory().equals(FOOD_CATEGORY_NAME)) {
+                unfilteredParsedExcelRow.setCategoryName(unfilteredParsedExcelRow.getFoodCategoryName());
             }
-            if (lastObjectInFilteredList.getCategoryName().equals(unfilteredCategoryDTO.getCategoryName())) {
-                lastObjectInFilteredList.getKeywords().addAll(unfilteredCategoryDTO.getKeywords());
+            if (lastObjectInFilteredList.getCategoryName().equals(unfilteredParsedExcelRow.getCategoryName())) {
+                lastObjectInFilteredList.getKeywords().addAll(unfilteredParsedExcelRow.getKeywords());
             } else {
-                filteredList.add(unfilteredCategoryDTO);
+                filteredList.add(unfilteredParsedExcelRow);
             }
 
         }
@@ -241,23 +240,37 @@ public class ExcelParser {
 
     /**
      * Additional list filtering step.<br>
-     *     Disregards all CategoryDTO objects that
+     *     Disregards all ParsedExcelRow objects that
      *     <ul>
      *         <li>have empty category names</li>
      *         <li>are uncategorized and have more than 1 keyword</li>
      *         <li>category name is "Food, Beverages {@literal &} Tobacco"</li>
      *     </ul>
      *
-     * @param categoryDTOList the category dto list
+     * @param parsedExcelRowList the category dto list
      * @return the filtered
      */
-    List<CategoryDTO> removeEmptyEntries(List<CategoryDTO> categoryDTOList) {
-        List<CategoryDTO> filteredList = categoryDTOList.stream()
+    List<ParsedExcelRow> removeEmptyEntries(List<ParsedExcelRow> parsedExcelRowList) {
+        List<ParsedExcelRow> filteredList = parsedExcelRowList.stream()
                 .filter(item -> !item.getCategoryName().equals(""))
                 .distinct()
                 .filter(item -> item.getKeywords().size() > 0 || item.getCategoryName().equals(UNCATEGORIZED_TITLE))
                 .filter(item -> !item.getCategoryName().equals(FOOD_BEVERAGES_TOBACCO))
                 .collect(Collectors.toList());
         return filteredList;
+    }
+
+    private List<CategoryDTO> rowsToDTOs(List<ParsedExcelRow> parsedExcelRows) {
+        List<CategoryDTO> dtoList = new ArrayList<>();
+        for(ParsedExcelRow rowDTO:parsedExcelRows){
+            dtoList.add(
+                    new CategoryDTO(
+                            rowDTO.getCategoryName(),
+                            rowDTO.getKeywords()
+                    )
+            );
+        }
+
+        return dtoList;
     }
 }

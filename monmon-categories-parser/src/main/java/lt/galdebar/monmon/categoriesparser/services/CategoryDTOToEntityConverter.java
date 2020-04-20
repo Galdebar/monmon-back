@@ -1,7 +1,9 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
+import lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordEntity;
 import org.springframework.stereotype.Component;
 
@@ -19,27 +21,47 @@ public class CategoryDTOToEntityConverter {
     /**
      * Convert DTO list into Entity list.
      *
-     * @param categoryDTOList the category dto list
+     * @param parsedExcelRowList the category dto list
      * @return the list
      */
-    public List<CategoryEntity> convertDTOsToEntities(List<CategoryDTO> categoryDTOList) {
+    public List<CategoryEntity> convertDTOsToEntities(List<CategoryDTO> parsedExcelRowList) {
         List<CategoryEntity> categoryEntityList = new ArrayList<>();
-        for (CategoryDTO categoryDTO : categoryDTOList) {
+        for (CategoryDTO categoryDTO : parsedExcelRowList) {
             categoryEntityList.add(convertDTOtoEntity(categoryDTO));
         }
         return categoryEntityList;
     }
 
-    private CategoryEntity convertDTOtoEntity(CategoryDTO categoryDTO) {
+    private CategoryEntity convertDTOtoEntity(CategoryDTO parsedExcelRow) {
         Set<KeywordEntity> keywords = new HashSet<>();
-        for (String keyword : categoryDTO.getKeywords()) {
+        for (String keyword : parsedExcelRow.getKeywords()) {
             KeywordEntity keywordEntity = new KeywordEntity();
             keywordEntity.setKeyword(keyword);
             keywords.add(keywordEntity);
         }
         return new CategoryEntity(
-                categoryDTO.getCategoryName(),
+                parsedExcelRow.getCategoryName(),
                 keywords
         );
+    }
+
+    CategoryDTO convertEntityToDTO(CategoryEntity entity){
+        Set<String> keywords = new HashSet<>();
+        for(KeywordEntity keywordEntity:entity.getKeywords()){
+            keywords.add(keywordEntity.getKeyword());
+        }
+        return new CategoryDTO(
+                entity.getCategoryName(),
+                keywords
+        );
+    }
+
+    List<CategoryDTO> convertEntitiesToDTOs(List<CategoryEntity> categoryEntities) {
+        List<CategoryDTO> categoryDTOS = new ArrayList<>();
+        for(CategoryEntity entity:categoryEntities){
+            categoryDTOS.add(convertEntityToDTO(entity));
+        }
+
+        return categoryDTOS;
     }
 }

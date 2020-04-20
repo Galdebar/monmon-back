@@ -3,11 +3,14 @@ package lt.galdebar.monmon.categoriesparser.persistence.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
+@Indexed
 @Table(name = "categories")
 @Getter
 @Setter
@@ -16,6 +19,7 @@ public class CategoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    @Field(name = "category_name")
     @Column(unique = true, name = "category_name")
     private String categoryName;
 

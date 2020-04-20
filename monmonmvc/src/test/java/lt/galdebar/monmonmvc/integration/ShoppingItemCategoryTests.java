@@ -177,7 +177,6 @@ public class ShoppingItemCategoryTests {
       assertNotEquals(0, shoppingCategoryList.size());
       assertEquals(expectedCategoriesCount,shoppingCategoryList.size());
   }
-    //getallCategories returns large array
 
     private Map<String,String> createKeywordRequestObject(String keyword){
         Map<String, String> map = new HashMap<>();

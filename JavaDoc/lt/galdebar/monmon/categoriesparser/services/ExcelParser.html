@@ -212,8 +212,8 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor" id="i4">
 <td class="colFirst"><code>(package private) void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCategoryName(int,lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO,java.lang.String)">getCategoryName</a></span>&#8203;(int&nbsp;column,
-               <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;categoryDTO,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCategoryName(int,lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow,java.lang.String)">getCategoryName</a></span>&#8203;(int&nbsp;column,
+               <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;parsedExcelRow,
                java.lang.String&nbsp;cellValue)</code></th>
 <td class="colLast">
 <div class="block">Gets category name.<br>
@@ -222,8 +222,8 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor" id="i5">
 <td class="colFirst"><code>(package private) void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getFoodCategoryName(int,lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO,java.lang.String)">getFoodCategoryName</a></span>&#8203;(int&nbsp;column,
-                   <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;categoryDTO,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getFoodCategoryName(int,lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow,java.lang.String)">getFoodCategoryName</a></span>&#8203;(int&nbsp;column,
+                   <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;parsedExcelRow,
                    java.lang.String&nbsp;cellValue)</code></th>
 <td class="colLast">
 <div class="block">Sets food category name.</div>
@@ -231,8 +231,8 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor" id="i6">
 <td class="colFirst"><code>(package private) void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSubcategoryName(int,lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO,java.lang.String)">getSubcategoryName</a></span>&#8203;(int&nbsp;cellCount,
-                  <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;categoryDTO,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSubcategoryName(int,lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow,java.lang.String)">getSubcategoryName</a></span>&#8203;(int&nbsp;cellCount,
+                  <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;parsedExcelRow,
                   java.lang.String&nbsp;cellValue)</code></th>
 <td class="colLast">
 <div class="block">Only sets "Food Items".<br>
@@ -255,7 +255,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor" id="i9">
 <td class="colFirst"><code>(package private) java.util.List&lt;<a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&gt;</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#removeEmptyEntries(java.util.List)">removeEmptyEntries</a></span>&#8203;(java.util.List&lt;<a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&gt;&nbsp;categoryDTOList)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#removeEmptyEntries(java.util.List)">removeEmptyEntries</a></span>&#8203;(java.util.List&lt;<a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&gt;&nbsp;parsedExcelRowList)</code></th>
 <td class="colLast">
 <div class="block">Additional list filtering step.<br>
      Disregards all CategoryDTO objects that
@@ -408,52 +408,52 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a id="getFoodCategoryName(int,lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO,java.lang.String)">
+<a id="getFoodCategoryName(int,lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow,java.lang.String)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getFoodCategoryName</h4>
 <pre class="methodSignature">void&nbsp;getFoodCategoryName&#8203;(int&nbsp;column,
-                         <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;categoryDTO,
+                         <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;parsedExcelRow,
                          java.lang.String&nbsp;cellValue)</pre>
 <div class="block">Sets food category name. Will onl execute if CategoryDTO subcategory is "Food Items" and the supplied cell count is 4.<br>
      Since I've decided to split food items, tobacco products and beverages into separate categories, I had to shift where the category name is found by one column.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>column</code> - the column</dd>
-<dd><code>categoryDTO</code> - the category dto</dd>
+<dd><code>parsedExcelRow</code> - the category dto</dd>
 <dd><code>cellValue</code> - the cell value</dd>
 </dl>
 </li>
 </ul>
-<a id="getSubcategoryName(int,lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO,java.lang.String)">
+<a id="getSubcategoryName(int,lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow,java.lang.String)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getSubcategoryName</h4>
 <pre class="methodSignature">void&nbsp;getSubcategoryName&#8203;(int&nbsp;cellCount,
-                        <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;categoryDTO,
+                        <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;parsedExcelRow,
                         java.lang.String&nbsp;cellValue)</pre>
 <div class="block">Only sets "Food Items".<br>
      This is neccessary because I wanted to expand the Food Items category.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>cellCount</code> - the cell count</dd>
-<dd><code>categoryDTO</code> - the category dto</dd>
+<dd><code>parsedExcelRow</code> - the category dto</dd>
 <dd><code>cellValue</code> - the cell value</dd>
 </dl>
 </li>
 </ul>
-<a id="getCategoryName(int,lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO,java.lang.String)">
+<a id="getCategoryName(int,lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow,java.lang.String)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getCategoryName</h4>
 <pre class="methodSignature">void&nbsp;getCategoryName&#8203;(int&nbsp;column,
-                     <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;categoryDTO,
+                     <a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&nbsp;parsedExcelRow,
                      java.lang.String&nbsp;cellValue)</pre>
 <div class="block">Gets category name.<br>
      If column is 2, sets whatever cell value provided.
@@ -461,7 +461,7 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>column</code> - the column count</dd>
-<dd><code>categoryDTO</code> - the category dto</dd>
+<dd><code>parsedExcelRow</code> - the category dto</dd>
 <dd><code>cellValue</code> - the cell value</dd>
 </dl>
 </li>
@@ -491,7 +491,7 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>removeEmptyEntries</h4>
-<pre class="methodSignature">java.util.List&lt;<a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&gt;&nbsp;removeEmptyEntries&#8203;(java.util.List&lt;<a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&gt;&nbsp;categoryDTOList)</pre>
+<pre class="methodSignature">java.util.List&lt;<a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&gt;&nbsp;removeEmptyEntries&#8203;(java.util.List&lt;<a href="../persistence/domain/CategoryDTO.html" title="class in lt.galdebar.monmon.categoriesparser.persistence.domain">CategoryDTO</a>&gt;&nbsp;parsedExcelRowList)</pre>
 <div class="block">Additional list filtering step.<br>
      Disregards all CategoryDTO objects that
      <ul>
@@ -501,7 +501,7 @@ extends java.lang.Object</pre>
      </ul></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>categoryDTOList</code> - the category dto list</dd>
+<dd><code>parsedExcelRowList</code> - the category dto list</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the filtered</dd>
 </dl>
