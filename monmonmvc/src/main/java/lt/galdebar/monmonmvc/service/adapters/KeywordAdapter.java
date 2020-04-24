@@ -1,6 +1,7 @@
 package lt.galdebar.monmonmvc.service.adapters;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
+import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
 import org.springframework.stereotype.Component;
 
@@ -9,28 +10,40 @@ import java.util.List;
 
 
 @Component
-public class KeywordAdapter {
+public class KeywordAdapter implements IsObjectAdapter<ShoppingKeywordDTO, KeywordDTO> {
 
-    public List<ShoppingKeywordDTO> externalToInternalList(List<KeywordDTO> externalList){
+    @Override
+    public List<ShoppingKeywordDTO> bToA(List<KeywordDTO> externalList){
         List<ShoppingKeywordDTO> internalList = new ArrayList<>();
         for(KeywordDTO external:externalList){
-            internalList.add(externalToInternal(external));
+            internalList.add(bToA(external));
         }
 
         return internalList;
     }
 
-    public ShoppingKeywordDTO externalToInternal(KeywordDTO keywordDTO){
+    @Override
+    public ShoppingKeywordDTO bToA(KeywordDTO keywordDTO){
         return new ShoppingKeywordDTO(
                 keywordDTO.getShoppingItemCategory(),
                 keywordDTO.getKeyword()
         );
     }
 
-    public KeywordDTO internalToExternal(ShoppingKeywordDTO internal){
+    @Override
+    public KeywordDTO aToB(ShoppingKeywordDTO internal){
         return new KeywordDTO(
                 internal.getShoppingItemCategory(),
                 internal.getKeyword()
         );
+    }
+
+    @Override
+    public List<KeywordDTO> aToB(List<ShoppingKeywordDTO> shoppingKeywordDTOS) {
+        List<KeywordDTO> externalList = new ArrayList<>();
+        for(ShoppingKeywordDTO internal:shoppingKeywordDTOS){
+            externalList.add(aToB(internal));
+        }
+        return externalList;
     }
 }

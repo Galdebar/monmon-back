@@ -8,27 +8,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CategoryAdapter {
+public class CategoryAdapter implements IsObjectAdapter<ShoppingCategoryDTO, CategoryDTO> {
 
-    public List<ShoppingCategoryDTO> externalToInternalList(List<CategoryDTO> externalList) {
+    @Override
+    public List<ShoppingCategoryDTO> bToA(List<CategoryDTO> externalList) {
         List<ShoppingCategoryDTO> dtoList = new ArrayList<>();
         for (CategoryDTO external : externalList) {
-            dtoList.add(externalToInternal(external));
+            dtoList.add(bToA(external));
         }
         return dtoList;
     }
 
-    public ShoppingCategoryDTO externalToInternal(CategoryDTO categoryDTO) {
+    @Override
+    public ShoppingCategoryDTO bToA(CategoryDTO categoryDTO) {
         return new ShoppingCategoryDTO(
                 categoryDTO.getCategoryName(),
                 categoryDTO.getKeywords()
         );
     }
 
-    public CategoryDTO internalToExternal(ShoppingCategoryDTO internal){
+    @Override
+    public CategoryDTO aToB(ShoppingCategoryDTO internal){
         return new CategoryDTO(
                 internal.getCategoryName(),
                 internal.getKeywords()
         );
+    }
+
+    @Override
+    public List<CategoryDTO> aToB(List<ShoppingCategoryDTO> shoppingCategoryDTOS) {
+        List<CategoryDTO> externalList = new ArrayList<>();
+        for(ShoppingCategoryDTO internal:shoppingCategoryDTOS){
+            externalList.add(aToB(internal));
+        }
+        return externalList;
     }
 }

@@ -7,6 +7,7 @@ import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
+import lt.galdebar.monmonmvc.service.adapters.ShoppingItemAdapter;
 import lt.galdebar.monmonmvc.service.exceptions.shoppingitem.ShoppingItemNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,8 @@ import java.util.List;
  */
 @Service
 public class ShoppingItemService {
+    private ShoppingItemAdapter adapter = new ShoppingItemAdapter();
+
     @Autowired
     private ShoppingItemRepo shoppingItemRepo;
     @Autowired
@@ -38,7 +41,7 @@ public class ShoppingItemService {
      */
     public List<ShoppingItemDTO> getItemsByCategory(String requestedCategory) {
         List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByItemCategory(requestedCategory);
-        return entitiesToDtos(foundItems);
+        return adapter.bToA(foundItems);
     }
 
     /**
@@ -47,7 +50,8 @@ public class ShoppingItemService {
      * @return List of Shopping items. Empty if nothing found.
      */
     public List<ShoppingItemDTO> getAll() {
-        return entitiesToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
+//        return entitiesToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
+        return adapter.bToA(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
     }
 
     /**
@@ -61,7 +65,7 @@ public class ShoppingItemService {
                 Collections.singletonList(userDTO.getUserEmail())
         );
 
-        return entitiesToDtos(foundItems);
+        return adapter.bToA(foundItems);
     }
 
     /**
@@ -90,8 +94,11 @@ public class ShoppingItemService {
 
         ShoppingItemDTO itemToAdd = addUsersIfEmpty(shoppingItemDTO);
 
-        ShoppingItemEntity returnedItem = shoppingItemRepo.insert(dtoToEntity(itemToAdd));
-        return entityToDto(returnedItem);
+        ShoppingItemEntity returnedItem = shoppingItemRepo.insert(
+                adapter.aToB(itemToAdd)
+        );
+
+        return adapter.bToA(returnedItem);
     }
 
 
@@ -114,8 +121,11 @@ public class ShoppingItemService {
 
         ShoppingItemDTO itemToUpdate = addUsersIfEmpty(shoppingItemDTO);
 
-        ShoppingItemEntity result = shoppingItemRepo.save(dtoToEntity(itemToUpdate));
-        return entityToDto(result);
+        ShoppingItemEntity result = shoppingItemRepo.save(
+                adapter.aToB(itemToUpdate)
+        );
+
+        return adapter.bToA(result);
     }
 
     /**
@@ -137,8 +147,11 @@ public class ShoppingItemService {
             }
             itemsToUpdate.add(addUsersIfEmpty(item));
         }
-        List<ShoppingItemEntity> updatedItems = shoppingItemRepo.saveAll(dtosToEntities(itemsToUpdate));
-        return entitiesToDtos(updatedItems);
+        List<ShoppingItemEntity> updatedItems = shoppingItemRepo.saveAll(
+                adapter.aToB(itemsToUpdate)
+        );
+
+        return adapter.bToA(updatedItems);
     }
 
     /**
@@ -155,7 +168,9 @@ public class ShoppingItemService {
         if (!shoppingItemRepo.existsById(shoppingItemDTO.getId())) {
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
-        shoppingItemRepo.delete(dtoToEntity(shoppingItemDTO));
+        shoppingItemRepo.delete(
+                adapter.aToB(shoppingItemDTO)
+        );
     }
 
     /**
@@ -174,45 +189,9 @@ public class ShoppingItemService {
                 throw new ShoppingItemNotFound(item.getId());
             }
         }
-        shoppingItemRepo.deleteAll(dtosToEntities(shoppingItemDTOList));
-    }
-
-    private ShoppingItemEntity dtoToEntity(ShoppingItemDTO shoppingItemDTO) {
-        ShoppingItemEntity shoppingItemEntity = new ShoppingItemEntity();
-        shoppingItemEntity.id = shoppingItemDTO.getId();
-        shoppingItemEntity.itemName = shoppingItemDTO.getItemName();
-        shoppingItemEntity.itemCategory = shoppingItemDTO.getItemCategory();
-        shoppingItemEntity.quantity = shoppingItemDTO.getQuantity();
-        shoppingItemEntity.comment = shoppingItemDTO.getComment();
-        shoppingItemEntity.isInCart = shoppingItemDTO.isInCart();
-        if(shoppingItemDTO.getUsers() != null){
-            shoppingItemEntity.users.addAll(shoppingItemDTO.getUsers());
-        }
-        return shoppingItemEntity;
-    }
-
-    private List<ShoppingItemEntity> dtosToEntities(List<ShoppingItemDTO> shoppingItemDTOList) {
-        List<ShoppingItemEntity> shoppingItemEntityList = new ArrayList<>();
-        shoppingItemDTOList.forEach(dto -> shoppingItemEntityList.add(dtoToEntity(dto)));
-        return shoppingItemEntityList;
-    }
-
-    private ShoppingItemDTO entityToDto(ShoppingItemEntity shoppingItemEntity) {
-        return new ShoppingItemDTO(
-                shoppingItemEntity.id,
-                shoppingItemEntity.itemName,
-                shoppingItemEntity.itemCategory,
-                shoppingItemEntity.quantity,
-                shoppingItemEntity.comment,
-                shoppingItemEntity.isInCart,
-                shoppingItemEntity.users
+        shoppingItemRepo.deleteAll(
+                adapter.aToB(shoppingItemDTOList)
         );
-    }
-
-    private List<ShoppingItemDTO> entitiesToDtos(List<ShoppingItemEntity> shoppingItemEntityList) {
-        List<ShoppingItemDTO> shoppingItemDTOList = new ArrayList<>();
-        shoppingItemEntityList.forEach(dao -> shoppingItemDTOList.add(entityToDto(dao)));
-        return shoppingItemDTOList;
     }
 
     private List<String> getCurrentUserAndConnectedUsers() {

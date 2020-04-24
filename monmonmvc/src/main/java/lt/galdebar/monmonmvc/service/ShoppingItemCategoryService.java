@@ -2,32 +2,19 @@ package lt.galdebar.monmonmvc.service;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
-import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
 import lt.galdebar.monmon.categoriesparser.services.CategoriesSearchService;
 import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingCategoryEntity;
-import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingKeywordEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ItemCategoryRepo;
 import lt.galdebar.monmonmvc.service.adapters.CategoryAdapter;
 import lt.galdebar.monmonmvc.service.adapters.KeywordAdapter;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.util.CharArraySet;
-import org.apache.lucene.search.Query;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -66,10 +53,10 @@ public class ShoppingItemCategoryService {
      */
     public List<ShoppingKeywordDTO> searchKeywordAutocomplete(ShoppingKeywordDTO keywordDTO) {
         List<KeywordDTO> foundKeywords = searchService.findKeywords(
-                keywordAdapter.internalToExternal(keywordDTO),
+                keywordAdapter.aToB(keywordDTO),
                 MAX_RESULTS
         );
-        List<ShoppingKeywordDTO> convertedKeywords = keywordAdapter.externalToInternalList(foundKeywords);
+        List<ShoppingKeywordDTO> convertedKeywords = keywordAdapter.bToA(foundKeywords);
         return convertedKeywords;
     }
 
@@ -83,12 +70,12 @@ public class ShoppingItemCategoryService {
 
         ShoppingCategoryDTO dtoToReturn;
         List<CategoryDTO> foundKeywords = searchService.findCategoriesByKeyword(
-                keywordAdapter.internalToExternal(keywordDTO)
+                keywordAdapter.aToB(keywordDTO)
         );
         if(foundKeywords.size() ==0 || foundKeywords.get(0).getKeywords().stream().noneMatch(keywordDTO.getKeyword()::equalsIgnoreCase)){
-            dtoToReturn = categoryAdapter.externalToInternal(searchService.getUncategorized());
+            dtoToReturn = categoryAdapter.bToA(searchService.getUncategorized());
         } else {
-            dtoToReturn = categoryAdapter.externalToInternal(foundKeywords.get(0));
+            dtoToReturn = categoryAdapter.bToA(foundKeywords.get(0));
 
         }
         return dtoToReturn;
@@ -114,9 +101,9 @@ public class ShoppingItemCategoryService {
      */
     ShoppingCategoryDTO searchCategory(ShoppingCategoryDTO itemCategory) {
         CategoryDTO foundCategory = searchService.searchCategory(
-                categoryAdapter.internalToExternal(itemCategory)
+                categoryAdapter.aToB(itemCategory)
         );
-        return categoryAdapter.externalToInternal(foundCategory);
+        return categoryAdapter.bToA(foundCategory);
     }
 
     private ShoppingCategoryDTO categoryEntityToDTO(ShoppingCategoryEntity shoppingCategoryEntity) {
