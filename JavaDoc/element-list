@@ -20,5 +20,5 @@ lt.galdebar.monmonmvc.service.exceptions.login
 lt.galdebar.monmonmvc.service.exceptions.registration
 lt.galdebar.monmonmvc.service.exceptions.shoppingitem
 lt.galdebar.monmonscraper
-lt.galdebar.monmonscraper.domain
+lt.galdebar.monmonscraper.pojos
 lt.galdebar.monmonscraper.services

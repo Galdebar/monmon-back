@@ -1,31 +1,23 @@
-package lt.galdebar.monmonscraper.services;
+package lt.galdebar.monmonscraper.services.helpers;
 
-import lt.galdebar.monmonscraper.domain.ScrapedShoppingItem;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.*;
 
-@SpringJUnitConfig
+
+@RunWith(SpringRunner.class)
 public class ItemTranslatorTests {
     @Autowired
     private ItemTranslator itemTranslator;
 
-    @Configuration
+    @org.springframework.boot.test.context.TestConfiguration
     public static class TestConfiguration {
-        @Bean
-        public MaximaScraper maximaScraper() {
-            return new MaximaScraper();
-        }
-
-        @Bean
-        public MaximaHTMLElementParserHelper maximaHTMLElementParserHelper() {
-            return new MaximaHTMLElementParserHelper();
-        }
 
         @Bean
         public ItemTranslator itemTranslator(){
@@ -33,41 +25,41 @@ public class ItemTranslatorTests {
         }
     }
 
-    @Autowired
-    MaximaScraper maximaScraper;
-
 
     @Test
-    void givenContext_thenLoadTranslator(){
+    public void givenContext_thenLoadTranslator(){
         assertNotNull(itemTranslator);
     }
 
     @Test
-    void givenValidItem_whenTranslate_thenReturnTranslatedItem(){
-        ScrapedShoppingItem itemToTranslate = new ScrapedShoppingItem(
+    public void givenValidItem_whenTranslate_thenReturnTranslatedItem(){
+        ItemOnOffer itemToTranslate = new ItemOnOffer(
                 "sviestas",
                 "ROKIŠKIO",
-                1
+                1,
+                "shopName"
         );
         String expectedName = "butter";
-        ScrapedShoppingItem translatedItem = itemTranslator.translate(itemToTranslate);
+        ItemOnOffer translatedItem = itemTranslator.translate(itemToTranslate);
 
         assertNotNull(translatedItem);
         assertNotEquals(itemToTranslate.getName(),translatedItem.getName());
         assertEquals(expectedName,translatedItem.getName());
         assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
-        assertTrue(itemToTranslate.getPrice() == translatedItem.getPrice());
+        assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
+        assertEquals(itemToTranslate.getShopName(),translatedItem.getShopName());
     }
 
     @Test
-    void givenComplexItem_whenTranslate_thenReturnTranslatedItem(){
-        ScrapedShoppingItem itemToTranslate = new ScrapedShoppingItem(
+    public void givenComplexItem_whenTranslate_thenReturnTranslatedItem(){
+        ItemOnOffer itemToTranslate = new ItemOnOffer(
                 "Atšaldytas kiaulienos kumpis be kaulų, be odos, vakuumuotas",
                 "ROKIŠKIO",
-                1
+                1,
+                "shopName"
         );
         String expectedName = "Chilled pork ham, boneless, skinless, vacuum";
-        ScrapedShoppingItem translatedItem = itemTranslator.translate(itemToTranslate);
+        ItemOnOffer translatedItem = itemTranslator.translate(itemToTranslate);
 
         assertNotNull(translatedItem);
         assertNotEquals(itemToTranslate.getName(),translatedItem.getName());
@@ -77,14 +69,15 @@ public class ItemTranslatorTests {
     }
 
     @Test
-    void givenItemWithNoName_whenTranslate_returnTranslatedBrand(){
-        ScrapedShoppingItem itemToTranslate = new ScrapedShoppingItem(
+    public void givenItemWithNoName_whenTranslate_returnTranslatedBrand(){
+        ItemOnOffer itemToTranslate = new ItemOnOffer(
                 "KONSERVUOTOMS DARŽOVĖMS, VAISIAMS IR UOGIENĖMS",
                 "",
-                1
+                1,
+                "shopName"
         );
         String expectedName = "PRESERVED VEGETABLES, FRUIT AND JAM";
-        ScrapedShoppingItem translatedItem = itemTranslator.translate(itemToTranslate);
+        ItemOnOffer translatedItem = itemTranslator.translate(itemToTranslate);
 
         assertNotNull(translatedItem);
         assertNotEquals(itemToTranslate.getName(),translatedItem.getName());
@@ -94,14 +87,15 @@ public class ItemTranslatorTests {
     }
 
     @Test
-    void givenItemWithNoName_whenTranslate_returnTranslatedBrandFiltered(){
-        ScrapedShoppingItem itemToTranslate = new ScrapedShoppingItem(
+    public void givenItemWithNoName_whenTranslate_returnTranslatedBrandFiltered(){
+        ItemOnOffer itemToTranslate = new ItemOnOffer(
                 "KOJINĖMS IR PĖDKELNĖMS",
                 "",
-                1
+                1,
+                "shopName"
         );
         String expectedName = "SOCKS AND TIGHTS";
-        ScrapedShoppingItem translatedItem = itemTranslator.translate(itemToTranslate);
+        ItemOnOffer translatedItem = itemTranslator.translate(itemToTranslate);
 
         assertNotNull(translatedItem);
         assertNotEquals(itemToTranslate.getName(),translatedItem.getName());

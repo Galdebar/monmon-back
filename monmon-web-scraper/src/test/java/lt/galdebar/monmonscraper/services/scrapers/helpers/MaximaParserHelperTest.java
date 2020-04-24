@@ -1,13 +1,14 @@
-package lt.galdebar.monmonscraper.services;
+package lt.galdebar.monmonscraper.services.scrapers.helpers;
 
-import lt.galdebar.monmonscraper.domain.ScrapedShoppingItem;
+import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,47 +17,49 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringJUnitConfig
-class MaximaHTMLElementParserHelperTest {
+@RunWith(SpringRunner.class)
+public class MaximaParserHelperTest {
 
-    @Configuration
+    @org.springframework.boot.test.context.TestConfiguration
     public static class TestConfiguration {
         @Bean
-        public MaximaHTMLElementParserHelper maximaHTMLElementParserHelper() {
-            return new MaximaHTMLElementParserHelper();
+        public MaximaParserHelper maximaHTMLElementParserHelper() {
+            return new MaximaParserHelper();
         }
     }
 
     @Autowired
-    MaximaHTMLElementParserHelper parser;
+    MaximaParserHelper parser;
 
     @Test
-    void contextLoads() {
+    public void contextLoads() {
         assertNotNull(parser);
     }
 
     @Test
-    void parseSimpleElementTest() {
+    public void parseSimpleElementTest() {
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/SimpleElement.html");
         String expectedName = "sviestas";
         String expectedBrand = "ROKIŠKIO";
+        String expectedShopName = "Maxima";
         float expectedPrice = 1.09f;
 
-        ScrapedShoppingItem actualItem = parser.parseElement(testElement);
+        ItemOnOffer actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getName());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
+        assertEquals(expectedShopName, actualItem.getShopName());
     }
 
     @Test
-    void parseNoBrandElementTest() {
+    public void parseNoBrandElementTest() {
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/NoBrandElement.html");
         String expectedName = "Šviežios viščiukų broilerių blauzdelės";
         String expectedBrand = "";
         float expectedPrice = 1.19f;
 
-        ScrapedShoppingItem actualItem = parser.parseElement(testElement);
+        ItemOnOffer actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getName());
         assertEquals(expectedBrand, actualItem.getBrand());
@@ -64,13 +67,13 @@ class MaximaHTMLElementParserHelperTest {
     }
 
     @Test
-    void parseSingleCategoryElementTest() {
+    public void parseSingleCategoryElementTest() {
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/SingleCategoryElement.html");
         String expectedName = "KOJINĖMS IR PĖDKELNĖMS";
         String expectedBrand = "";
         float expectedPrice = 0;
 
-        ScrapedShoppingItem actualItem = parser.parseElement(testElement);
+        ItemOnOffer actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getName());
         assertEquals(expectedBrand, actualItem.getBrand());
@@ -78,13 +81,13 @@ class MaximaHTMLElementParserHelperTest {
     }
 
     @Test
-    void parseSeveralCategorieselementTest() {
+    public void parseSeveralCategorieselementTest() {
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/SeveralCategoriesElement.html");
         String expectedName = "KONSERVUOTOMS DARŽOVĖMS, VAISIAMS IR UOGIENĖMS";
         String expectedBrand = "";
         float expectedPrice = 0;
 
-        ScrapedShoppingItem actualItem = parser.parseElement(testElement);
+        ItemOnOffer actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getName());
         assertEquals(expectedBrand, actualItem.getBrand());
@@ -92,13 +95,13 @@ class MaximaHTMLElementParserHelperTest {
     }
 
     @Test
-    void complexElement1Test() {
+    public void complexElement1Test() {
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/ComplexElement.html");
         String expectedName = "Rauginti kopūstai fasuoti";
         String expectedBrand = "LINKĖJIMAI IŠ KAIMO";
         float expectedPrice = 1.09f;
 
-        ScrapedShoppingItem actualItem = parser.parseElement(testElement);
+        ItemOnOffer actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getName());
         assertEquals(expectedBrand, actualItem.getBrand());
@@ -106,13 +109,13 @@ class MaximaHTMLElementParserHelperTest {
     }
 
     @Test
-    void complexElement2Test() {
+    public void complexElement2Test() {
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/ComplexElement2.html");
         String expectedName = "Atšaldytas kiaulienos kumpis be kaulų, be odos, vakuumuotas";
         String expectedBrand = "LAUKUVA";
         float expectedPrice = 2.79f;
 
-        ScrapedShoppingItem actualItem = parser.parseElement(testElement);
+        ItemOnOffer actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getName());
         assertEquals(expectedBrand, actualItem.getBrand());
@@ -120,13 +123,13 @@ class MaximaHTMLElementParserHelperTest {
     }
 
     @Test
-    void complexElement3Test(){
+    public void complexElement3Test(){
         Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/MaximaHTMLElements/ComplexElement3.html");
         String expectedName = "Virta dešra";
         String expectedBrand = "SAMSONO DAKTARIŠKA";
         float expectedPrice = 1.74f;
 
-        ScrapedShoppingItem actualItem = parser.parseElement(testElement);
+        ItemOnOffer actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getName());
         assertEquals(expectedBrand, actualItem.getBrand());

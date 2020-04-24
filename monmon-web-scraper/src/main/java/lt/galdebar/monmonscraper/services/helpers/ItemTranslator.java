@@ -1,8 +1,8 @@
-package lt.galdebar.monmonscraper.services;
+package lt.galdebar.monmonscraper.services.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lt.galdebar.monmonscraper.domain.ScrapedShoppingItem;
+import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
@@ -15,13 +15,14 @@ public class ItemTranslator {
     private final String URL = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=lt&tl=en&dt=t&q=";
     private final String[] wordsToFilter = {"for"};
 
-    public ScrapedShoppingItem translate(ScrapedShoppingItem itemToTranslate) {
+    public ItemOnOffer translate(ItemOnOffer itemToTranslate) {
         String translatedName = translateString(itemToTranslate.getName());
 
-        return new ScrapedShoppingItem(
+        return new ItemOnOffer(
                 translatedName,
                 itemToTranslate.getBrand(),
-                itemToTranslate.getPrice()
+                itemToTranslate.getPrice(),
+                itemToTranslate.getShopName()
         );
     }
 

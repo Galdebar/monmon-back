@@ -9,10 +9,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-//@NoArgsConstructor
-//@Getter
-//@Setter
-//@ToString
 @Data
 @Document(collection = "users")
 public class UserEntity {

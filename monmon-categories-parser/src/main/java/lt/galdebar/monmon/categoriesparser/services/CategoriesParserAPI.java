@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Log4j2
 @Component
-public class CategoriesParserMain {
+public class CategoriesParserAPI {
 
     @Autowired
     private CategoriesRepo categoriesRepo;

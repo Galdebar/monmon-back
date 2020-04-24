@@ -1,6 +1,7 @@
-package lt.galdebar.monmonscraper.services;
+package lt.galdebar.monmonscraper.services.scrapers.helpers;
 
-import lt.galdebar.monmonscraper.domain.ScrapedShoppingItem;
+import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
+import lt.galdebar.monmonscraper.services.scrapers.ShopNames;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
@@ -10,16 +11,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-class MaximaHTMLElementParserHelper {
+public class MaximaParserHelper implements IsHTMLElementParserHelper {
+    private final String shopName = ShopNames.MAXIMA.getShopName();
 
-    ScrapedShoppingItem parseElement(Element element) {
+    public ItemOnOffer parseElement(Element element) {
         String name = getItemName(getTitleElement(element));
         String brand = getItemBrand(getTitleElement(element));
         float price = getItemPrice(element);
-        ScrapedShoppingItem itemToReturn;
+        ItemOnOffer itemToReturn;
         if(name.equalsIgnoreCase("")) {
-            return new ScrapedShoppingItem(brand, "", price);
-        } else return new ScrapedShoppingItem(name,brand,price);
+            return new ItemOnOffer(brand, "", price,shopName);
+        } else return new ItemOnOffer(name,brand,price,shopName);
     }
 
     private String getItemName(Element titleElement) {

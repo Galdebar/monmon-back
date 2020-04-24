@@ -1,26 +1,28 @@
-package lt.galdebar.monmonscraper.services;
+package lt.galdebar.monmonscraper.services.scrapers;
 
-import lt.galdebar.monmonscraper.domain.ScrapedShoppingItem;
+import lt.galdebar.monmonscraper.services.scrapers.helpers.MaximaParserHelper;
+import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
+import static lt.galdebar.monmonscraper.services.testhelpers.GetItemsCountFromWebsites.*;
 import static org.junit.Assert.*;
 
-@SpringJUnitConfig
+@RunWith(SpringRunner.class)
 public class MaximaScraperTest {
 
-    @Configuration
+    @org.springframework.boot.test.context.TestConfiguration
     public static class TestConfiguration {
         @Bean
         public MaximaScraper maximaScraper() {
@@ -35,44 +37,53 @@ public class MaximaScraperTest {
         }
 
         @Bean
-        public MaximaHTMLElementParserHelper maximaHTMLElementParserHelper() {
-            return new MaximaHTMLElementParserHelper();
+        public MaximaScraper actualMaximaScraper(){
+            return new MaximaScraper();
         }
+
+        @Bean
+        public MaximaParserHelper maximaHTMLElementParserHelper() {
+            return new MaximaParserHelper();
+        }
+
     }
 
     @Autowired
     private MaximaScraper maximaScraper;
 
+    @Autowired
+    private MaximaScraper actualMaximaScraper;
+
     @Test
-    void givenContext_thenLoadContext() {
+    public void givenContext_thenLoadContext() {
         assertNotNull(maximaScraper);
     }
 
     @Test
-    void givenContext_whenIsValid_thenTrue() {
+    public void givenContext_whenIsValid_thenTrue() {
         assertTrue(maximaScraper.isValid());
     }
 
     @Test
-    void givenInvalidAddress_whenIsValid_thenFalse() {
+    public void givenInvalidAddress_whenIsValid_thenFalse() {
         MaximaScraper scraper = new MaximaScraper(new Document("Some random string which should fail"));
         assertFalse(scraper.isValid());
     }
 
     @Test
-    void givenValidContext_whenGetDocumentTitle_thenNotNull() {
+    public void givenValidContext_whenGetDocumentTitle_thenNotNull() {
         assertNotNull(maximaScraper.getTitle());
     }
 
 
     @Test
-    void givenValidContext_whenGetContainer_thenNotNull() {
+    public void givenValidContext_whenGetContainer_thenNotNull() {
         Element container = maximaScraper.getContainer();
         assertNotNull(container);
     }
 
     @Test
-    void givenValidFile_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
+    public void givenValidFile_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
         int singlePageItemsCount = 45;
         int totalItems = 328;
         int expectedCount = 8;
@@ -82,10 +93,10 @@ public class MaximaScraperTest {
     }
 
     @Test
-    void givenActualWebsite_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
+    public void givenActualWebsite_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
         MaximaScraper scraper = new MaximaScraper(); // default constructor has hardwired url.
         int singlePageItemsCount = 45;
-        int totalItemsCount = getTotalItemsFromActualSite();
+        int totalItemsCount = getTotalItemsFromMaxima();
         int expectedPagesCount = (totalItemsCount % singlePageItemsCount == 0) ? totalItemsCount / singlePageItemsCount : totalItemsCount / singlePageItemsCount + 1;
         int actualPagesCount = scraper.countPages();
 
@@ -94,41 +105,40 @@ public class MaximaScraperTest {
     }
 
     @Test
-    void givenValidFile_whenFetchItemsWithOffset_thenNotNull() {
+    public void givenValidFile_whenFetchItemsWithOffset_thenNotNull() {
         MaximaScraper scraper = new MaximaScraper();
-        Elements fetchedElements = scraper.fetchItemsWithOffset(0);
+        List<ItemOnOffer> fetchedElements = actualMaximaScraper.fetchItemsWithOffset(0);
 
         assertNotNull(fetchedElements);
     }
 
     @Test
-    void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
+    public void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
         int expectedCount = 328;
-        Collection<Element> actualIterable = maximaScraper.getItemsOnOffer();
+        List<ItemOnOffer> actualIterable = maximaScraper.getItemsOnOffer();
 
         assertNotNull(actualIterable);
         assertEquals(actualIterable.size(), expectedCount);
     }
 
     @Test
-    void givenActualWebsite_whenGetItemsOnOffer_thenReturnCount() {
-        MaximaScraper scraper = new MaximaScraper();// default constructor has hardwired url.
-        int expectedCount = getTotalItemsFromActualSite();
-        int actualCount = scraper.getItemsOnOffer().size();
+    public void givenActualWebsite_whenGetItemsOnOffer_thenReturnCount() {
+        int expectedCount = getTotalItemsFromMaxima();
+        int actualCount = actualMaximaScraper.getItemsOnOffer().size();
 
         assertNotEquals(0, expectedCount);
         assertEquals(expectedCount, actualCount);
     }
 
     @Test
-    void givenValidFile_whenCreateItemFromElement_thenReturnItem() {
+    public void givenValidFile_whenCreateItemFromElement_thenReturnItem() {
         int expectedItemIndex = 2;
         String expectedItemName = "sviestas";
         String expectedItemBrand = "ROKIŠKIO";
         float expectedItemPrice = 1.09f;
-        ScrapedShoppingItem expectedItem = new ScrapedShoppingItem(expectedItemName, expectedItemBrand, expectedItemPrice);
-        ScrapedShoppingItem actualItem = maximaScraper.createItem(
-                maximaScraper.getItemsOnOffer().get(expectedItemIndex)
+        ItemOnOffer expectedItem = new ItemOnOffer(expectedItemName, expectedItemBrand, expectedItemPrice, "ShopName");
+        ItemOnOffer actualItem = maximaScraper.elementToScrapedShoppingItem(
+                maximaScraper.getDocument().getElementsByClass("item").get(expectedItemIndex)
         );
 
         assertNotNull(actualItem);
@@ -137,16 +147,17 @@ public class MaximaScraperTest {
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 
-    // account for timeouts and bad pages- just return empty arrays.
+//    @Test
+//    void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
+//        MaximaScraper scraper = new MaximaScraper();
+//        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
+//        assertNotNull(foundDeals);
+//        assertEquals(
+//                getTotalItemsFromMaxima(),
+//                foundDeals.size()
+//        );
+//    }
 
-    private int getTotalItemsFromActualSite() {
-        Document doc = null;
-        try {
-            doc = Jsoup.connect("https://www.maxima.lt/akcijos#visi-pasiulymai-1").userAgent("Mozilla").get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Element totalItemsElement = doc.getElementById("items_cnt");
-        return Integer.parseInt(totalItemsElement.text());
-    }
+    // push to db with valid website
+    //push to db with invalid website
 }

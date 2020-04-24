@@ -43,9 +43,6 @@ public class ShoppingItemCategoryService {
      */
     private final int MAX_RESULTS = 10;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Autowired
     private CategoriesSearchService searchService;
 
@@ -69,12 +66,11 @@ public class ShoppingItemCategoryService {
      */
     public List<ShoppingKeywordDTO> searchKeywordAutocomplete(ShoppingKeywordDTO keywordDTO) {
         List<KeywordDTO> foundKeywords = searchService.findKeywords(
-                keywordAdapter.internalToExternal(keywordDTO)
+                keywordAdapter.internalToExternal(keywordDTO),
+                MAX_RESULTS
         );
         List<ShoppingKeywordDTO> convertedKeywords = keywordAdapter.externalToInternalList(foundKeywords);
-        if(convertedKeywords.size()>MAX_RESULTS){
-        return convertedKeywords.subList(0,MAX_RESULTS);
-        } else return convertedKeywords;
+        return convertedKeywords;
     }
 
     /**
@@ -89,7 +85,7 @@ public class ShoppingItemCategoryService {
         List<CategoryDTO> foundKeywords = searchService.findCategoriesByKeyword(
                 keywordAdapter.internalToExternal(keywordDTO)
         );
-        if (foundKeywords.size() == 0 || foundKeywords.get(0).getKeywords().contains(keywordDTO.getKeyword())) {
+        if(foundKeywords.size() ==0 || foundKeywords.get(0).getKeywords().stream().noneMatch(keywordDTO.getKeyword()::equalsIgnoreCase)){
             dtoToReturn = categoryAdapter.externalToInternal(searchService.getUncategorized());
         } else {
             dtoToReturn = categoryAdapter.externalToInternal(foundKeywords.get(0));
@@ -104,7 +100,7 @@ public class ShoppingItemCategoryService {
      *
      * @return list of all categories.
      */
-    @Transactional
+//    @Transactional
     public List<ShoppingCategoryDTO> getAllCategories() {
         List<ShoppingCategoryEntity> categories = (List<ShoppingCategoryEntity>) categoryRepo.findAll();
         return categoryEntitiesToDTOS(categories);

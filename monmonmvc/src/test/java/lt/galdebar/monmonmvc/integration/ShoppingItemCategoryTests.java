@@ -1,16 +1,13 @@
 package lt.galdebar.monmonmvc.integration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import lt.galdebar.monmon.categoriesparser.services.CategoriesParserMain;
+import lt.galdebar.monmon.categoriesparser.services.CategoriesParserAPI;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
-import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +26,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,16 +44,16 @@ public class ShoppingItemCategoryTests {
 
     @TestConfiguration
     @ComponentScan(basePackages = "lt.galdebar.monmon.categoriesparser")
-    @Import(CategoriesParserMain.class)
+    @Import(CategoriesParserAPI.class)
     public class Config{
         @Bean
-        public CategoriesParserMain categoriesParserMain(){
-            return new CategoriesParserMain();
+        public CategoriesParserAPI categoriesParserMain(){
+            return new CategoriesParserAPI();
         }
     }
 
     @Autowired
-    private CategoriesParserMain categoriesParserMain;
+    private CategoriesParserAPI categoriesParserAPI;
 
     @Autowired
     private UserRepo userRepo;
@@ -85,7 +81,7 @@ public class ShoppingItemCategoryTests {
 
         userCreatorHelper.createSimpleUser(TEST_USER_EMAIL, TEST_USER_PASS);
 
-        categoriesParserMain.pushCategoriesToDB();
+        categoriesParserAPI.pushCategoriesToDB();
     }
 
     @After

@@ -1,14 +1,14 @@
-package lt.galdebar.monmonscraper.domain;
+package lt.galdebar.monmonscraper.services.scrapers.pojos;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
 public
-class ScrapedShoppingItem {
+class ItemOnOffer {
     private final String name;
     private final String brand;
     private final float price;
+    private final String shopName;
 }

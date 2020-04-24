@@ -1,5 +1,7 @@
 package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
@@ -8,6 +10,7 @@ import javax.persistence.*;
 @Entity
 @Indexed
 @Table(name = "keywords")
+@EqualsAndHashCode
 public class KeywordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

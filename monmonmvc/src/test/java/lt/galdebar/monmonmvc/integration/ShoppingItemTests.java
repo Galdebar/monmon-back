@@ -3,8 +3,7 @@ package lt.galdebar.monmonmvc.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lt.galdebar.monmon.categoriesparser.ExcelParserApp;
-import lt.galdebar.monmon.categoriesparser.services.CategoriesParserMain;
+import lt.galdebar.monmon.categoriesparser.services.CategoriesParserAPI;
 import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
 import lt.galdebar.monmonmvc.persistence.domain.dto.LoginAttemptDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
@@ -13,15 +12,10 @@ import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -57,7 +51,7 @@ public class ShoppingItemTests {
     private UserRepo userRepo;
 
     @Autowired
-    private CategoriesParserMain categoriesParserMain;
+    private CategoriesParserAPI categoriesParserAPI;
 
     @Autowired
     private
@@ -86,7 +80,7 @@ public class ShoppingItemTests {
 
         userCreatorHelper.createSimpleUser(TEST_USER_EMAIL, TEST_USER_PASS);
 
-        categoriesParserMain.pushCategoriesToDB();
+        categoriesParserAPI.pushCategoriesToDB();
     }
 
     @After
@@ -328,13 +322,22 @@ public class ShoppingItemTests {
 
     @Test
     public void givenNoCategory_whenAddItem_thenReturnItemWithAssignedCategory() throws Exception {
-        String itemName = "water";
+        String item1Name = "water";
         String itemCategory = "";
-        String expectedCategory = "Beverages";
+        String expectedCategory1 = "Beverages";
+        String item2Name = "Butter & Margarine";
+        String expectedCategory2 = "Dairy Products";
 
+
+        Map<String, String> requestObject1 = new HashMap<>();
+        requestObject1.put("itemName", item1Name);
+        requestObject1.put("itemCategory", itemCategory);
+        requestObject1.put("quantity", "0");
+        requestObject1.put("comment", "");
+        requestObject1.put("isInCart", "false");
 
         Map<String, String> requestObject = new HashMap<>();
-        requestObject.put("itemName", itemName);
+        requestObject.put("itemName", item2Name);
         requestObject.put("itemCategory", itemCategory);
         requestObject.put("quantity", "0");
         requestObject.put("comment", "");
@@ -342,7 +345,17 @@ public class ShoppingItemTests {
 
         String authToken = getAuthToken(TEST_USER_EMAIL, TEST_USER_PASS);
 
-        String response = mvc.perform(post("/shoppingitems/additem")
+        String response1 = mvc.perform(post("/shoppingitems/additem")
+                .header("Authorization", "Bearer " + authToken)
+                .content(
+                        objectMapper.writeValueAsString(requestObject1)
+                )
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
+
+        String response2 = mvc.perform(post("/shoppingitems/additem")
                 .header("Authorization", "Bearer " + authToken)
                 .content(
                         objectMapper.writeValueAsString(requestObject)
@@ -352,10 +365,45 @@ public class ShoppingItemTests {
                 .andDo(print())
                 .andReturn().getResponse().getContentAsString();
 
-        assertFalse(response.contentEquals("[]"));
-        assertTrue(response.contains(itemName));
-        assertTrue(response.contains(expectedCategory));
+        assertFalse(response1.contentEquals("[]"));
+        assertTrue(response1.contains(item1Name));
+        assertTrue(response1.contains(expectedCategory1));
+
+        assertFalse(response2.contentEquals("[]"));
+        assertTrue(response2.contains(item2Name));
+        assertTrue(response2.contains(expectedCategory2));
     }
+
+//    @Test
+//    public void givenItemNoCategory_whenAddItem_thenReturnItemWithAssignedCategory() throws Exception {
+//        String item2Name = "Butter & Margarine";
+//        String itemCategory = "";
+//        String expectedCategory2 = "Dairy Products";
+//
+//
+//        Map<String, String> requestObject = new HashMap<>();
+//        requestObject.put("itemName", item2Name);
+//        requestObject.put("itemCategory", itemCategory);
+//        requestObject.put("quantity", "0");
+//        requestObject.put("comment", "");
+//        requestObject.put("isInCart", "false");
+//
+//        String authToken = getAuthToken(TEST_USER_EMAIL, TEST_USER_PASS);
+//
+//        String response2 = mvc.perform(post("/shoppingitems/additem")
+//                .header("Authorization", "Bearer " + authToken)
+//                .content(
+//                        objectMapper.writeValueAsString(requestObject)
+//                )
+//                .contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isOk())
+//                .andDo(print())
+//                .andReturn().getResponse().getContentAsString();
+//
+//        assertFalse(response2.contentEquals("[]"));
+//        assertTrue(response2.contains(item2Name));
+//        assertTrue(response2.contains(expectedCategory2));
+//    }
 
     @Test
     public void givenIncorrectCategory_whenAddItem_thenReturnUncategorized() throws Exception {

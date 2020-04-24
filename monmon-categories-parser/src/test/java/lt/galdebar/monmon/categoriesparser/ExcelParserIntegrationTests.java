@@ -4,7 +4,7 @@ package lt.galdebar.monmon.categoriesparser;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.KeywordsRepo;
-import lt.galdebar.monmon.categoriesparser.services.CategoriesParserMain;
+import lt.galdebar.monmon.categoriesparser.services.CategoriesParserAPI;
 import lt.galdebar.monmon.categoriesparser.services.CategoryDTOToEntityConverter;
 import lt.galdebar.monmon.categoriesparser.services.ExcelParser;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 @SpringBootTest
 public class ExcelParserIntegrationTests {
     @Autowired
-    private CategoriesParserMain parserMain;
+    private CategoriesParserAPI parserMain;
 
     @Autowired
     private KeywordsRepo keywordsRepo;
