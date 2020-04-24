@@ -31,6 +31,7 @@ public class ShoppingItemCategoryService {
      */
     private final int MAX_RESULTS = 10;
     private final ShoppingItemCategoryAdapter CATEGORY_DTO_ENTITY_ADAPTER = new ShoppingItemCategoryAdapter();
+    private Analyzer analyzer = new StandardAnalyzer(CharArraySet.EMPTY_SET);
 
     @Autowired
     private CategoriesSearchService searchService;
@@ -44,7 +45,6 @@ public class ShoppingItemCategoryService {
     @Autowired
     private KeywordAdapter externalKeywordAdapter;
 
-    private Analyzer analyzer = new StandardAnalyzer(CharArraySet.EMPTY_SET);
 
 
     /**

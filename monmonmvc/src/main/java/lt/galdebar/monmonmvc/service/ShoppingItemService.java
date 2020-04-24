@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Service
 public class ShoppingItemService {
-    private ShoppingItemAdapter adapter = new ShoppingItemAdapter();
+    private final ShoppingItemAdapter ADAPTER = new ShoppingItemAdapter();
 
     @Autowired
     private ShoppingItemRepo shoppingItemRepo;
@@ -41,7 +41,7 @@ public class ShoppingItemService {
      */
     public List<ShoppingItemDTO> getItemsByCategory(String requestedCategory) {
         List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByItemCategory(requestedCategory);
-        return adapter.bToA(foundItems);
+        return ADAPTER.bToA(foundItems);
     }
 
     /**
@@ -50,8 +50,7 @@ public class ShoppingItemService {
      * @return List of Shopping items. Empty if nothing found.
      */
     public List<ShoppingItemDTO> getAll() {
-//        return entitiesToDtos(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
-        return adapter.bToA(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
+        return ADAPTER.bToA(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
     }
 
     /**
@@ -65,7 +64,7 @@ public class ShoppingItemService {
                 Collections.singletonList(userDTO.getUserEmail())
         );
 
-        return adapter.bToA(foundItems);
+        return ADAPTER.bToA(foundItems);
     }
 
     /**
@@ -95,10 +94,10 @@ public class ShoppingItemService {
         ShoppingItemDTO itemToAdd = addUsersIfEmpty(shoppingItemDTO);
 
         ShoppingItemEntity returnedItem = shoppingItemRepo.insert(
-                adapter.aToB(itemToAdd)
+                ADAPTER.aToB(itemToAdd)
         );
 
-        return adapter.bToA(returnedItem);
+        return ADAPTER.bToA(returnedItem);
     }
 
 
@@ -122,10 +121,10 @@ public class ShoppingItemService {
         ShoppingItemDTO itemToUpdate = addUsersIfEmpty(shoppingItemDTO);
 
         ShoppingItemEntity result = shoppingItemRepo.save(
-                adapter.aToB(itemToUpdate)
+                ADAPTER.aToB(itemToUpdate)
         );
 
-        return adapter.bToA(result);
+        return ADAPTER.bToA(result);
     }
 
     /**
@@ -148,10 +147,10 @@ public class ShoppingItemService {
             itemsToUpdate.add(addUsersIfEmpty(item));
         }
         List<ShoppingItemEntity> updatedItems = shoppingItemRepo.saveAll(
-                adapter.aToB(itemsToUpdate)
+                ADAPTER.aToB(itemsToUpdate)
         );
 
-        return adapter.bToA(updatedItems);
+        return ADAPTER.bToA(updatedItems);
     }
 
     /**
@@ -169,7 +168,7 @@ public class ShoppingItemService {
             throw new ShoppingItemNotFound(shoppingItemDTO.getId());
         }
         shoppingItemRepo.delete(
-                adapter.aToB(shoppingItemDTO)
+                ADAPTER.aToB(shoppingItemDTO)
         );
     }
 
@@ -190,7 +189,7 @@ public class ShoppingItemService {
             }
         }
         shoppingItemRepo.deleteAll(
-                adapter.aToB(shoppingItemDTOList)
+                ADAPTER.aToB(shoppingItemDTOList)
         );
     }
 
