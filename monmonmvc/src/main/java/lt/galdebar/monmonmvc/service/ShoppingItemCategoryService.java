@@ -9,6 +9,7 @@ import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ItemCategoryRepo;
 import lt.galdebar.monmonmvc.service.adapters.CategoryAdapter;
 import lt.galdebar.monmonmvc.service.adapters.KeywordAdapter;
+import lt.galdebar.monmonmvc.service.adapters.ShoppingItemCategoryAdapter;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -29,6 +30,7 @@ public class ShoppingItemCategoryService {
      * Limits the amount of search autocomplete results.
      */
     private final int MAX_RESULTS = 10;
+    private final ShoppingItemCategoryAdapter CATEGORY_DTO_ENTITY_ADAPTER = new ShoppingItemCategoryAdapter();
 
     @Autowired
     private CategoriesSearchService searchService;
@@ -37,10 +39,10 @@ public class ShoppingItemCategoryService {
     private ItemCategoryRepo categoryRepo;
 
     @Autowired
-    private CategoryAdapter categoryAdapter;
+    private CategoryAdapter externalCategoryAdapter;
 
     @Autowired
-    private KeywordAdapter keywordAdapter;
+    private KeywordAdapter externalKeywordAdapter;
 
     private Analyzer analyzer = new StandardAnalyzer(CharArraySet.EMPTY_SET);
 
@@ -53,10 +55,10 @@ public class ShoppingItemCategoryService {
      */
     public List<ShoppingKeywordDTO> searchKeywordAutocomplete(ShoppingKeywordDTO keywordDTO) {
         List<KeywordDTO> foundKeywords = searchService.findKeywords(
-                keywordAdapter.aToB(keywordDTO),
+                externalKeywordAdapter.aToB(keywordDTO),
                 MAX_RESULTS
         );
-        List<ShoppingKeywordDTO> convertedKeywords = keywordAdapter.bToA(foundKeywords);
+        List<ShoppingKeywordDTO> convertedKeywords = externalKeywordAdapter.bToA(foundKeywords);
         return convertedKeywords;
     }
 
@@ -70,12 +72,12 @@ public class ShoppingItemCategoryService {
 
         ShoppingCategoryDTO dtoToReturn;
         List<CategoryDTO> foundKeywords = searchService.findCategoriesByKeyword(
-                keywordAdapter.aToB(keywordDTO)
+                externalKeywordAdapter.aToB(keywordDTO)
         );
         if(foundKeywords.size() ==0 || foundKeywords.get(0).getKeywords().stream().noneMatch(keywordDTO.getKeyword()::equalsIgnoreCase)){
-            dtoToReturn = categoryAdapter.bToA(searchService.getUncategorized());
+            dtoToReturn = externalCategoryAdapter.bToA(searchService.getUncategorized());
         } else {
-            dtoToReturn = categoryAdapter.bToA(foundKeywords.get(0));
+            dtoToReturn = externalCategoryAdapter.bToA(foundKeywords.get(0));
 
         }
         return dtoToReturn;
@@ -87,10 +89,9 @@ public class ShoppingItemCategoryService {
      *
      * @return list of all categories.
      */
-//    @Transactional
     public List<ShoppingCategoryDTO> getAllCategories() {
         List<ShoppingCategoryEntity> categories = (List<ShoppingCategoryEntity>) categoryRepo.findAll();
-        return categoryEntitiesToDTOS(categories);
+        return CATEGORY_DTO_ENTITY_ADAPTER.bToA(categories);
     }
 
     /**
@@ -101,22 +102,9 @@ public class ShoppingItemCategoryService {
      */
     ShoppingCategoryDTO searchCategory(ShoppingCategoryDTO itemCategory) {
         CategoryDTO foundCategory = searchService.searchCategory(
-                categoryAdapter.aToB(itemCategory)
+                externalCategoryAdapter.aToB(itemCategory)
         );
-        return categoryAdapter.bToA(foundCategory);
-    }
-
-    private ShoppingCategoryDTO categoryEntityToDTO(ShoppingCategoryEntity shoppingCategoryEntity) {
-        Set<String> keywords = new HashSet<>();
-        shoppingCategoryEntity.getKeywords().forEach(shoppingKeywordEntity -> keywords.add(shoppingKeywordEntity.getKeyword()));
-
-        return new ShoppingCategoryDTO(shoppingCategoryEntity.getCategoryName(), keywords);
-    }
-
-    private List<ShoppingCategoryDTO> categoryEntitiesToDTOS(List<ShoppingCategoryEntity> shoppingCategoryEntityList) {
-        List<ShoppingCategoryDTO> shoppingCategoryDTOList = new ArrayList<>();
-        shoppingCategoryEntityList.forEach(categoryDAO -> shoppingCategoryDTOList.add(categoryEntityToDTO(categoryDAO)));
-        return shoppingCategoryDTOList;
+        return externalCategoryAdapter.bToA(foundCategory);
     }
 
 }

@@ -34,8 +34,8 @@ public class MaximaScraper implements IsWebScraper {
     private final int ITEMS_PER_PAGE = 45;
     private String sessionID = "";
 
-    private ItemTranslator itemTranslator;
-    private ShoppingIitemDealAdapter adapter;
+    private final ItemTranslator TRANSLATOR = new ItemTranslator();
+    private final ShoppingIitemDealAdapter ADAPTER = new ShoppingIitemDealAdapter();
 
     @Getter
     private Document document;
@@ -54,8 +54,6 @@ public class MaximaScraper implements IsWebScraper {
     private ShoppingItemDealsRepo dealsRepo;
 
     public MaximaScraper() {
-        this.itemTranslator = new ItemTranslator();
-        this.adapter = new ShoppingIitemDealAdapter();
         try {
             Connection.Response response = Jsoup.connect("https://www.maxima.lt/akcijos#visi-pasiulymai-1").userAgent(USER_AGENT).execute();
             document = response.parse();
@@ -73,8 +71,6 @@ public class MaximaScraper implements IsWebScraper {
      * @param doc the doc
      */
     MaximaScraper(Document doc) {
-        this.itemTranslator = new ItemTranslator();
-        this.adapter = new ShoppingIitemDealAdapter();
         if (doc.childNodes().size() > 0) {
             document = doc;
             isDocumentValid = true;
@@ -117,9 +113,9 @@ public class MaximaScraper implements IsWebScraper {
     public boolean updateOffersDB() {
         if (isDocumentValid) {
             List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
-            List<ItemOnOffer> translatedItems = itemTranslator.translate(unprocessedItems);
+            List<ItemOnOffer> translatedItems = TRANSLATOR.translate(unprocessedItems);
             List<ShoppingItemDealDTO> finalDeals= assignKeywordHelper.assignKeywords(translatedItems);
-            List<ShoppingItemDealEntity> returnedEntities = dealsRepo.saveAll(adapter.dtoToEntity(finalDeals));
+            List<ShoppingItemDealEntity> returnedEntities = dealsRepo.saveAll(ADAPTER.dtoToEntity(finalDeals));
             if(returnedEntities.size()==finalDeals.size()){
                 return true;
             } else return false;
