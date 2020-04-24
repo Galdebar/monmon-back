@@ -3,8 +3,12 @@ package lt.galdebar.monmonscraper.services.scrapers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
+import lt.galdebar.monmonscraper.persistence.dao.ShoppingItemDealsRepo;
+import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealDTO;
+import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealEntity;
 import lt.galdebar.monmonscraper.services.helpers.AssignKeywordHelper;
 import lt.galdebar.monmonscraper.services.helpers.ItemTranslator;
+import lt.galdebar.monmonscraper.services.helpers.ShoppingIitemDealAdapter;
 import lt.galdebar.monmonscraper.services.scrapers.helpers.MaximaParserHelper;
 import org.jsoup.Connection;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
@@ -30,6 +34,9 @@ public class MaximaScraper implements IsWebScraper {
     private final int ITEMS_PER_PAGE = 45;
     private String sessionID = "";
 
+    private ItemTranslator itemTranslator;
+    private ShoppingIitemDealAdapter adapter;
+
     @Getter
     private Document document;
 
@@ -38,14 +45,17 @@ public class MaximaScraper implements IsWebScraper {
 
     @Autowired
     private MaximaParserHelper elementParser;
-//
-//    @Autowired
-//    private ItemTranslator itemTranslator;
-//
-//    @Autowired
-//    private AssignKeywordHelper assignKeywordHelper;
+
+
+    @Autowired
+    private AssignKeywordHelper assignKeywordHelper;
+
+    @Autowired
+    private ShoppingItemDealsRepo dealsRepo;
 
     public MaximaScraper() {
+        this.itemTranslator = new ItemTranslator();
+        this.adapter = new ShoppingIitemDealAdapter();
         try {
             Connection.Response response = Jsoup.connect("https://www.maxima.lt/akcijos#visi-pasiulymai-1").userAgent(USER_AGENT).execute();
             document = response.parse();
@@ -63,6 +73,8 @@ public class MaximaScraper implements IsWebScraper {
      * @param doc the doc
      */
     MaximaScraper(Document doc) {
+        this.itemTranslator = new ItemTranslator();
+        this.adapter = new ShoppingIitemDealAdapter();
         if (doc.childNodes().size() > 0) {
             document = doc;
             isDocumentValid = true;
@@ -102,12 +114,17 @@ public class MaximaScraper implements IsWebScraper {
         return document.getElementById(CONTAINER_NAME);
     }
 
-//    public void updateOffersDB() {
-//        if (isDocumentValid) {
-//            List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
-//
-//        }
-//    }
+    public boolean updateOffersDB() {
+        if (isDocumentValid) {
+            List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
+            List<ItemOnOffer> translatedItems = itemTranslator.translate(unprocessedItems);
+            List<ShoppingItemDealDTO> finalDeals= assignKeywordHelper.assignKeywords(translatedItems);
+            List<ShoppingItemDealEntity> returnedEntities = dealsRepo.saveAll(adapter.dtoToEntity(finalDeals));
+            if(returnedEntities.size()==finalDeals.size()){
+                return true;
+            } else return false;
+        } else return false;
+    }
 
     /**
      * Gets items on offer.

@@ -1,15 +1,24 @@
 package lt.galdebar.monmonscraper.services.scrapers;
 
+import lt.galdebar.monmonscraper.persistence.dao.ShoppingItemDealsRepo;
+import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealEntity;
 import lt.galdebar.monmonscraper.services.scrapers.helpers.MaximaParserHelper;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.context.annotation.Primary;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -20,12 +29,15 @@ import static lt.galdebar.monmonscraper.services.testhelpers.GetItemsCountFromWe
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest
+@TestPropertySource(locations = "classpath:test.properties")
+//@ActiveProfiles("test")
 public class MaximaScraperTest {
 
     @org.springframework.boot.test.context.TestConfiguration
     public static class TestConfiguration {
         @Bean
-        public MaximaScraper maximaScraper() {
+        public MaximaScraper fullFileMaximaScraper() {
             File localfile = new File("src/test/resources/WebsiteSnapshots/Maxima_Full.html");
             Document doc = null;
             try {
@@ -36,32 +48,35 @@ public class MaximaScraperTest {
             return new MaximaScraper(doc);
         }
 
-        @Bean
-        public MaximaScraper actualMaximaScraper(){
-            return new MaximaScraper();
-        }
-
-        @Bean
-        public MaximaParserHelper maximaHTMLElementParserHelper() {
-            return new MaximaParserHelper();
-        }
-
     }
+
+    @Autowired
+    private MaximaScraper fullFileMaximaScraper;
 
     @Autowired
     private MaximaScraper maximaScraper;
 
     @Autowired
-    private MaximaScraper actualMaximaScraper;
+    private ShoppingItemDealsRepo dealsRepo;
+
+    @Before
+    public void setUp() throws Exception {
+        dealsRepo.deleteAll();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        dealsRepo.deleteAll();
+    }
 
     @Test
     public void givenContext_thenLoadContext() {
-        assertNotNull(maximaScraper);
+        assertNotNull(fullFileMaximaScraper);
     }
 
     @Test
     public void givenContext_whenIsValid_thenTrue() {
-        assertTrue(maximaScraper.isValid());
+        assertTrue(fullFileMaximaScraper.isValid());
     }
 
     @Test
@@ -72,13 +87,13 @@ public class MaximaScraperTest {
 
     @Test
     public void givenValidContext_whenGetDocumentTitle_thenNotNull() {
-        assertNotNull(maximaScraper.getTitle());
+        assertNotNull(fullFileMaximaScraper.getTitle());
     }
 
 
     @Test
     public void givenValidContext_whenGetContainer_thenNotNull() {
-        Element container = maximaScraper.getContainer();
+        Element container = fullFileMaximaScraper.getContainer();
         assertNotNull(container);
     }
 
@@ -87,7 +102,7 @@ public class MaximaScraperTest {
         int singlePageItemsCount = 45;
         int totalItems = 328;
         int expectedCount = 8;
-        int actualCount = maximaScraper.countPages();
+        int actualCount = fullFileMaximaScraper.countPages();
 
         assertEquals(expectedCount, actualCount);
     }
@@ -107,7 +122,7 @@ public class MaximaScraperTest {
     @Test
     public void givenValidFile_whenFetchItemsWithOffset_thenNotNull() {
         MaximaScraper scraper = new MaximaScraper();
-        List<ItemOnOffer> fetchedElements = actualMaximaScraper.fetchItemsWithOffset(0);
+        List<ItemOnOffer> fetchedElements = maximaScraper.fetchItemsWithOffset(0);
 
         assertNotNull(fetchedElements);
     }
@@ -115,7 +130,7 @@ public class MaximaScraperTest {
     @Test
     public void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
         int expectedCount = 328;
-        List<ItemOnOffer> actualIterable = maximaScraper.getItemsOnOffer();
+        List<ItemOnOffer> actualIterable = fullFileMaximaScraper.getItemsOnOffer();
 
         assertNotNull(actualIterable);
         assertEquals(actualIterable.size(), expectedCount);
@@ -124,7 +139,7 @@ public class MaximaScraperTest {
     @Test
     public void givenActualWebsite_whenGetItemsOnOffer_thenReturnCount() {
         int expectedCount = getTotalItemsFromMaxima();
-        int actualCount = actualMaximaScraper.getItemsOnOffer().size();
+        int actualCount = maximaScraper.getItemsOnOffer().size();
 
         assertNotEquals(0, expectedCount);
         assertEquals(expectedCount, actualCount);
@@ -137,8 +152,8 @@ public class MaximaScraperTest {
         String expectedItemBrand = "ROKIŠKIO";
         float expectedItemPrice = 1.09f;
         ItemOnOffer expectedItem = new ItemOnOffer(expectedItemName, expectedItemBrand, expectedItemPrice, "ShopName");
-        ItemOnOffer actualItem = maximaScraper.elementToScrapedShoppingItem(
-                maximaScraper.getDocument().getElementsByClass("item").get(expectedItemIndex)
+        ItemOnOffer actualItem = fullFileMaximaScraper.elementToScrapedShoppingItem(
+                fullFileMaximaScraper.getDocument().getElementsByClass("item").get(expectedItemIndex)
         );
 
         assertNotNull(actualItem);
@@ -147,16 +162,18 @@ public class MaximaScraperTest {
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 
-//    @Test
-//    void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
-//        MaximaScraper scraper = new MaximaScraper();
-//        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
-//        assertNotNull(foundDeals);
-//        assertEquals(
-//                getTotalItemsFromMaxima(),
-//                foundDeals.size()
-//        );
-//    }
+    @Test
+    public void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
+        boolean isPushSuccessful = maximaScraper.updateOffersDB();
+        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
+
+        assertTrue(isPushSuccessful);
+        assertNotNull(foundDeals);
+        assertEquals(
+                getTotalItemsFromMaxima(),
+                foundDeals.size()
+        );
+    }
 
     // push to db with valid website
     //push to db with invalid website

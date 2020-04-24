@@ -8,12 +8,29 @@ import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-@Service
 public class ItemTranslator {
     private final String URL = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=lt&tl=en&dt=t&q=";
     private final String[] wordsToFilter = {"for"};
+    private final int REQUESTDELAY = 5;
+
+    public List<ItemOnOffer> translate(List<ItemOnOffer> itemsToTranslate) {
+        List<ItemOnOffer> translatedItems = new ArrayList<>();
+        for(ItemOnOffer itemToTranslate:itemsToTranslate){
+            try {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(REQUESTDELAY));
+                translatedItems.add(translate(itemToTranslate));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return translatedItems;
+            }
+        }
+        return translatedItems;
+    }
 
     public ItemOnOffer translate(ItemOnOffer itemToTranslate) {
         String translatedName = translateString(itemToTranslate.getName());
