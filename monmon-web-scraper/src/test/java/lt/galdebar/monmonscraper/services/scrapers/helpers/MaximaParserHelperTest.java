@@ -20,16 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringRunner.class)
 public class MaximaParserHelperTest {
 
-    @org.springframework.boot.test.context.TestConfiguration
-    public static class TestConfiguration {
-        @Bean
-        public MaximaParserHelper maximaHTMLElementParserHelper() {
-            return new MaximaParserHelper();
-        }
-    }
-
-    @Autowired
-    MaximaParserHelper parser;
+    MaximaParserHelper parser = new MaximaParserHelper();
 
     @Test
     public void contextLoads() {

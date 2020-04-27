@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.junit.Test;
@@ -36,6 +37,11 @@ public class WebScraperAPITests {
         assertNotNull(scraperAPI.getAvailableScrapers());
         assertTrue(scraperAPI.getAvailableScrapers().size()>0);
         assertTrue( scraperAPI.getAvailableScrapers().get(0) instanceof IsWebScraper);
+    }
+
+    @Test
+    public void givenContext_whenRunScrapers_thenDBHasEntries(){
+
     }
 
     //get all items (fresh parse from websites)

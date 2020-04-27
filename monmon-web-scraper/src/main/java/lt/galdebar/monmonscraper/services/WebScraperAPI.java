@@ -15,4 +15,10 @@ public class WebScraperAPI {
     public List<IsWebScraper> getAvailableScrapers() {
         return webScrapers;
     }
+
+    public void runScrapers() {
+        for (IsWebScraper scraper : webScrapers) {
+            scraper.updateOffersDB();
+        }
+    }
 }

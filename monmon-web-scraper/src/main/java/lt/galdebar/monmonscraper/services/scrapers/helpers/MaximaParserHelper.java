@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+
 public class MaximaParserHelper implements IsHTMLElementParserHelper {
     private final String shopName = ShopNames.MAXIMA.getShopName();
 

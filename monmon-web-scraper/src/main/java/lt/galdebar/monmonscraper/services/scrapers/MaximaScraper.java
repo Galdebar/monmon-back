@@ -17,6 +17,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -26,26 +27,24 @@ import java.util.List;
 /**
  * Maxima website scraper.
  */
-@Service
+@Component
 public class MaximaScraper implements IsWebScraper {
     private final String CONTAINER_NAME = "offers_container";
     private final String ITEM_NAME = "item";
     private final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36";
     private final int ITEMS_PER_PAGE = 45;
     private String sessionID = "";
+    @Getter
+    private final ShopNames SHOP = ShopNames.MAXIMA;
 
     private final ItemTranslator TRANSLATOR = new ItemTranslator();
     private final ShoppingIitemDealAdapter ADAPTER = new ShoppingIitemDealAdapter();
-
-    @Getter
-    private Document document;
-
+    private final MaximaParserHelper elementParser = new MaximaParserHelper();
 
     private boolean isDocumentValid;
 
-    @Autowired
-    private MaximaParserHelper elementParser;
-
+    @Getter
+    private Document document;
 
     @Autowired
     private AssignKeywordHelper assignKeywordHelper;
@@ -139,7 +138,6 @@ public class MaximaScraper implements IsWebScraper {
             List<ItemOnOffer> fetchedPage = fetchItemsWithOffset(i);
             totalElements.addAll(fetchedPage);
         }
-//        List<ItemOnOffer> scrapedItems = elementsToScrapedItems(totalElements);
         return totalElements;
     }
 

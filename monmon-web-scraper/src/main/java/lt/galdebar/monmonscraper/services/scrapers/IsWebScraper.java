@@ -8,4 +8,6 @@ import java.util.List;
 public interface IsWebScraper {
     List<ItemOnOffer> getItemsOnOffer();
     List<ItemOnOffer> getItemsOnOffer(Document document);
+    boolean updateOffersDB();
+    ShopNames getSHOP();
 }

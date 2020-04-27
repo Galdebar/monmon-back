@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class ItemTranslator {
     private final String URL = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=lt&tl=en&dt=t&q=";
     private final String[] wordsToFilter = {"for"};
-    private final int REQUESTDELAY = 5;
+    private final int REQUESTDELAY = 10;
 
     public List<ItemOnOffer> translate(List<ItemOnOffer> itemsToTranslate) {
         List<ItemOnOffer> translatedItems = new ArrayList<>();

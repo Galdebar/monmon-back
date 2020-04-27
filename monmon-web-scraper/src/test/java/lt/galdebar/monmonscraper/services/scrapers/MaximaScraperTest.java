@@ -31,7 +31,6 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test.properties")
-//@ActiveProfiles("test")
 public class MaximaScraperTest {
 
     @org.springframework.boot.test.context.TestConfiguration
@@ -72,11 +71,15 @@ public class MaximaScraperTest {
     @Test
     public void givenContext_thenLoadContext() {
         assertNotNull(fullFileMaximaScraper);
+        assertNotNull(maximaScraper);
+        assertEquals(ShopNames.MAXIMA, fullFileMaximaScraper.getSHOP());
+        assertEquals(ShopNames.MAXIMA, maximaScraper.getSHOP());
     }
 
     @Test
     public void givenContext_whenIsValid_thenTrue() {
         assertTrue(fullFileMaximaScraper.isValid());
+        assertTrue(maximaScraper.isValid());
     }
 
     @Test
