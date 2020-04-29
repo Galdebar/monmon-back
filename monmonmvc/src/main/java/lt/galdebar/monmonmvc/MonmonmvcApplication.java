@@ -5,7 +5,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication(scanBasePackages = {"lt.galdebar.monmonmvc", "lt.galdebar.monmon.categoriesparser"})
+@SpringBootApplication(scanBasePackages = {
+        "lt.galdebar.monmonmvc",
+        "lt.galdebar.monmon.categoriesparser",
+        "lt.galdebar.monmonscraper"
+})
 @EnableScheduling
 @Log4j2
 public class MonmonmvcApplication {

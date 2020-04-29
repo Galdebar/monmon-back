@@ -2,6 +2,7 @@ package lt.galdebar.monmonmvc.service.adapters;
 
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
 import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
+import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,8 @@ public class ShoppingItemAdapter implements IsObjectAdapter<ShoppingItemDTO, Sho
                 shoppingItemEntity.quantity,
                 shoppingItemEntity.comment,
                 shoppingItemEntity.isInCart,
-                shoppingItemEntity.users
+                shoppingItemEntity.users,
+                new ShoppingItemDealDTO()
         );
     }
 

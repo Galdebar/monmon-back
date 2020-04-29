@@ -14,7 +14,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Component
-public class DealsService {
+public class ShoppingItemDealFinderService {
     private final ShoppingIitemDealAdapter ADAPTER = new ShoppingIitemDealAdapter();
 
     @Autowired

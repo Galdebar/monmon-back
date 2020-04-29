@@ -9,6 +9,7 @@ import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonmvc.service.adapters.ShoppingItemAdapter;
 import lt.galdebar.monmonmvc.service.exceptions.shoppingitem.ShoppingItemNotFound;
+import lt.galdebar.monmonscraper.services.ShoppingItemDealFinderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class ShoppingItemService {
     @Autowired
     private ShoppingItemCategoryService shoppingItemCategoryService;
 
+    @Autowired
+    private ShoppingItemDealsService dealsService;
+
     /**
      * Gets items by category.
      *
@@ -41,7 +45,9 @@ public class ShoppingItemService {
      */
     public List<ShoppingItemDTO> getItemsByCategory(String requestedCategory) {
         List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByItemCategory(requestedCategory);
-        return ADAPTER.bToA(foundItems);
+        List<ShoppingItemDTO> dtos = ADAPTER.bToA(foundItems);
+        dtos = dealsService.findDeal(dtos);
+        return dtos;
     }
 
     /**
@@ -50,7 +56,11 @@ public class ShoppingItemService {
      * @return List of Shopping items. Empty if nothing found.
      */
     public List<ShoppingItemDTO> getAll() {
-        return ADAPTER.bToA(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
+        List<ShoppingItemEntity> foundItems = shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers());
+        List<ShoppingItemDTO> dtos = ADAPTER.bToA(foundItems);
+        dtos = dealsService.findDeal(dtos);
+//        return ADAPTER.bToA(shoppingItemRepo.findByUsersIn(getCurrentUserAndConnectedUsers()));
+        return dtos;
     }
 
     /**
@@ -64,7 +74,10 @@ public class ShoppingItemService {
                 Collections.singletonList(userDTO.getUserEmail())
         );
 
-        return ADAPTER.bToA(foundItems);
+        List<ShoppingItemDTO> dtos = ADAPTER.bToA(foundItems);
+        dtos = dealsService.findDeal(dtos);
+//        return ADAPTER.bToA(foundItems);
+        return dtos;
     }
 
     /**
@@ -215,7 +228,7 @@ public class ShoppingItemService {
     }
 
     private ShoppingItemDTO addUsersIfEmpty(ShoppingItemDTO shoppingItemDTO) {
-        if(shoppingItemDTO.getUsers() == null){
+        if (shoppingItemDTO.getUsers() == null) {
             shoppingItemDTO.setUsers(new HashSet<>());
         }
         if (shoppingItemDTO.getUsers().size() == 0) {
