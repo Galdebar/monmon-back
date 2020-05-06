@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Maxima website scraper.
@@ -110,15 +111,46 @@ public class MaximaScraper implements IsWebScraper {
     }
 
     public boolean updateOffersDB() {
-        if (isDocumentValid) {
+//        if (isDocumentValid) {
+//            List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
+//            List<ItemOnOffer> translatedItems = TRANSLATOR.translate(unprocessedItems);
+//            List<ShoppingItemDealDTO> finalDeals = assignKeywordHelper.assignKeywords(translatedItems);
+//            List<ShoppingItemDealEntity> returnedEntities = dealsRepo.saveAll(ADAPTER.dtoToEntity(finalDeals));
+//            if (returnedEntities.size() == finalDeals.size()) {
+//                return true;
+//            } else return false;
+//        } else return false;
+
+        if(isDocumentValid){
             List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
-            List<ItemOnOffer> translatedItems = TRANSLATOR.translate(unprocessedItems);
-            List<ShoppingItemDealDTO> finalDeals= assignKeywordHelper.assignKeywords(translatedItems);
-            List<ShoppingItemDealEntity> returnedEntities = dealsRepo.saveAll(ADAPTER.dtoToEntity(finalDeals));
-            if(returnedEntities.size()==finalDeals.size()){
+            try {
+                staggeredTranslateAndPush(unprocessedItems);
                 return true;
-            } else return false;
-        } else return false;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }else return false;
+    }
+
+    //This method is a bad necessity, because I'm not using Google's translate API.
+    //So the translator allowance is 100 requests per hour.
+    private void staggeredTranslateAndPush(List<ItemOnOffer> itemsOnOffer) throws InterruptedException {
+        int maxItemsInBatch = 90;
+        int numOfBatches = (itemsOnOffer.size() % maxItemsInBatch == 0) ?
+                (itemsOnOffer.size() / maxItemsInBatch) : (itemsOnOffer.size() / maxItemsInBatch + 1);
+
+        for (int i = 0; i < numOfBatches; i++) {
+            int startIndex = maxItemsInBatch * i;
+            int endIndex = Math.min(itemsOnOffer.size(), (startIndex + maxItemsInBatch)) - 1;
+            List<ItemOnOffer> trimmedList = itemsOnOffer.subList(startIndex, endIndex);
+
+            List<ItemOnOffer> translatedItems = TRANSLATOR.translate(trimmedList);
+            List<ShoppingItemDealDTO> finalDeals = assignKeywordHelper.assignKeywords(translatedItems);
+            List<ShoppingItemDealEntity> entities = dealsRepo.saveAll(ADAPTER.dtoToEntity(finalDeals));
+            System.out.println(entities);
+            Thread.sleep(TimeUnit.HOURS.toMillis(1));
+        }
     }
 
     /**
@@ -147,8 +179,8 @@ public class MaximaScraper implements IsWebScraper {
     }
 
 
-    public int countPages() {
-        int pagesCount = 0;
+    int countPages() {
+        int pagesCount;
         int totalItemsCount;
         try {
             totalItemsCount = Integer.parseInt(document.getElementById("items_cnt").text());
@@ -163,7 +195,7 @@ public class MaximaScraper implements IsWebScraper {
         return pagesCount;
     }
 
-    public List<ItemOnOffer> fetchItemsWithOffset(int pagesCount) {
+    List<ItemOnOffer> fetchItemsWithOffset(int pagesCount) {
         String url = "https://www.maxima.lt/ajax/saleloadmore";
         Document fetchedDoc = null;
         int offset = pagesCount * ITEMS_PER_PAGE;

@@ -1,54 +1,39 @@
 package lt.galdebar.monmonscraper.services.scrapers.helpers;
 
-import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import lt.galdebar.monmonscraper.services.scrapers.ShopNames;
+import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.nodes.Element;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+public class RimiParserHelper implements IsHTMLElementParserHelper {
+    private final String shopName = ShopNames.RIMI.getShopName();
 
-public class MaximaParserHelper implements IsHTMLElementParserHelper {
-    private final String shopName = ShopNames.MAXIMA.getShopName();
-
+    @Override
     public ItemOnOffer parseElement(Element element) {
         String name = getItemName(getTitleElement(element));
         String brand = getItemBrand(getTitleElement(element));
         float price = getItemPrice(element);
-        if(name.equalsIgnoreCase("")) {
-            return new ItemOnOffer(brand, "", price,shopName);
-        } else return new ItemOnOffer(name,brand,price,shopName);
+        return new ItemOnOffer(name, brand, price, shopName);
     }
-
-//    private String getItemName(Element titleElement) {
-//        return cleanCommaFromEndOfString(
-//                getTitleWords(titleElement.text(), false)
-//        );
-//    }
-//
-//    private String getItemBrand(Element titleElement) {
-//        return cleanCommaFromEndOfString(
-//                getTitleWords(titleElement.text(), true)
-//        );
-//    }
 
     @Override
     public float getItemPrice(Element element) {
         float finalPrice;
 
-        if (element.getElementsByClass("t1").size() == 0) {
+        if (element.getElementsByClass("price-badge").size() == 0) {
             finalPrice = 0;
             return finalPrice;
         }
 
         Element priceElement = element
-                .getElementsByClass("price").get(0)
-                .getElementsByClass("t1").get(0);
+                .getElementsByClass("price-badge").get(0)
+                .getElementsByClass("price-badge__inner").get(0);
 
-        String value = priceElement.getElementsByClass("value").get(0).text();
+        String value = priceElement.getElementsByClass("euro").get(0).text();
         String cents = priceElement.getElementsByClass("cents").get(0).text();
 
         String finalPriceString = new StringBuilder()
@@ -64,9 +49,17 @@ public class MaximaParserHelper implements IsHTMLElementParserHelper {
         return finalPrice;
     }
 
-    private Element getTitleElement(Element itemElement) {
-        return itemElement.getElementsByClass("title").get(0);
-    }
+//    private String getItemBrand(Element titleElement) {
+//        return cleanCommaFromEndOfString(
+//                getTitleWords(titleElement.text(), true)
+//        );
+//    }
+//
+//    private String getItemName(Element titleElement) {
+//        return cleanCommaFromEndOfString(
+//                getTitleWords(titleElement.text(), false)
+//        );
+//    }
 
 //    private String getTitleWords(String fullTitle, boolean shouldFindCapitalized) {
 //        String finalString = "";
@@ -82,26 +75,13 @@ public class MaximaParserHelper implements IsHTMLElementParserHelper {
 //            return finalString;
 //        } else return finalString;
 //    }
-
+//
 //    private List<String> filterTitleIntoUsableWordsList(String fullTitle) {
 //        List<String> sectionsSeparatedByCommas = generateSectionsSeparatedByCommas(fullTitle);
 //
 //        return sectionsToUsableWords(sectionsSeparatedByCommas);
 //    }
 //
-//    private List<String> sectionsToUsableWords(List<String> wordSections) {
-//        List<String> separatedBySpaces = Arrays.asList(
-//                wordSections.stream()
-//                        .collect(Collectors.joining(" "))
-//                        .split(" ")
-//        );
-//        List<String> finalList = separatedBySpaces.stream()
-//                .filter(word -> !word.isEmpty())
-//                .collect(Collectors.toList());
-//
-//        return finalList;
-//    }
-
 //    private List<String> generateSectionsSeparatedByCommas(String fullTitle) {
 //        List<String> initialList = new ArrayList<>(Arrays.asList(fullTitle.split(",")));
 //        if (initialList.size() > 1) {
@@ -122,24 +102,14 @@ public class MaximaParserHelper implements IsHTMLElementParserHelper {
 //
 //        return initialList;
 //    }
-
+//
 //    private List<String> filterTitleSubsectionsAfterFirstComma(List<String> subsections) {
 //        List<String> usableSections = subsections.stream()
 //                .filter(word -> checkifWordIsOnlyAlphabetic(word))
 //                .collect(Collectors.toList());
 //        return usableSections;
 //    }
-
-//    private boolean checkifWordIsOnlyAlphabetic(String word) {
-//        for (char c : word.toCharArray()) {
-//            if (!Character.isDigit(c)  && c!='.' || c == ' ') {
-//                continue;
-//            }
-//            return false;
-//        }
-//        return true;
-//    }
-
+//
 //    private List<String> filterTitleWords(List<String> unfilteredWords, boolean shouldFindCapitalized) {
 //        List<String> filteredWords;
 //        if (shouldFindCapitalized) {
@@ -153,19 +123,8 @@ public class MaximaParserHelper implements IsHTMLElementParserHelper {
 //        }
 //        return filteredWords;
 //    }
-//
-//    private boolean isWordUpperCase(String string) {
-//        for (int i = 0; i < string.length(); i++) {
-//            if (Character.isLowerCase(string.charAt(i))) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-//
-//    private String cleanCommaFromEndOfString(String string) {
-//        if (!string.isEmpty() && string.charAt(string.length() - 1) == ',') {
-//            return string.substring(0, string.length() - 1);
-//        } else return string;
-//    }
+
+    private Element getTitleElement(Element element) {
+        return element.getElementsByClass("offer-card__name").get(0);
+    }
 }
