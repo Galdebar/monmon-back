@@ -43,6 +43,34 @@ public class RimiParserHelperTest {
 
     }
 
+    @Test
+    public void parseNoBrandElementTest() {
+        Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/RimiHTMLElements/NoBrandElement.html");
+        String expectedName = "Kalakutų filė";
+        String expectedBrand = "";
+        float expectedPrice = 6.99f;
+
+        ItemOnOffer actualItem = parser.parseElement(testElement);
+
+        assertEquals(expectedName, actualItem.getName());
+        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedPrice, actualItem.getPrice());
+    }
+
+    @Test
+    public void parseSeveralCategorieselementTest() {
+        Element testElement = getElementFromFile("src/test/resources/WebsiteSnapshots/RimiHTMLElements/SeveralCategoriesElement.html");
+        String expectedName = "Filtrams, filtravimo indams ar kasetėms";
+        String expectedBrand = "BRITA";
+        float expectedPrice = 0;
+
+        ItemOnOffer actualItem = parser.parseElement(testElement);
+
+        assertEquals(expectedName, actualItem.getName());
+        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedPrice, actualItem.getPrice());
+    }
+
     private Element getElementFromFile(String filePath) {
         return Jsoup.parse(
                 htmlStringFromFile(filePath)
