@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HTMLElementParserHelper implements IsHTMLElementParserHelper {
+public abstract class HTMLElementParserHelper implements IsHTMLElementParserHelper {
     protected final String shopName;
 
     public HTMLElementParserHelper(String shopName) {
@@ -22,13 +22,9 @@ public class HTMLElementParserHelper implements IsHTMLElementParserHelper {
         return new ItemOnOffer(name, brand, price, shopName);
     }
 
-    public Element getTitleElement(Element element) {
-        return null;
-    }
+    public abstract Element getTitleElement(Element element);
 
-    public float getItemPrice(Element element) {
-        return 0;
-    }
+    public abstract float getItemPrice(Element element);
 
     public String getItemBrand(Element titleElement) {
         return cleanCommaFromEndOfString(
