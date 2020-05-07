@@ -1,5 +1,6 @@
 package lt.galdebar.monmonscraper.services.scrapers.helpers;
 
+import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.nodes.Element;
 

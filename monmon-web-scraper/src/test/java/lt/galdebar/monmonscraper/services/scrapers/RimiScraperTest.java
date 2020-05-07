@@ -6,6 +6,7 @@ import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static lt.galdebar.monmonscraper.services.testhelpers.GetItemsCountFromWebsites.getTotalItemsFromMaxima;
+import static lt.galdebar.monmonscraper.services.testhelpers.GetItemsCountFromWebsites.getTotalItemsFromRimi;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
@@ -31,7 +33,7 @@ public class RimiScraperTest {
     @org.springframework.boot.test.context.TestConfiguration
     public static class TestConfiguration {
         @Bean
-        public MaximaScraper fullFileMaximaScraper() {
+        public RimiScraper fullFileRimiScraper() {
             File localfile = new File("src/test/resources/WebsiteSnapshots/Rimi_Full.html");
             Document doc = null;
             try {
@@ -39,16 +41,16 @@ public class RimiScraperTest {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return new MaximaScraper(doc);
+            return new RimiScraper(doc);
         }
 
     }
 
     @Autowired
-    private MaximaScraper fullFileMaximaScraper;
+    private RimiScraper fullFileRimiScraper;
 
     @Autowired
-    private MaximaScraper maximaScraper;
+    private RimiScraper rimiScraper;
 
     @Autowired
     private ShoppingItemDealsRepo dealsRepo;
@@ -65,16 +67,16 @@ public class RimiScraperTest {
 
     @Test
     public void givenContext_thenLoadContext() {
-        assertNotNull(fullFileMaximaScraper);
-        assertNotNull(maximaScraper);
-        assertEquals(ShopNames.MAXIMA, fullFileMaximaScraper.getSHOP());
-        assertEquals(ShopNames.MAXIMA, maximaScraper.getSHOP());
+        assertNotNull(fullFileRimiScraper);
+        assertNotNull(rimiScraper);
+        assertEquals(ShopNames.MAXIMA, fullFileRimiScraper.getSHOP());
+        assertEquals(ShopNames.MAXIMA, rimiScraper.getSHOP());
     }
 
     @Test
     public void givenContext_whenIsValid_thenTrue() {
-        assertTrue(fullFileMaximaScraper.isValid());
-        assertTrue(maximaScraper.isValid());
+        assertTrue(fullFileRimiScraper.isValid());
+        assertTrue(rimiScraper.isValid());
     }
 
     @Test
@@ -84,60 +86,18 @@ public class RimiScraperTest {
     }
 
     @Test
-    public void givenValidContext_whenGetDocumentTitle_thenNotNull() {
-        assertNotNull(fullFileMaximaScraper.getTitle());
-    }
-
-
-    @Test
-    public void givenValidContext_whenGetContainer_thenNotNull() {
-        Element container = fullFileMaximaScraper.getContainer();
-        assertNotNull(container);
-    }
-
-    @Test
-    public void givenValidFile_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
-        int singlePageItemsCount = 45;
-        int totalItems = 328;
-        int expectedCount = 8;
-        int actualCount = fullFileMaximaScraper.countPages();
-
-        assertEquals(expectedCount, actualCount);
-    }
-
-    @Test
-    public void givenActualWebsite_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
-        MaximaScraper scraper = new MaximaScraper(); // default constructor has hardwired url.
-        int singlePageItemsCount = 45;
-        int totalItemsCount = getTotalItemsFromMaxima();
-        int expectedPagesCount = (totalItemsCount % singlePageItemsCount == 0) ? totalItemsCount / singlePageItemsCount : totalItemsCount / singlePageItemsCount + 1;
-        int actualPagesCount = scraper.countPages();
-
-        assertNotEquals(0, expectedPagesCount);
-        assertEquals(expectedPagesCount, actualPagesCount);
-    }
-
-    @Test
-    public void givenValidFile_whenFetchItemsWithOffset_thenNotNull() {
-        MaximaScraper scraper = new MaximaScraper();
-        List<ItemOnOffer> fetchedElements = maximaScraper.fetchItemsWithOffset(0);
-
-        assertNotNull(fetchedElements);
-    }
-
-    @Test
     public void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
-        int expectedCount = 328;
-        List<ItemOnOffer> actualIterable = fullFileMaximaScraper.getItemsOnOffer();
+        int expectedCount = 152;
+        List<ItemOnOffer> actualIterable = fullFileRimiScraper.getItemsOnOffer();
 
         assertNotNull(actualIterable);
-        assertEquals(actualIterable.size(), expectedCount);
+        assertEquals(expectedCount, actualIterable.size());
     }
 
     @Test
     public void givenActualWebsite_whenGetItemsOnOffer_thenReturnCount() {
-        int expectedCount = getTotalItemsFromMaxima();
-        int actualCount = maximaScraper.getItemsOnOffer().size();
+        int expectedCount = getTotalItemsFromRimi();
+        int actualCount = rimiScraper.getItemsOnOffer().size();
 
         assertNotEquals(0, expectedCount);
         assertEquals(expectedCount, actualCount);
@@ -145,14 +105,18 @@ public class RimiScraperTest {
 
     @Test
     public void givenValidFile_whenCreateItemFromElement_thenReturnItem() {
-        int expectedItemIndex = 2;
-        String expectedItemName = "sviestas";
-        String expectedItemBrand = "ROKIŠKIO";
-        float expectedItemPrice = 1.09f;
+        int expectedItemIndex = 3;
+        String expectedItemName = "Viščiukų krūtinėlės filė";
+        String expectedItemBrand = "RIMI";
+        float expectedItemPrice = 3.59f;
+        Element elementToParse = fullFileRimiScraper.getDocument()
+                .getElementsByClass("container")
+                .get(3)
+                .getElementsByClass("offer-card")
+                .get(expectedItemIndex);
+
         ItemOnOffer expectedItem = new ItemOnOffer(expectedItemName, expectedItemBrand, expectedItemPrice, "ShopName");
-        ItemOnOffer actualItem = fullFileMaximaScraper.elementToScrapedShoppingItem(
-                fullFileMaximaScraper.getDocument().getElementsByClass("item").get(expectedItemIndex)
-        );
+        ItemOnOffer actualItem = fullFileRimiScraper.elementToScrapedShoppingItem(elementToParse);
 
         assertNotNull(actualItem);
         assertTrue(actualItem.getName().equalsIgnoreCase(expectedItemName));
@@ -162,7 +126,7 @@ public class RimiScraperTest {
 
     @Test
     public void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
-        boolean isPushSuccessful = maximaScraper.updateOffersDB();
+        boolean isPushSuccessful = rimiScraper.updateOffersDB();
         List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
 
         assertTrue(isPushSuccessful);

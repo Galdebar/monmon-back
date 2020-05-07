@@ -29,33 +29,20 @@ import java.util.concurrent.TimeUnit;
  * Maxima website scraper.
  */
 @Component
-public class MaximaScraper implements IsWebScraper {
-    private final String CONTAINER_NAME = "offers_container";
-    private final String ITEM_NAME = "item";
-    private final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36";
+public class MaximaScraper extends Scraper {
     private final int ITEMS_PER_PAGE = 45;
-    private String sessionID = "";
-    @Getter
-    private final ShopNames SHOP = ShopNames.MAXIMA;
+    private final String URL = "https://www.maxima.lt/akcijos#visi-pasiulymai-1";
 
-    private final ItemTranslator TRANSLATOR = new ItemTranslator();
-    private final ShoppingIitemDealAdapter ADAPTER = new ShoppingIitemDealAdapter();
-    private final MaximaParserHelper elementParser = new MaximaParserHelper();
-
-    private boolean isDocumentValid;
-
-    @Getter
-    private Document document;
-
-    @Autowired
-    private AssignKeywordHelper assignKeywordHelper;
-
-    @Autowired
-    private ShoppingItemDealsRepo dealsRepo;
 
     public MaximaScraper() {
+        super(
+                "offers_container",
+                "item",
+                ShopNames.MAXIMA,
+                new MaximaParserHelper()
+        );
         try {
-            Connection.Response response = Jsoup.connect("https://www.maxima.lt/akcijos#visi-pasiulymai-1").userAgent(USER_AGENT).execute();
+            Connection.Response response = Jsoup.connect(URL).userAgent(USER_AGENT).maxBodySize(0).execute();
             document = response.parse();
             sessionID = response.cookie("SESSIONID");
             isDocumentValid = true;
@@ -71,6 +58,12 @@ public class MaximaScraper implements IsWebScraper {
      * @param doc the doc
      */
     MaximaScraper(Document doc) {
+        super(
+                "offers_container",
+                "item",
+                ShopNames.MAXIMA,
+                new MaximaParserHelper()
+        );
         if (doc.childNodes().size() > 0) {
             document = doc;
             isDocumentValid = true;
@@ -108,49 +101,6 @@ public class MaximaScraper implements IsWebScraper {
 
     Element getContainer(Document document) {
         return document.getElementById(CONTAINER_NAME);
-    }
-
-    public boolean updateOffersDB() {
-//        if (isDocumentValid) {
-//            List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
-//            List<ItemOnOffer> translatedItems = TRANSLATOR.translate(unprocessedItems);
-//            List<ShoppingItemDealDTO> finalDeals = assignKeywordHelper.assignKeywords(translatedItems);
-//            List<ShoppingItemDealEntity> returnedEntities = dealsRepo.saveAll(ADAPTER.dtoToEntity(finalDeals));
-//            if (returnedEntities.size() == finalDeals.size()) {
-//                return true;
-//            } else return false;
-//        } else return false;
-
-        if(isDocumentValid){
-            List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
-            try {
-                staggeredTranslateAndPush(unprocessedItems);
-                return true;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }else return false;
-    }
-
-    //This method is a bad necessity, because I'm not using Google's translate API.
-    //So the translator allowance is 100 requests per hour.
-    private void staggeredTranslateAndPush(List<ItemOnOffer> itemsOnOffer) throws InterruptedException {
-        int maxItemsInBatch = 90;
-        int numOfBatches = (itemsOnOffer.size() % maxItemsInBatch == 0) ?
-                (itemsOnOffer.size() / maxItemsInBatch) : (itemsOnOffer.size() / maxItemsInBatch + 1);
-
-        for (int i = 0; i < numOfBatches; i++) {
-            int startIndex = maxItemsInBatch * i;
-            int endIndex = Math.min(itemsOnOffer.size(), (startIndex + maxItemsInBatch)) - 1;
-            List<ItemOnOffer> trimmedList = itemsOnOffer.subList(startIndex, endIndex);
-
-            List<ItemOnOffer> translatedItems = TRANSLATOR.translate(trimmedList);
-            List<ShoppingItemDealDTO> finalDeals = assignKeywordHelper.assignKeywords(translatedItems);
-            List<ShoppingItemDealEntity> entities = dealsRepo.saveAll(ADAPTER.dtoToEntity(finalDeals));
-            System.out.println(entities);
-            Thread.sleep(TimeUnit.HOURS.toMillis(1));
-        }
     }
 
     /**
@@ -220,15 +170,15 @@ public class MaximaScraper implements IsWebScraper {
         List<ItemOnOffer> items = getItemsOnOffer(fetchedDoc);
         return items;
     }
-
-    private List<ItemOnOffer> elementsToScrapedItems(Elements totalElements) {
-        List<ItemOnOffer> scrapedItems = new ArrayList<>();
-        for (Element element : totalElements) {
-            scrapedItems.add(elementToScrapedShoppingItem(element));
-        }
-        return scrapedItems;
-
-    }
+//
+//    private List<ItemOnOffer> elementsToScrapedItems(Elements totalElements) {
+//        List<ItemOnOffer> scrapedItems = new ArrayList<>();
+//        for (Element element : totalElements) {
+//            scrapedItems.add(elementToScrapedShoppingItem(element));
+//        }
+//        return scrapedItems;
+//
+//    }
 
     /**
      * Create item scraped shopping item.
@@ -236,7 +186,7 @@ public class MaximaScraper implements IsWebScraper {
      * @param element the element
      * @return the scraped shopping item
      */
-    ItemOnOffer elementToScrapedShoppingItem(Element element) {
-        return elementParser.parseElement(element);
-    }
+//    ItemOnOffer elementToScrapedShoppingItem(Element element) {
+//        return elementParser.parseElement(element);
+//    }
 }

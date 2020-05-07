@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import java.util.List;
 
 public interface IsWebScraper {
+    boolean isValid();
     List<ItemOnOffer> getItemsOnOffer();
     List<ItemOnOffer> getItemsOnOffer(Document document);
     boolean updateOffersDB();

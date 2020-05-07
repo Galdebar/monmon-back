@@ -1,5 +1,6 @@
 package lt.galdebar.monmonscraper.services.scrapers.pojos;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
