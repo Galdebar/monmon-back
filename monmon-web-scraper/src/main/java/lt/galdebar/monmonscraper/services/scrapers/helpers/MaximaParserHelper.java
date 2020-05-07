@@ -11,9 +11,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class MaximaParserHelper implements IsHTMLElementParserHelper {
-    private final String shopName = ShopNames.MAXIMA.getShopName();
+public class MaximaParserHelper extends HTMLElementParserHelper {
 
+    public MaximaParserHelper() {
+        super(ShopNames.MAXIMA.getShopName());
+    }
+
+    @Override
     public ItemOnOffer parseElement(Element element) {
         String name = getItemName(getTitleElement(element));
         String brand = getItemBrand(getTitleElement(element));
@@ -52,7 +56,7 @@ public class MaximaParserHelper implements IsHTMLElementParserHelper {
         return finalPrice;
     }
 
-    private Element getTitleElement(Element itemElement) {
+    public Element getTitleElement(Element itemElement) {
         return itemElement.getElementsByClass("title").get(0);
     }
 

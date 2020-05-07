@@ -4,15 +4,10 @@ import lt.galdebar.monmonscraper.services.scrapers.ShopNames;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.nodes.Element;
 
-public class RimiParserHelper implements IsHTMLElementParserHelper {
-    private final String shopName = ShopNames.RIMI.getShopName();
+public class RimiParserHelper extends HTMLElementParserHelper {
 
-    @Override
-    public ItemOnOffer parseElement(Element element) {
-        String name = getItemName(getTitleElement(element));
-        String brand = getItemBrand(getTitleElement(element));
-        float price = getItemPrice(element);
-        return new ItemOnOffer(name, brand, price, shopName);
+    public RimiParserHelper() {
+        super(ShopNames.RIMI.getShopName());
     }
 
     @Override
@@ -44,8 +39,8 @@ public class RimiParserHelper implements IsHTMLElementParserHelper {
         return finalPrice;
     }
 
-
-    private Element getTitleElement(Element element) {
+    @Override
+    public Element getTitleElement(Element element) {
         return element.getElementsByClass("offer-card__name").get(0);
     }
 }
