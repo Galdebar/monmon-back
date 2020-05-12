@@ -16,10 +16,10 @@ import java.util.List;
 
 @Component
 public class RimiScraper extends Scraper {
-    private final String URL = "https://www.rimi.lt/akcijos";
 
     public RimiScraper() {
         super(
+                "https://www.rimi.lt/akcijos",
                 "container",
                 "offer-card",
                 ShopNames.RIMI,
@@ -38,6 +38,7 @@ public class RimiScraper extends Scraper {
 
     public RimiScraper(Document doc){
         super(
+                "https://www.rimi.lt/akcijos",
                 "container",
                 "offer-card",
                 ShopNames.RIMI,

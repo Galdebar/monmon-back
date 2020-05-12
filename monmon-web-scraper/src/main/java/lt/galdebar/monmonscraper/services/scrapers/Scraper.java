@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public abstract class Scraper implements IsWebScraper {
+    protected final String URL;
     protected final String CONTAINER_NAME;
     protected final String ITEM_NAME;
     protected static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36";
@@ -41,7 +42,8 @@ public abstract class Scraper implements IsWebScraper {
     @Autowired
     protected ShoppingItemDealsRepo dealsRepo;
 
-    protected Scraper(String container_name, String item_name, ShopNames shop, IsHTMLElementParserHelper elementParser) {
+    protected Scraper(String url, String container_name, String item_name, ShopNames shop, IsHTMLElementParserHelper elementParser) {
+        this.URL = url;
         CONTAINER_NAME = container_name;
         ITEM_NAME = item_name;
         SHOP = shop;

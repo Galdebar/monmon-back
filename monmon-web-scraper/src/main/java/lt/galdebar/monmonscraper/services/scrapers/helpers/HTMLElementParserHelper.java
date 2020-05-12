@@ -40,19 +40,6 @@ public abstract class HTMLElementParserHelper implements IsHTMLElementParserHelp
     }
 
 
-    List<String> sectionsToUsableWords(List<String> wordSections) {
-        List<String> separatedBySpaces = Arrays.asList(
-                wordSections.stream()
-                        .collect(Collectors.joining(" "))
-                        .split(" ")
-        );
-        List<String> finalList = separatedBySpaces.stream()
-                .filter(word -> !word.isEmpty())
-                .collect(Collectors.toList());
-
-        return finalList;
-    }
-
     String getTitleWords(String fullTitle, boolean shouldFindCapitalized) {
         String finalString = "";
         List<String> usableWords = filterTitleIntoUsableWordsList(fullTitle);
@@ -72,6 +59,20 @@ public abstract class HTMLElementParserHelper implements IsHTMLElementParserHelp
         List<String> sectionsSeparatedByCommas = generateSectionsSeparatedByCommas(fullTitle);
 
         return sectionsToUsableWords(sectionsSeparatedByCommas);
+    }
+
+    List<String> sectionsToUsableWords(List<String> wordSections) {
+        List<String> separatedBySpaces = Arrays.asList(
+                wordSections.stream()
+                        .collect(Collectors.joining(" "))
+                        .split(" ")
+        );
+        List<String> finalList = separatedBySpaces.stream()
+                .filter(word -> !word.isEmpty())
+                .filter(this::checkifWordIsOnlyAlphabetic)
+                .collect(Collectors.toList());
+
+        return finalList;
     }
 
     List<String> generateSectionsSeparatedByCommas(String fullTitle) {

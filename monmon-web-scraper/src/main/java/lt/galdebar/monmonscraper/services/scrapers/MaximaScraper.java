@@ -2,13 +2,6 @@ package lt.galdebar.monmonscraper.services.scrapers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Getter;
-import lt.galdebar.monmonscraper.persistence.dao.ShoppingItemDealsRepo;
-import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealDTO;
-import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealEntity;
-import lt.galdebar.monmonscraper.services.helpers.AssignKeywordHelper;
-import lt.galdebar.monmonscraper.services.helpers.ItemTranslator;
-import lt.galdebar.monmonscraper.services.helpers.ShoppingIitemDealAdapter;
 import lt.galdebar.monmonscraper.services.scrapers.helpers.MaximaParserHelper;
 import org.jsoup.Connection;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
@@ -31,11 +24,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class MaximaScraper extends Scraper {
     private final int ITEMS_PER_PAGE = 45;
-    private final String URL = "https://www.maxima.lt/akcijos#visi-pasiulymai-1";
-
 
     public MaximaScraper() {
         super(
+                "https://www.maxima.lt/akcijos#visi-pasiulymai-1",
                 "offers_container",
                 "item",
                 ShopNames.MAXIMA,
@@ -59,6 +51,7 @@ public class MaximaScraper extends Scraper {
      */
     MaximaScraper(Document doc) {
         super(
+                "https://www.maxima.lt/akcijos#visi-pasiulymai-1",
                 "offers_container",
                 "item",
                 ShopNames.MAXIMA,
@@ -170,23 +163,4 @@ public class MaximaScraper extends Scraper {
         List<ItemOnOffer> items = getItemsOnOffer(fetchedDoc);
         return items;
     }
-//
-//    private List<ItemOnOffer> elementsToScrapedItems(Elements totalElements) {
-//        List<ItemOnOffer> scrapedItems = new ArrayList<>();
-//        for (Element element : totalElements) {
-//            scrapedItems.add(elementToScrapedShoppingItem(element));
-//        }
-//        return scrapedItems;
-//
-//    }
-
-    /**
-     * Create item scraped shopping item.
-     *
-     * @param element the element
-     * @return the scraped shopping item
-     */
-//    ItemOnOffer elementToScrapedShoppingItem(Element element) {
-//        return elementParser.parseElement(element);
-//    }
 }
