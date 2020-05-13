@@ -22,7 +22,7 @@ public class IkiScraper extends Scraper {
         super(
                 "https://www.iki.lt/akcijos/",
                 "sales-main-wrap",
-                "sales-item",
+                "sales-item ",
                 ShopNames.IKI,
                 new IkiParserHelper()
         );
@@ -53,11 +53,11 @@ public class IkiScraper extends Scraper {
 
     @Override
     public List<ItemOnOffer> getItemsOnOffer() {
-//        if (sessionID.trim().isEmpty()) {
-//
-//            Elements elements = document.getElementsByClass(ITEM_NAME);
-//            return elementsToScrapedItems(elements);
-//        }
+        if (!document.location().contains(URL)) {
+
+            Elements elements = document.getElementsByClass(ITEM_NAME);
+            return elementsToScrapedItems(elements);
+        }
         int pagesCount = countPages();
         List<ItemOnOffer> totalElements = new ArrayList<>();
         for (int i = 0; i < pagesCount; i++) {
@@ -76,15 +76,9 @@ public class IkiScraper extends Scraper {
             fetchedDoc = Jsoup.connect(url)
                     .ignoreContentType(true)
                     .method(Connection.Method.GET)
-//                    .data("orderBy", "discount", "offset", Integer.toString(offset))
                     .cookie("PHPSESSID", sessionID)
                     .maxBodySize(0)
                     .get();
-//            String responseString = response.body();
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            JsonNode jsonNode = objectMapper.readTree(responseString);
-//            String htmlString = jsonNode.get("html").asText();
-//            fetchedDoc = Jsoup.parse(htmlString);
         } catch (IOException e) {
             e.printStackTrace();
             return new ArrayList<>();
@@ -104,7 +98,8 @@ public class IkiScraper extends Scraper {
 
     @Override
     public List<ItemOnOffer> getItemsOnOffer(Document document) {
-        Elements elements = document.getElementsByClass(ITEM_NAME);
+//        Elements elements = document.getElementsByClass(ITEM_NAME);
+        Elements elements = document.select("." + ITEM_NAME);
         return elementsToScrapedItems(elements);
     }
 }

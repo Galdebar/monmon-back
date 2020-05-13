@@ -55,13 +55,13 @@ public class GetItemsCountFromWebsites {
                     .connect(mainUrl + "?start=" + (pagesCount - 1) * itemsPerPage)
                     .maxBodySize(0)
                     .get()
-                    .getElementsByClass("sales-item")
+                    .select(".sales-item")
                     .size();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        int totalItemCount = (pagesCount-2)*itemsPerPage + itemsOnLastPage;
+        int totalItemCount = (pagesCount-1)*itemsPerPage + itemsOnLastPage;
 
         return totalItemCount;
     }

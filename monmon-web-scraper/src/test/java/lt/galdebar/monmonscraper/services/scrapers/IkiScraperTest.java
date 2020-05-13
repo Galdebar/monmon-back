@@ -33,7 +33,7 @@ public class IkiScraperTest {
     public static class TestConfiguration {
         @Bean
         public IkiScraper fullFileIkiScraper() {
-            File localfile = new File("src/test/resources/WebsiteSnapshots/Iki_Full.html");
+            File localfile = new File("src/test/resources/WebsiteSnapshots/IKI_Full.html");
             Document doc = null;
             try {
                 doc = Jsoup.parse(localfile, "UTF-8");
@@ -48,8 +48,7 @@ public class IkiScraperTest {
     @Autowired
     private IkiScraper fullFileIkiScraper;
 
-    @Autowired
-    private IkiScraper ikiScraper;
+    private IkiScraper ikiScraper = new IkiScraper();
 
     @Autowired
     private ShoppingItemDealsRepo dealsRepo;
@@ -94,38 +93,35 @@ public class IkiScraperTest {
 
     @Test
     public void givenActualWebsite_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
-        IkiScraper scraper = new IkiScraper(); // default constructor has hardwired url.
         int singlePageItemsCount = 18;
         int totalItemsCount = getTotalItemsFromIki();
         int expectedPagesCount = (totalItemsCount % singlePageItemsCount == 0) ? totalItemsCount / singlePageItemsCount : totalItemsCount / singlePageItemsCount + 1;
-        int actualPagesCount = scraper.countPages();
+        int actualPagesCount = ikiScraper.countPages();
 
         assertNotEquals(0, expectedPagesCount);
         assertEquals(expectedPagesCount, actualPagesCount);
     }
 
     @Test
-    public void givenValidFile_whenFetchItemsWithOffset_thenNotNull() {
-        IkiScraper scraper = new IkiScraper();
+    public void givenActualSite_whenFetchItemsWithOffset_thenNotNull() {
         List<ItemOnOffer> fetchedElements = ikiScraper.fetchItemsWithOffset(0);
 
         assertNotNull(fetchedElements);
     }
 
-//    @Test
-//    public void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
-//        int expectedCount = 18;
-//        List<ItemOnOffer> actualIterable = fullFileIkiScraper.getItemsOnOffer();
-//
-//        assertNotNull(actualIterable);
-//        assertEquals( expectedCount, actualIterable.size());
-//    }
+    @Test
+    public void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
+        int expectedCount = 18;
+        List<ItemOnOffer> actualIterable = fullFileIkiScraper.getItemsOnOffer();
+
+        assertNotNull(actualIterable);
+        assertEquals( expectedCount, actualIterable.size());
+    }
 
     @Test
     public void givenActualWebsite_whenGetItemsOnOffer_thenReturnCount() {
-        IkiScraper scraper = new IkiScraper();
         int expectedCount = getTotalItemsFromIki();
-        int actualCount = scraper.getItemsOnOffer().size();
+        int actualCount = ikiScraper.getItemsOnOffer().size();
 
         assertNotEquals(0, expectedCount);
         assertEquals(expectedCount, actualCount);
@@ -148,18 +144,18 @@ public class IkiScraperTest {
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 
-//    @Test
-//    public void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
-//        boolean isPushSuccessful = ikiScraper.updateOffersDB();
-//        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
-//
-//        assertTrue(isPushSuccessful);
-//        assertNotNull(foundDeals);
-//        assertEquals(
-//                getTotalItemsFromMaxima(),
-//                foundDeals.size()
-//        );
-//    }
+    @Test
+    public void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
+        boolean isPushSuccessful = ikiScraper.updateOffersDB();
+        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
+
+        assertTrue(isPushSuccessful);
+        assertNotNull(foundDeals);
+        assertEquals(
+                getTotalItemsFromMaxima(),
+                foundDeals.size()
+        );
+    }
 
     // push to db with valid website
     //push to db with invalid website
