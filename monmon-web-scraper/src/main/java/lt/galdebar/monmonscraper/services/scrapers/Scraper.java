@@ -94,7 +94,7 @@ public abstract class Scraper implements IsWebScraper {
     //This method is a bad necessity, because I'm not using Google's translate API.
     //So the translator allowance is 100 requests per hour.
     private void staggeredTranslateAndPush(List<ItemOnOffer> itemsOnOffer) throws InterruptedException {
-        int maxItemsInBatch = 90;
+        int maxItemsInBatch = 50;
         int numOfBatches = (itemsOnOffer.size() % maxItemsInBatch == 0) ?
                 (itemsOnOffer.size() / maxItemsInBatch) : (itemsOnOffer.size() / maxItemsInBatch + 1);
 
