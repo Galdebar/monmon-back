@@ -124,18 +124,18 @@ public class RimiScraperTest {
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 
-    @Test
-    public void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
-        boolean isPushSuccessful = rimiScraper.updateOffersDB();
-        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
-
-        assertTrue(isPushSuccessful);
-        assertNotNull(foundDeals);
-        assertEquals(
-                getTotalItemsFromMaxima(),
-                foundDeals.size()
-        );
-    }
+//    @Test
+//    public void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
+//        boolean isPushSuccessful = rimiScraper.updateOffersDB();
+//        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
+//
+//        assertTrue(isPushSuccessful);
+//        assertNotNull(foundDeals);
+//        assertEquals(
+//                getTotalItemsFromMaxima(),
+//                foundDeals.size()
+//        );
+//    }
 
     // push to db with valid website
     //push to db with invalid website
