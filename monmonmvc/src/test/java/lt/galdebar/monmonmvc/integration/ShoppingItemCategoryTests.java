@@ -9,22 +9,28 @@ import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.exceptions.login.UserNotFound;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +43,35 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test.properties")
+@ContextConfiguration(initializers = {ShoppingItemCategoryTests.Initializer.class})
 @SpringBootTest
 public class ShoppingItemCategoryTests {
+    private static String postgresUsername = "postgres";
+    private static String password = "letmein";
+    private static String postgresDBName = "MonMonCategories";
+
+    @ClassRule
+    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
+            .withDatabaseName(postgresDBName)
+            .withUsername(postgresUsername)
+            .withPassword(password);
+
+    @ClassRule
+    public static MongoDBContainer mongoDBContainer = new MongoDBContainer();
+
+    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+            TestPropertyValues.of(
+                    "spring.datasource.url=" + postgreSQLContainer.getJdbcUrl(),
+                    "spring.datasource.username=" + postgresUsername,
+                    "spring.datasource.password=" + password,
+                    "spring.data.mongodb.host=" + mongoDBContainer.getHost(),
+                    "spring.data.mongodb.port=" + mongoDBContainer.getMappedPort(27017)
+            ).applyTo(configurableApplicationContext.getEnvironment());
+        }
+    }
+
+
     private static final String TEST_USER_EMAIL = "user@somemail.com";
     private static final String TEST_USER_PASS = "password";
 

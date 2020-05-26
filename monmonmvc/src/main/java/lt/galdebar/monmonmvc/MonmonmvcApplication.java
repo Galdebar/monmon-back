@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "lt.galdebar.monmon.categoriesparser",
         "lt.galdebar.monmonscraper"
 })
-@ConfigurationProperties(value = "classpath:mvc-application.properties")
 @EnableScheduling
 @Log4j2
 public class MonmonmvcApplication {

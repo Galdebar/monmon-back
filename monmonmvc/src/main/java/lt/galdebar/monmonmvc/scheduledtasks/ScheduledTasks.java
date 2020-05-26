@@ -30,7 +30,7 @@ public class ScheduledTasks {
     private ShoppingItemService shoppingItemService;
 
     /**
-     * Delete expired users. Executes on a timer set in the mvc-application.properties with task.schedule.period property.<br>
+     * Delete expired users. Executes on a timer set in the application.properties with task.schedule.period property.<br>
      *     Gathers all users pending deletion (toBeDeleted=true and Grace Period past)
      *     For each user pending deletion:
      *     <ul>
