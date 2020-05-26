@@ -100,6 +100,20 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql </artifactId>
+			<version>1.11.4</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.testcontainers/mongodb -->
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>mongodb</artifactId>
+			<version>1.14.2</version>
+			<scope>test</scope>
+		</dependency>
+
 
 
 	</dependencies>
@@ -110,6 +124,8 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+
 		</plugins>
 	</build>
 

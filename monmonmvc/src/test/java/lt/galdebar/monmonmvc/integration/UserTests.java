@@ -1,6 +1,9 @@
 package lt.galdebar.monmonmvc.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.InternetProtocol;
+import com.github.dockerjava.api.model.Ports;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import lt.galdebar.monmonmvc.persistence.domain.entities.UserEntity;
@@ -15,18 +18,25 @@ import lt.galdebar.monmonmvc.persistence.repositories.UserRepo;
 import lt.galdebar.monmonmvc.service.EmailSenderService;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -45,8 +55,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test.properties")
+@ContextConfiguration(initializers = {UserTests.Initializer.class})
 @SpringBootTest
 public class UserTests {
+
+    private static String postgresUsername = "postgres";
+    private static String password = "letmein";
+    private static String postgresDBName = "MonMonCategories";
+
+    @ClassRule
+    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
+            .withDatabaseName(postgresDBName)
+            .withUsername(postgresUsername)
+            .withPassword(password);
+
+    @ClassRule
+    public static MongoDBContainer mongoDBContainer = new MongoDBContainer();
+
+    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+            TestPropertyValues.of(
+                    "spring.datasource.url=" + postgreSQLContainer.getJdbcUrl(),
+                    "spring.datasource.username=" + postgresUsername,
+                    "spring.datasource.password=" + password,
+                    "spring.data.mongodb.host=" + mongoDBContainer.getHost(),
+                    "spring.data.mongodb.port=" + mongoDBContainer.getMappedPort(27017)
+            ).applyTo(configurableApplicationContext.getEnvironment());
+        }
+    }
 
 
     @Autowired

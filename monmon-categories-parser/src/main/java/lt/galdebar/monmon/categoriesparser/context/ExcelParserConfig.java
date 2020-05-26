@@ -32,15 +32,4 @@ public class ExcelParserConfig {
         Resource resource = resourceLoader.getResource("classpath:taxonomy-with-ids.en-US.xls");
         return new ExcelParser(resource);
     }
-
-    @Bean
-    public DataSource dataSource(){
-        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
-        dataSourceBuilder.driverClassName("org.postgresql.Driver");
-        dataSourceBuilder.url("jdbc:postgresql://192.168.99.100:5432/MonMonCategories");
-        dataSourceBuilder.username("postgres");
-        dataSourceBuilder.password("letmein");
-
-        return dataSourceBuilder.build();
-    }
 }
