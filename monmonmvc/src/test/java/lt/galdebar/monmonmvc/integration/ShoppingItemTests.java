@@ -47,33 +47,9 @@ import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test.properties")
-@ContextConfiguration(initializers = {ShoppingItemTests.Initializer.class})
+@ContextConfiguration(initializers = {TestContainersConfig.Initializer.class})
 @SpringBootTest
 public class ShoppingItemTests {
-    private static String postgresUsername = "postgres";
-    private static String password = "letmein";
-    private static String postgresDBName = "MonMonCategories";
-
-    @ClassRule
-    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
-            .withDatabaseName(postgresDBName)
-            .withUsername(postgresUsername)
-            .withPassword(password);
-
-    @ClassRule
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer();
-
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues.of(
-                    "spring.datasource.url=" + postgreSQLContainer.getJdbcUrl(),
-                    "spring.datasource.username=" + postgresUsername,
-                    "spring.datasource.password=" + password,
-                    "spring.data.mongodb.host=" + mongoDBContainer.getHost(),
-                    "spring.data.mongodb.port=" + mongoDBContainer.getMappedPort(27017)
-            ).applyTo(configurableApplicationContext.getEnvironment());
-        }
-    }
 
     private static final String TEST_USER_EMAIL = "user@somemail.com";
     private static final String TEST_USER_PASS = "password";
