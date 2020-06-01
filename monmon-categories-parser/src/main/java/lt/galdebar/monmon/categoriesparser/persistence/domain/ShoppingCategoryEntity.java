@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.persistence.domain.entities;
+package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
@@ -27,5 +27,8 @@ public class ShoppingCategoryEntity {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "shoppingItemCategory", fetch = FetchType.EAGER)
     private Set<ShoppingKeywordEntity> keywords;
 
-
+    public ShoppingCategoryEntity(String categoryName, Set<ShoppingKeywordEntity> keywords) {
+        this.categoryName = categoryName;
+        this.keywords = keywords;
+    }
 }

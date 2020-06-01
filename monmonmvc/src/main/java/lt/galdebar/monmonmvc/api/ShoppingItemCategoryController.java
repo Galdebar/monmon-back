@@ -1,9 +1,8 @@
 package lt.galdebar.monmonmvc.api;
 
 import lombok.extern.log4j.Log4j2;
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
-import lt.galdebar.monmonmvc.service.ShoppingItemCategoryService;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;
+import lt.galdebar.monmon.categoriesparser.services.ShoppingItemCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;

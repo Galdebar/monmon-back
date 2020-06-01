@@ -1,9 +1,6 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordEntity;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.*;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -36,14 +33,14 @@ public class CategoriesSearchService {
     private static final KeywordComparator COMPARATOR = new KeywordComparator();
 
     @Transactional
-    public CategoryDTO searchCategory(CategoryDTO itemCategory) {
+    public ShoppingCategoryDTO searchCategory(ShoppingCategoryDTO itemCategory) {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
-                .getAnalyzer(CategoryEntity.class);
+                .getAnalyzer(ShoppingCategoryEntity.class);
         String analyzedString = analyzeString(customAnalyzer, itemCategory.getCategoryName());
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(CategoryEntity.class).get();
+                .forEntity(ShoppingCategoryEntity.class).get();
 
         if (analyzedString.trim().isEmpty()) {
             return getUncategorized();
@@ -59,8 +56,8 @@ public class CategoriesSearchService {
                 .createQuery();
 
 
-        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, CategoryEntity.class);
-        List<CategoryEntity> queryResults = jpaQuery.getResultList();
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingCategoryEntity.class);
+        List<ShoppingCategoryEntity> queryResults = jpaQuery.getResultList();
 
         if (queryResults.size() == 0) {
             return getUncategorized();
@@ -74,50 +71,50 @@ public class CategoriesSearchService {
     }
 
     @Transactional
-    public List<KeywordDTO> findKeywords(KeywordDTO keywordDTO) {
-        List<KeywordEntity> foundKeywords = searchKeywords(keywordDTO);
+    public List<ShoppingKeywordDTO> findKeywords(ShoppingKeywordDTO keywordDTO) {
+        List<ShoppingKeywordEntity> foundKeywords = searchKeywords(keywordDTO);
 
-        List<KeywordDTO> keywordDTOS = keywordConverter.convertEntitiesToDTOs(foundKeywords);
+        List<ShoppingKeywordDTO> keywordDTOS = keywordConverter.convertEntitiesToDTOs(foundKeywords);
         keywordDTOS.sort(COMPARATOR);
         return keywordDTOS;
     }
 
     @Transactional
-    public List<KeywordDTO> findKeywords(KeywordDTO keywordDTO, int maxResults) {
-        List<KeywordEntity> foundKeywords = searchKeywords(keywordDTO, maxResults);
+    public List<ShoppingKeywordDTO> findKeywords(ShoppingKeywordDTO keywordDTO, int maxResults) {
+        List<ShoppingKeywordEntity> foundKeywords = searchKeywords(keywordDTO, maxResults);
 
-        List<KeywordDTO> keywordDTOS = keywordConverter.convertEntitiesToDTOs(foundKeywords);
+        List<ShoppingKeywordDTO> keywordDTOS = keywordConverter.convertEntitiesToDTOs(foundKeywords);
         keywordDTOS.sort(COMPARATOR);
         return keywordDTOS;
     }
 
-    public List<CategoryDTO> findCategoriesByKeyword(KeywordDTO keywordDTO) {
-        List<KeywordEntity> foundKeywords = searchKeywords(keywordDTO);
-        List<CategoryEntity> categoryEntities = new ArrayList<>();
-        for (KeywordEntity keyword : foundKeywords) {
-            categoryEntities.add(keyword.getCategory());
+    public List<ShoppingCategoryDTO> findCategoriesByKeyword(ShoppingKeywordDTO keywordDTO) {
+        List<ShoppingKeywordEntity> foundKeywords = searchKeywords(keywordDTO);
+        List<ShoppingCategoryEntity> categoryEntities = new ArrayList<>();
+        for (ShoppingKeywordEntity keyword : foundKeywords) {
+            categoryEntities.add(keyword.getShoppingItemCategory());
         }
         return categoryConverter.convertEntitiesToDTOs(categoryEntities);
     }
 
-    public List<CategoryDTO> findCategoriesByKeyword(KeywordDTO keywordDTO, int maxResults) {
-        List<KeywordEntity> foundKeywords = searchKeywords(keywordDTO, maxResults);
-        List<CategoryEntity> categoryEntities = new ArrayList<>();
-        for (KeywordEntity keyword : foundKeywords) {
-            categoryEntities.add(keyword.getCategory());
+    public List<ShoppingCategoryDTO> findCategoriesByKeyword(ShoppingKeywordDTO keywordDTO, int maxResults) {
+        List<ShoppingKeywordEntity> foundKeywords = searchKeywords(keywordDTO, maxResults);
+        List<ShoppingCategoryEntity> categoryEntities = new ArrayList<>();
+        for (ShoppingKeywordEntity keyword : foundKeywords) {
+            categoryEntities.add(keyword.getShoppingItemCategory());
         }
         return categoryConverter.convertEntitiesToDTOs(categoryEntities);
     }
 
     @Transactional
-    private List<KeywordEntity> searchKeywords(KeywordDTO keywordDTO) {
+    private List<ShoppingKeywordEntity> searchKeywords(ShoppingKeywordDTO keywordDTO) {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
-                .getAnalyzer(KeywordEntity.class);
+                .getAnalyzer(ShoppingKeywordEntity.class);
         String analyzedString = analyzeString(customAnalyzer, keywordDTO.getKeyword());
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(KeywordEntity.class).get();
+                .forEntity(ShoppingKeywordEntity.class).get();
 
         if (analyzedString.trim().isEmpty()) {
             return new ArrayList<>();
@@ -133,8 +130,8 @@ public class CategoriesSearchService {
                 .createQuery();
 
 
-        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, KeywordEntity.class);
-        List<KeywordEntity> foundKeywords = jpaQuery.getResultList();
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingKeywordEntity.class);
+        List<ShoppingKeywordEntity> foundKeywords = jpaQuery.getResultList();
 //        foundKeywords.sort(COMPARATOR);
 //        for(KeywordEntity keyword:foundKeywords){
 //            System.out.println(keyword.getCategory().getCategoryName());
@@ -143,14 +140,14 @@ public class CategoriesSearchService {
     }
 
     @Transactional
-    private List<KeywordEntity> searchKeywords(KeywordDTO keywordDTO, int maxResults) {
+    private List<ShoppingKeywordEntity> searchKeywords(ShoppingKeywordDTO keywordDTO, int maxResults) {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
-                .getAnalyzer(KeywordEntity.class);
+                .getAnalyzer(ShoppingKeywordEntity.class);
         String analyzedString = analyzeString(customAnalyzer, keywordDTO.getKeyword());
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(KeywordEntity.class).get();
+                .forEntity(ShoppingKeywordEntity.class).get();
 
         if (analyzedString.trim().isEmpty()) {
             return new ArrayList<>();
@@ -166,8 +163,8 @@ public class CategoriesSearchService {
                 .createQuery();
 
 
-        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, KeywordEntity.class);
-        List<KeywordEntity> foundKeywords = jpaQuery.setMaxResults(maxResults).getResultList();
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingKeywordEntity.class);
+        List<ShoppingKeywordEntity> foundKeywords = jpaQuery.setMaxResults(maxResults).getResultList();
 //        foundKeywords.sort(COMPARATOR);
 //        for(KeywordEntity keyword:foundKeywords){
 //            System.out.println(keyword.getCategory().getCategoryName());
@@ -176,11 +173,11 @@ public class CategoriesSearchService {
     }
 
     @Transactional
-    public CategoryDTO getUncategorized() {
+    public ShoppingCategoryDTO getUncategorized() {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(CategoryEntity.class).get();
+                .forEntity(ShoppingCategoryEntity.class).get();
 
         Query query = queryBuilder
                 .keyword()
@@ -188,12 +185,13 @@ public class CategoriesSearchService {
                 .matching("Uncategorized")
                 .createQuery();
 
-        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, CategoryEntity.class);
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingCategoryEntity.class);
 
-        Object result = jpaQuery.setMaxResults(1).getResultList().get(0);
-        if (result instanceof CategoryEntity) {
-            return categoryConverter.convertEntityToDTO((CategoryEntity) result);
-        } else return null;
+        ShoppingCategoryEntity result = (ShoppingCategoryEntity) jpaQuery.setMaxResults(1).getResultList().get(0);
+//        if (result instanceof ShoppingCategoryEntity) {
+//            return categoryConverter.convertEntityToDTO((ShoppingCategoryEntity) result);
+//        } else return null;
+        return categoryConverter.convertEntityToDTO(result);
 
     }
 

@@ -1,6 +1,7 @@
 package lt.galdebar.monmonscraper.services.helpers;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;
 import lt.galdebar.monmon.categoriesparser.services.CategoriesSearchService;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealDTO;
@@ -21,8 +22,8 @@ public class AssignKeywordHelper {
         if (scrapedItem.getName().trim().isEmpty()) {
             return new ShoppingItemDealDTO();
         }
-        List<KeywordDTO> foundKeywords = searchService.findKeywords(
-                new KeywordDTO("", scrapedItem.getName())
+        List<ShoppingKeywordDTO> foundKeywords = searchService.findKeywords(
+                new ShoppingKeywordDTO("", scrapedItem.getName())
         );
         if (foundKeywords.size() > 0) {
             return new ShoppingItemDealDTO(

@@ -2,11 +2,12 @@ package lt.galdebar.monmon.categoriesparser.services;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordEntity;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;
 
 import java.util.Comparator;
 import java.util.Map;
 
-public class KeywordComparator implements Comparator<KeywordDTO> {
+public class KeywordComparator implements Comparator<ShoppingKeywordDTO> {
     private static final Map<String, Integer> categoryPriorities = Map.ofEntries(
             Map.entry("Candied & Chocolate Covered Fruit", 3),
             Map.entry("Candy & Chocolate", 3),
@@ -34,7 +35,7 @@ public class KeywordComparator implements Comparator<KeywordDTO> {
     }
 
     @Override
-    public int compare(KeywordDTO o1, KeywordDTO o2) {
+    public int compare(ShoppingKeywordDTO o1, ShoppingKeywordDTO o2) {
 
         if (isPriority(o1) && isPriority(o2)) {
             return comparePriorityEntities(o1, o2);
@@ -42,17 +43,17 @@ public class KeywordComparator implements Comparator<KeywordDTO> {
         return 0;
     }
 
-    private boolean isPriority(KeywordDTO entity) {
+    private boolean isPriority(ShoppingKeywordDTO entity) {
         return categoryPriorities.containsKey(entity.getShoppingItemCategory());
     }
 
-    private int comparePriorityEntities(KeywordDTO o1, KeywordDTO o2) {
+    private int comparePriorityEntities(ShoppingKeywordDTO o1, ShoppingKeywordDTO o2) {
         int o1Priority = getObjectPriority(o1);
         int o2Priority = getObjectPriority(o2);
         return o1Priority - o2Priority;
     }
 
-    private int getObjectPriority(KeywordDTO o1) {
+    private int getObjectPriority(ShoppingKeywordDTO o1) {
         return categoryPriorities.get(o1.getShoppingItemCategory());
     }
 }

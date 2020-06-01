@@ -1,4 +1,4 @@
-package lt.galdebar.monmonmvc.persistence.domain.dto;
+package lt.galdebar.monmon.categoriesparser.persistence.domain;
 
 
 import lombok.AllArgsConstructor;

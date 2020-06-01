@@ -3,6 +3,8 @@ package lt.galdebar.monmon.categoriesparser.services;
 import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryEntity;
 import lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,12 +45,12 @@ public class CategoriesParserAPI {
      * Push categories to db. Stops if matching categories are found.
      */
     public void pushCategoriesToDB() {
-        List<CategoryEntity> categoryEntityList = convertToDAO(getCategories());
+        List<ShoppingCategoryEntity> categoryEntityList = convertToDAO(getCategories());
 
         categoryEntityList.forEach(this::pushSingleCategory);
     }
 
-    private void pushSingleCategory(CategoryEntity entity){
+    private void pushSingleCategory(ShoppingCategoryEntity entity){
         try{
             categoriesRepo.save(entity);
         }catch (DataIntegrityViolationException e){
@@ -56,7 +58,7 @@ public class CategoriesParserAPI {
         }
     }
 
-    private List<CategoryDTO> getCategories() {
+    private List<ShoppingCategoryDTO> getCategories() {
         if (excelParser.isParserValid()) {
             return excelParser.getCategories();
         }
@@ -64,7 +66,7 @@ public class CategoriesParserAPI {
         return null;
     }
 
-    private List<CategoryEntity> convertToDAO(List<CategoryDTO> parsedExcelRowList) {
+    private List<ShoppingCategoryEntity> convertToDAO(List<ShoppingCategoryDTO> parsedExcelRowList) {
         return converter.convertDTOsToEntities(parsedExcelRowList);
     }
 }

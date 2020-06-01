@@ -2,6 +2,7 @@ package lt.galdebar.monmon.categoriesparser;
 
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.KeywordsRepo;
 import lt.galdebar.monmon.categoriesparser.services.CategoriesParserAPI;
@@ -94,17 +95,17 @@ public class ExcelParserIntegrationTests {
 
     @Test
     public void whenPushToDB_thenValidDBEntries(){
-        List<CategoryEntity> expectedList = converter.convertDTOsToEntities(excelParser.getCategories());
+        List<ShoppingCategoryEntity> expectedList = converter.convertDTOsToEntities(excelParser.getCategories());
         parserMain.pushCategoriesToDB();
 
-        List<CategoryEntity> actualList = categoriesRepo.findAll();
+        List<ShoppingCategoryEntity> actualList = categoriesRepo.findAll();
         expectedList.sort(this::compareCategoryDAO);
         actualList.sort(this::compareCategoryDAO);
 
         assertEquals(expectedList.size(), actualList.size());
     }
 
-    private int compareCategoryDAO(CategoryEntity categoryA, CategoryEntity categoryB){
+    private int compareCategoryDAO(ShoppingCategoryEntity categoryA, ShoppingCategoryEntity categoryB){
         return categoryA.getCategoryName().compareTo(categoryB.getCategoryName());
     }
 }

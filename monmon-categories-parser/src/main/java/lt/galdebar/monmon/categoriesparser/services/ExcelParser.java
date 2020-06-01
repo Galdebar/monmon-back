@@ -2,6 +2,7 @@ package lt.galdebar.monmon.categoriesparser.services;
 
 import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryDTO;
 import lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
@@ -86,11 +87,11 @@ public class ExcelParser {
      *
      * @return the categories
      */
-    public List<CategoryDTO> getCategories() {
+    public List<ShoppingCategoryDTO> getCategories() {
         List<ParsedExcelRow> unfilteredList = getUnfilteredCategories();
         List<ParsedExcelRow> consolidatedList = consolidateSimilarCategories(unfilteredList);
         List<ParsedExcelRow> finalList = removeEmptyEntries(consolidatedList);
-        List<CategoryDTO> dtoList = rowsToDTOs(finalList);
+        List<ShoppingCategoryDTO> dtoList = rowsToDTOs(finalList);
         return dtoList;
     }
 
@@ -260,11 +261,11 @@ public class ExcelParser {
         return filteredList;
     }
 
-    private List<CategoryDTO> rowsToDTOs(List<ParsedExcelRow> parsedExcelRows) {
-        List<CategoryDTO> dtoList = new ArrayList<>();
+    private List<ShoppingCategoryDTO> rowsToDTOs(List<ParsedExcelRow> parsedExcelRows) {
+        List<ShoppingCategoryDTO> dtoList = new ArrayList<>();
         for(ParsedExcelRow rowDTO:parsedExcelRows){
             dtoList.add(
-                    new CategoryDTO(
+                    new ShoppingCategoryDTO(
                             rowDTO.getCategoryName(),
                             rowDTO.getKeywords()
                     )

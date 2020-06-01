@@ -1,6 +1,7 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryDTO;
 import lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -45,8 +46,8 @@ class ExcelParserTest {
     @Test
     void getCategories() {
         ExcelParser parser = new ExcelParser(TAXONOMY_FILE_FEW_ROWS);
-        List<CategoryDTO> expectedList = new ArrayList<>();
-        List<CategoryDTO> actualList;
+        List<ShoppingCategoryDTO> expectedList = new ArrayList<>();
+        List<ShoppingCategoryDTO> actualList;
 
         String cell2Keyword = "Arts & Entertainment";
         String cell3Keyword = "Hobbies & Creative Arts";
@@ -78,9 +79,9 @@ class ExcelParserTest {
         expectedCategoryKeywords.add(cell7Keyword7);
         expectedCategoryKeywords.add(cell7Keyword8);
 
-        expectedList.add(new CategoryDTO("Uncategorized", new HashSet<String>()));
+        expectedList.add(new ShoppingCategoryDTO("Uncategorized", new HashSet<String>()));
         expectedList.add(
-                new CategoryDTO(
+                new ShoppingCategoryDTO(
                         cell2Keyword,
                         expectedCategoryKeywords
                 )

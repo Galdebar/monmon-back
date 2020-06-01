@@ -1,15 +1,15 @@
 package lt.galdebar.monmonmvc.service;
 
 
+import lt.galdebar.monmon.categoriesparser.services.ShoppingItemCategoryService;
 import lt.galdebar.monmonmvc.persistence.domain.dto.UserDTO;
 import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingItemEntity;
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryDTO;
 import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingItemDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;
 import lt.galdebar.monmonmvc.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonmvc.service.adapters.ShoppingItemAdapter;
 import lt.galdebar.monmonmvc.service.exceptions.shoppingitem.ShoppingItemNotFound;
-import lt.galdebar.monmonscraper.services.ShoppingItemDealFinderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;

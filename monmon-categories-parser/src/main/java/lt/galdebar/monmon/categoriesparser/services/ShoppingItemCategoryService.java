@@ -1,25 +1,19 @@
-package lt.galdebar.monmonmvc.service;
+package lt.galdebar.monmon.categoriesparser.services;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
 import lt.galdebar.monmon.categoriesparser.services.CategoriesSearchService;
-import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingCategoryEntity;
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
-import lt.galdebar.monmonmvc.persistence.repositories.ItemCategoryRepo;
-import lt.galdebar.monmonmvc.service.adapters.CategoryAdapter;
-import lt.galdebar.monmonmvc.service.adapters.KeywordAdapter;
-import lt.galdebar.monmonmvc.service.adapters.ShoppingItemCategoryAdapter;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryEntity;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Handles retrieval of shopping item categories and search.
@@ -30,20 +24,15 @@ public class ShoppingItemCategoryService {
      * Limits the amount of search autocomplete results.
      */
     private final int MAX_RESULTS = 10;
-    private final ShoppingItemCategoryAdapter CATEGORY_DTO_ENTITY_ADAPTER = new ShoppingItemCategoryAdapter();
+    private final CategoryDTOToEntityConverter CATEGORY_DTO_ENTITY_ADAPTER = new CategoryDTOToEntityConverter();
     private Analyzer analyzer = new StandardAnalyzer(CharArraySet.EMPTY_SET);
 
     @Autowired
     private CategoriesSearchService searchService;
 
     @Autowired
-    private ItemCategoryRepo categoryRepo;
+    private CategoriesRepo categoryRepo;
 
-    @Autowired
-    private CategoryAdapter externalCategoryAdapter;
-
-    @Autowired
-    private KeywordAdapter externalKeywordAdapter;
 
 
 
@@ -54,11 +43,11 @@ public class ShoppingItemCategoryService {
      * @return list of keywords that are the closest match. List size limited by the MAX_RESULTS value.
      */
     public List<ShoppingKeywordDTO> searchKeywordAutocomplete(ShoppingKeywordDTO keywordDTO) {
-        List<KeywordDTO> foundKeywords = searchService.findKeywords(
-                externalKeywordAdapter.aToB(keywordDTO),
+        List<ShoppingKeywordDTO> foundKeywords = searchService.findKeywords(
+                keywordDTO,
                 MAX_RESULTS
         );
-        List<ShoppingKeywordDTO> convertedKeywords = externalKeywordAdapter.bToA(foundKeywords);
+        List<ShoppingKeywordDTO> convertedKeywords = foundKeywords;
         return convertedKeywords;
     }
 
@@ -68,16 +57,16 @@ public class ShoppingItemCategoryService {
      * @param keywordDTO the keyword dto. Keyword field must not be null or empty.
      * @return closest matching category.
      */
-    ShoppingCategoryDTO findCategoryByKeyword(ShoppingKeywordDTO keywordDTO) {
+    public ShoppingCategoryDTO findCategoryByKeyword(ShoppingKeywordDTO keywordDTO) {
 
         ShoppingCategoryDTO dtoToReturn;
-        List<CategoryDTO> foundKeywords = searchService.findCategoriesByKeyword(
-                externalKeywordAdapter.aToB(keywordDTO)
+        List<ShoppingCategoryDTO> foundKeywords = searchService.findCategoriesByKeyword(
+                keywordDTO
         );
         if(foundKeywords.size() ==0 || foundKeywords.get(0).getKeywords().stream().noneMatch(keywordDTO.getKeyword()::equalsIgnoreCase)){
-            dtoToReturn = externalCategoryAdapter.bToA(searchService.getUncategorized());
+            dtoToReturn = searchService.getUncategorized();
         } else {
-            dtoToReturn = externalCategoryAdapter.bToA(foundKeywords.get(0));
+            dtoToReturn = foundKeywords.get(0);
 
         }
         return dtoToReturn;
@@ -90,8 +79,8 @@ public class ShoppingItemCategoryService {
      * @return list of all categories.
      */
     public List<ShoppingCategoryDTO> getAllCategories() {
-        List<ShoppingCategoryEntity> categories = (List<ShoppingCategoryEntity>) categoryRepo.findAll();
-        return CATEGORY_DTO_ENTITY_ADAPTER.bToA(categories);
+        List<ShoppingCategoryEntity> categories = categoryRepo.findAll();
+        return CATEGORY_DTO_ENTITY_ADAPTER.convertEntitiesToDTOs(categories);
     }
 
     /**
@@ -100,11 +89,11 @@ public class ShoppingItemCategoryService {
      * @param itemCategory the item category
      * @return list of matching shopping categories. Size limited by the MAX_RESULTS value.
      */
-    ShoppingCategoryDTO searchCategory(ShoppingCategoryDTO itemCategory) {
-        CategoryDTO foundCategory = searchService.searchCategory(
-                externalCategoryAdapter.aToB(itemCategory)
+    public ShoppingCategoryDTO searchCategory(ShoppingCategoryDTO itemCategory) {
+        ShoppingCategoryDTO foundCategory = searchService.searchCategory(
+                itemCategory
         );
-        return externalCategoryAdapter.bToA(foundCategory);
+        return foundCategory;
     }
 
 }

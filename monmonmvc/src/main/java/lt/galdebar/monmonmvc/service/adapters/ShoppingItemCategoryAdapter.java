@@ -1,7 +1,7 @@
 package lt.galdebar.monmonmvc.service.adapters;
 
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
-import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingCategoryEntity;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryEntity;
 
 import java.util.ArrayList;
 import java.util.HashSet;

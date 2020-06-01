@@ -1,8 +1,7 @@
 package lt.galdebar.monmonmvc.service.adapters;
 
 import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingCategoryDTO;
-import lt.galdebar.monmonmvc.persistence.domain.dto.ShoppingKeywordDTO;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

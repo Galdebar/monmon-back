@@ -1,6 +1,6 @@
 package lt.galdebar.monmonmvc.persistence.repositories;
 
-import lt.galdebar.monmonmvc.persistence.domain.entities.ShoppingCategoryEntity;
+import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
