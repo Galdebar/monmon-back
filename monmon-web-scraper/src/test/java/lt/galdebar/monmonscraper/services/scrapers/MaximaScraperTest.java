@@ -4,6 +4,7 @@ import lt.galdebar.monmonscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealEntity;
 import lt.galdebar.monmonscraper.services.scrapers.helpers.MaximaParserHelper;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
+import lt.galdebar.monmonscraper.services.testhelpers.TestContainersConfig;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -24,13 +26,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static lt.galdebar.monmonscraper.services.testhelpers.GetItemsCountFromWebsites.*;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@TestPropertySource(locations = "classpath:test.properties")
+//@TestPropertySource(locations = "classpath:test.properties")
+@ContextConfiguration(initializers = {TestContainersConfig.Initializer.class})
+
 public class MaximaScraperTest {
 
     @org.springframework.boot.test.context.TestConfiguration
@@ -66,6 +72,9 @@ public class MaximaScraperTest {
     @AfterEach
     public void tearDown() throws Exception {
         dealsRepo.deleteAll();
+//        Thread.sleep(10000); // testing a grace period to not overload the api
+        await().atMost(10, TimeUnit.SECONDS);
+
     }
 
     @Test

@@ -1,9 +1,6 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
-import lt.galdebar.monmon.categoriesparser.services.CategoriesSearchService;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;

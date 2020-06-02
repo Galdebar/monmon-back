@@ -1,13 +1,11 @@
 package lt.galdebar.monmonscraper.services.helpers;
 
-import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;
 import lt.galdebar.monmon.categoriesparser.services.CategoriesSearchService;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;

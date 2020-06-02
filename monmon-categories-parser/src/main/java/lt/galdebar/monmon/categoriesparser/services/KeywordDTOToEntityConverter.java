@@ -1,7 +1,5 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
-import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordDTO;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.KeywordEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingKeywordEntity;
 import org.springframework.stereotype.Component;

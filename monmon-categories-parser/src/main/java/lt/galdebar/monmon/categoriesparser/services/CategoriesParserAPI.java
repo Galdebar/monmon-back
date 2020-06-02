@@ -1,11 +1,8 @@
 package lt.galdebar.monmon.categoriesparser.services;
 
 import lombok.extern.log4j.Log4j2;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryDTO;
-import lt.galdebar.monmon.categoriesparser.persistence.domain.CategoryEntity;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryDTO;
 import lt.galdebar.monmon.categoriesparser.persistence.domain.ShoppingCategoryEntity;
-import lt.galdebar.monmon.categoriesparser.services.pojos.ParsedExcelRow;
 import lt.galdebar.monmon.categoriesparser.persistence.repositories.CategoriesRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
