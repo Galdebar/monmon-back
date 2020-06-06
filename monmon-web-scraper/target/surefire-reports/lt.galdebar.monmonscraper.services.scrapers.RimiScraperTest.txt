@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: lt.galdebar.monmonscraper.services.scrapers.RimiScraperTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 71.01 s <<< FAILURE! - in lt.galdebar.monmonscraper.services.scrapers.RimiScraperTest
+givenContext_thenLoadContext  Time elapsed: 0.013 s  <<< FAILURE!
+java.lang.AssertionError: expected:<MAXIMA> but was:<RIMI>
+	at lt.galdebar.monmonscraper.services.scrapers.RimiScraperTest.givenContext_thenLoadContext(RimiScraperTest.java:72)
+

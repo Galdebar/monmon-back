@@ -4,10 +4,14 @@ package lt.galdebar.monmonscraper.services.helpers;
 import lt.galdebar.monmonscraper.services.scrapers.pojos.ItemOnOffer;
 import lt.galdebar.monmonscraper.persistence.domain.ShoppingItemDealDTO;
 
+import lt.galdebar.monmonscraper.services.testhelpers.TestContainersConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
@@ -18,6 +22,8 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
+@TestPropertySource(locations = {"classpath:test.properties"})
+@ContextConfiguration(initializers = {TestContainersConfig.Initializer.class})
 public class AssignKeywordHelperTests {
 
     @Autowired

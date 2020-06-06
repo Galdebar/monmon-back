@@ -1,0 +1,13 @@
+lt\galdebar\monmonscraper\services\scrapers\RimiScraperTest.class
+lt\galdebar\monmonscraper\services\scrapers\MaximaScraperTest$TestConfiguration.class
+lt\galdebar\monmonscraper\services\scrapers\RimiScraperTest$TestConfiguration.class
+lt\galdebar\monmonscraper\services\scrapers\IkiScraperTest$TestConfiguration.class
+lt\galdebar\monmonscraper\services\WebScraperAPITests.class
+lt\galdebar\monmonscraper\services\scrapers\helpers\RimiParserHelperTest.class
+lt\galdebar\monmonscraper\services\helpers\AssignKeywordHelperTests.class
+lt\galdebar\monmonscraper\services\scrapers\MaximaScraperTest.class
+lt\galdebar\monmonscraper\services\scrapers\IkiScraperTest.class
+lt\galdebar\monmonscraper\services\scrapers\helpers\MaximaParserHelperTest.class
+lt\galdebar\monmonscraper\services\scrapers\helpers\IkiParserHelperTest.class
+lt\galdebar\monmonscraper\services\ShoppingItemDealFinderServiceTests.class
+lt\galdebar\monmonscraper\services\testhelpers\GetItemsCountFromWebsites.class

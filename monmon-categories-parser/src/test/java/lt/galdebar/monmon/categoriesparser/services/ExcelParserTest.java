@@ -8,6 +8,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestPropertySource(locations = {"classpath:test.properties"})
 class ExcelParserTest {
     private static final String TAXONOMY_FILE_FULL = "src/test/resources/Excel_test_full.xls";
     private static final String TAXONOMY_FILE_FEW_ROWS = "src/test/resources/Excel_test_fewRows.xls";

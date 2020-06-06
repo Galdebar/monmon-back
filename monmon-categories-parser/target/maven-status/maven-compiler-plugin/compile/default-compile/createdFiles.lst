@@ -1,0 +1,15 @@
+lt\galdebar\monmon\categoriesparser\persistence\repositories\KeywordsRepo.class
+lt\galdebar\monmon\categoriesparser\services\pojos\ParsedExcelRow.class
+lt\galdebar\monmon\categoriesparser\scheduledtasks\RunIndexer.class
+lt\galdebar\monmon\categoriesparser\services\KeywordComparator.class
+lt\galdebar\monmon\categoriesparser\persistence\repositories\CategoriesRepo.class
+lt\galdebar\monmon\categoriesparser\ExcelParserApp.class
+lt\galdebar\monmon\categoriesparser\persistence\domain\CategoryDTO.class
+lt\galdebar\monmon\categoriesparser\services\CategoriesSearchService.class
+lt\galdebar\monmon\categoriesparser\services\CategoriesParserAPI.class
+lt\galdebar\monmon\categoriesparser\services\SearchIndexer.class
+lt\galdebar\monmon\categoriesparser\services\ExcelParser.class
+lt\galdebar\monmon\categoriesparser\context\ExcelParserConfig.class
+lt\galdebar\monmon\categoriesparser\services\CategoryDTOToEntityConverter.class
+lt\galdebar\monmon\categoriesparser\services\KeywordDTOToEntityConverter.class
+lt\galdebar\monmon\categoriesparser\scheduledtasks\RunParser.class

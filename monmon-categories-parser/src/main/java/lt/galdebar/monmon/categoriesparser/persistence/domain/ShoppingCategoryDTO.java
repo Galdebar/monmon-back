@@ -10,6 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode
 public class ShoppingCategoryDTO {
     @NonNull
     private String categoryName;
