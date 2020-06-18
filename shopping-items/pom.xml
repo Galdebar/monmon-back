@@ -11,9 +11,9 @@
 
     <artifactId>shopping-items</artifactId>
 
-    <properties>
-        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-    </properties>
+<!--    <properties>-->
+<!--        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>-->
+<!--    </properties>-->
 
 
 </project>
