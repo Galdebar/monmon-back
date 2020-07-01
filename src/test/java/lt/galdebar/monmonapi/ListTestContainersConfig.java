@@ -8,7 +8,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @TestConfiguration
-public class ListTestCoontainersConfig {
+public class ListTestContainersConfig {
     private static String postgresUsername = "postgres";
     private static String password = "letmein";
     private static String dbName = "lists";

@@ -1,12 +1,12 @@
 package lt.galdebar.monmonapi.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lt.galdebar.monmonapi.ListTestCoontainersConfig;
+import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.context.security.AuthTokenDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntity;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingListRepo;
+import lt.galdebar.monmonapi.services.exceptions.ListAlreadyExists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import javax.print.attribute.standard.Media;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -26,11 +25,12 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ContextConfiguration(initializers = {ListTestCoontainersConfig.Initializer.class})
+@ContextConfiguration(initializers = {ListTestContainersConfig.Initializer.class})
 @TestPropertySource(locations = "classpath:test.properties")
 class ShoppingListControllerTest {
 
@@ -115,7 +115,61 @@ class ShoppingListControllerTest {
         AuthTokenDTO responseObject = objectMapper.readValue(response, AuthTokenDTO.class);
 
         assertNotNull(responseObject);
-        assertTrue(listName.equals(responseObject.getName()));
+        assertEquals(listName, responseObject.getName());
+        assertFalse(responseObject.getToken().trim().isEmpty());
+
+    }
+
+    @Test
+    void givenEmptyListName_whenCreateList_thenReturnBadRequest() throws Exception {
+        String listName = "";
+        String listPassword = "testPass";
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("name", listName);
+        requestObject.put("password", listPassword);
+
+
+        String response = mockMvc.perform(post("/lists/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestObject))
+        )
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertEquals(0, repo.count());
+        assert response != null;
+        assertTrue(response.contains("empty"));
+
+    }
+
+    @Test
+    void givenAlreadyExistingListName_whenCreateList_thenReturnBadRequest() throws Exception {
+        String listName = "testList";
+        String listPassword = "testPass";
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("name", listName);
+        requestObject.put("password", listPassword);
+        ShoppingListEntity testEntity = new ShoppingListEntity();
+        testEntity.setName(listName);
+        testEntity.setPassword(listPassword);
+        testEntity.setTimeCreated(LocalDateTime.now().minusDays(1));
+        testEntity.setLastUsedTime(LocalDateTime.now().minusHours(8));
+        repo.save(testEntity);
+
+
+        assertEquals(1, repo.count());
+
+        String response = mockMvc.perform(post("/lists/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestObject))
+        )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        ListAlreadyExists expectedException = new ListAlreadyExists(listName);
+
+        assertEquals(response, expectedException.getMessage());
     }
 
     //bad request if create list that already exists

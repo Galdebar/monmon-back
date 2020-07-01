@@ -8,7 +8,9 @@ import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntity;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntityToDTOAdapter;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingListRepo;
+import lt.galdebar.monmonapi.services.exceptions.InvalidCreateListRequest;
 import lt.galdebar.monmonapi.services.exceptions.InvalidPassword;
+import lt.galdebar.monmonapi.services.exceptions.ListAlreadyExists;
 import lt.galdebar.monmonapi.services.exceptions.ListNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +30,7 @@ public class ShoppingListService {
     private JwtTokenProvider tokenProvider;
 
     public ShoppingListDTO createList(LoginAttemptDTO createRequest) {
+        checkIfCreateRequestValid(createRequest);
         ShoppingListEntity entity = new ShoppingListEntity();
         entity.setName(createRequest.getName());
         entity.setPassword(passwordEncoder.encode(createRequest.getPassword()));
@@ -36,6 +39,15 @@ public class ShoppingListService {
 
         ShoppingListEntity savedEntity = repo.save(entity);
         return adapter.entityToDTO(savedEntity);
+    }
+
+    private void checkIfCreateRequestValid(LoginAttemptDTO createRequest) {
+        if (createRequest.getName().trim().isEmpty()) {
+            throw new InvalidCreateListRequest("List name cannot be empty");
+        }
+        if (repo.findByNameIgnoreCase(createRequest.getName()) != null) {
+            throw new ListAlreadyExists(createRequest.getName());
+        }
     }
 
     public ShoppingListEntity findByListName(String listName) {
@@ -48,10 +60,10 @@ public class ShoppingListService {
 
     public AuthTokenDTO login(LoginAttemptDTO loginRequest) {
         ShoppingListEntity foundList = repo.findByNameIgnoreCase(loginRequest.getName());
-        if(foundList==null){
+        if (foundList == null) {
             throw new ListNotFound("List named " + loginRequest.getName() + " not found");
         }
-        if(!passwordEncoder.matches(loginRequest.getPassword(),foundList.getPassword())){
+        if (!passwordEncoder.matches(loginRequest.getPassword(), foundList.getPassword())) {
             throw new InvalidPassword("Invalid password");
         }
 
@@ -60,8 +72,6 @@ public class ShoppingListService {
                 Collections.singletonList(foundList.toString())
         );
 
-        AuthTokenDTO tokenDTO = new AuthTokenDTO(foundList.getName(),token);
-
-        return tokenDTO;
+        return new AuthTokenDTO(foundList.getName(), token);
     }
 }
