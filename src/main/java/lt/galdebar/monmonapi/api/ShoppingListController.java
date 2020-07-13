@@ -3,10 +3,8 @@ package lt.galdebar.monmonapi.api;
 import lt.galdebar.monmonapi.context.security.AuthTokenDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.LoginAttemptDTO;
 import lt.galdebar.monmonapi.services.ShoppingListService;
-import lt.galdebar.monmonapi.services.exceptions.InvalidCreateListRequest;
-import lt.galdebar.monmonapi.services.exceptions.InvalidPassword;
-import lt.galdebar.monmonapi.services.exceptions.ListAlreadyExists;
-import lt.galdebar.monmonapi.services.exceptions.ListNotFound;
+import lt.galdebar.monmonapi.services.exceptions.*;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,8 +36,8 @@ public class ShoppingListController {
             return service.login(loginRequest);
         } catch (ListNotFound notFound){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, notFound.getMessage());
-        } catch (InvalidPassword invalidPassword){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, invalidPassword.getMessage());
+        } catch (InvalidPassword | ListNameEmpty exception){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, exception.getMessage());
         }
     }
 }

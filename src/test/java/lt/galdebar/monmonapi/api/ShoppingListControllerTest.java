@@ -121,6 +121,114 @@ class ShoppingListControllerTest {
     }
 
     @Test
+    void givenInvalidPassword_whenLogin_thenReturnUnauthorized() throws Exception {
+        String listName = "testList";
+        String listPassword = "testPass";
+        String invalidPassword = "opiupahwdlkn";
+
+        Map<String, String> loginRequestObject = new HashMap<>();
+        loginRequestObject.put("name", listName);
+        loginRequestObject.put("password", invalidPassword);
+
+        ShoppingListEntity entityToSave = new ShoppingListEntity();
+        entityToSave.setName(listName);
+        entityToSave.setPassword(passwordEncoder.encode(listPassword));
+        entityToSave.setTimeCreated(LocalDateTime.now());
+        entityToSave.setLastUsedTime(LocalDateTime.now());
+        repo.save(entityToSave);
+
+        String response = mockMvc.perform(post("/lists/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequestObject)))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertNotNull(response);
+        assertTrue(response.toLowerCase().contains("invalid password"));
+    }
+
+    @Test
+    void givenInvalidListName_whenLogin_thenReturnNotFound() throws Exception {
+        String listName = "testList";
+        String listPassword = "testPass";
+        String invalidListName = "opiupahwdlkn";
+
+        Map<String, String> loginRequestObject = new HashMap<>();
+        loginRequestObject.put("name", invalidListName);
+        loginRequestObject.put("password", listPassword);
+
+        ShoppingListEntity entityToSave = new ShoppingListEntity();
+        entityToSave.setName(listName);
+        entityToSave.setPassword(passwordEncoder.encode(listPassword));
+        entityToSave.setTimeCreated(LocalDateTime.now());
+        entityToSave.setLastUsedTime(LocalDateTime.now());
+        repo.save(entityToSave);
+
+        String response = mockMvc.perform(post("/lists/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequestObject)))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertNotNull(response);
+        assertTrue(response.contains("not found"));
+    }
+
+    @Test
+    void givenEmptyListName_whenLogin_thenReturnBadRequest() throws Exception {
+        String listName = "testList";
+        String listPassword = "testPass";
+        String invalidListName = "";
+
+        Map<String, String> loginRequestObject = new HashMap<>();
+        loginRequestObject.put("name", invalidListName);
+        loginRequestObject.put("password", listPassword);
+
+        ShoppingListEntity entityToSave = new ShoppingListEntity();
+        entityToSave.setName(listName);
+        entityToSave.setPassword(passwordEncoder.encode(listPassword));
+        entityToSave.setTimeCreated(LocalDateTime.now());
+        entityToSave.setLastUsedTime(LocalDateTime.now());
+        repo.save(entityToSave);
+
+        String response = mockMvc.perform(post("/lists/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequestObject)))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertNotNull(response);
+        assertTrue(response.contains("empty"));
+    }
+
+    @Test
+    void givenBlankListName_whenLogin_thenReturnBadRequest() throws Exception {
+        String listName = "testList";
+        String listPassword = "testPass";
+        String invalidListName = "     ";
+
+        Map<String, String> loginRequestObject = new HashMap<>();
+        loginRequestObject.put("name", invalidListName);
+        loginRequestObject.put("password", listPassword);
+
+        ShoppingListEntity entityToSave = new ShoppingListEntity();
+        entityToSave.setName(listName);
+        entityToSave.setPassword(passwordEncoder.encode(listPassword));
+        entityToSave.setTimeCreated(LocalDateTime.now());
+        entityToSave.setLastUsedTime(LocalDateTime.now());
+        repo.save(entityToSave);
+
+        String response = mockMvc.perform(post("/lists/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequestObject)))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertNotNull(response);
+        assertTrue(response.contains("empty"));
+    }
+
+    @Test
     void givenEmptyListName_whenCreateList_thenReturnBadRequest() throws Exception {
         String listName = "";
         String listPassword = "testPass";
@@ -140,6 +248,69 @@ class ShoppingListControllerTest {
         assert response != null;
         assertTrue(response.contains("empty"));
 
+    }
+
+    @Test
+    void givenBlankListName_whenCreateList_thenReturnBadRequest() throws Exception {
+        String listName = "      ";
+        String listPassword = "testPass";
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("name", listName);
+        requestObject.put("password", listPassword);
+
+
+        String response = mockMvc.perform(post("/lists/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestObject))
+        )
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertEquals(0, repo.count());
+        assert response != null;
+        assertTrue(response.contains("empty"));
+    }
+
+    @Test
+    void givenEmptyPassword_whenCreateList_thenReturnBadRequest() throws Exception {
+        String listName = "listName";
+        String listPassword = "";
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("name", listName);
+        requestObject.put("password", listPassword);
+
+
+        String response = mockMvc.perform(post("/lists/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestObject))
+        )
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertEquals(0, repo.count());
+        assert response != null;
+        assertTrue(response.contains("empty"));
+    }
+
+    @Test
+    void givenBlankPassword_whenCreateList_thenReturnBadRequest() throws Exception {
+        String listName = "listName";
+        String listPassword = "       ";
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("name", listName);
+        requestObject.put("password", listPassword);
+
+
+        String response = mockMvc.perform(post("/lists/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestObject))
+        )
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertEquals(0, repo.count());
+        assert response != null;
+        assertTrue(response.contains("empty"));
     }
 
     @Test
