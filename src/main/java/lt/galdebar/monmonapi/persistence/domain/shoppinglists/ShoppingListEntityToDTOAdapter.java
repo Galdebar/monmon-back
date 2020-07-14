@@ -1,10 +1,16 @@
 package lt.galdebar.monmonapi.persistence.domain.shoppinglists;
 
+import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonapi.persistence.IsEntityToDTOAdapter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ShoppingListEntityToDTOAdapter implements IsEntityToDTOAdapter<ShoppingListEntity, ShoppingListDTO> {
+
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public ShoppingListEntity dtoToEntity(ShoppingListDTO shoppingListDTO) {
         ShoppingListEntity entity = new ShoppingListEntity();

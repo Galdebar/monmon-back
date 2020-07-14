@@ -343,10 +343,4 @@ class ShoppingListControllerTest {
         assertEquals(response, expectedException.getMessage());
     }
 
-    //bad request if create list that already exists
-    //bad request if password is empty
-    //maybe add two passwords ?
-    //not found if login with incorrect name
-    //unahtorized if invalid password.
-
 }

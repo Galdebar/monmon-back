@@ -34,7 +34,10 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers("/lists/create",
-                        "lists/login").permitAll();
+                        "lists/login").permitAll()
+                .antMatchers(
+                        "/items/**"
+                ).hasAuthority("user");
 
         http
                 .apply(new JwtConfigurer(tokenProvider));
