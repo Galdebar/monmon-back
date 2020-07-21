@@ -1,4 +1,4 @@
-package lt.galdebar.monmonapi.services.exceptions;
+package lt.galdebar.monmonapi.services.shoppinglists.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

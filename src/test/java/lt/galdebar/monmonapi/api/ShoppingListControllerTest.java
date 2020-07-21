@@ -1,12 +1,11 @@
 package lt.galdebar.monmonapi.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.context.security.AuthTokenDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntity;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingListRepo;
-import lt.galdebar.monmonapi.services.exceptions.ListAlreadyExists;
+import lt.galdebar.monmonapi.services.shoppinglists.exceptions.ListAlreadyExists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +71,7 @@ class ShoppingListControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestObject))
         )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         List<ShoppingListEntity> savedLists = (List<ShoppingListEntity>) repo.findAll();

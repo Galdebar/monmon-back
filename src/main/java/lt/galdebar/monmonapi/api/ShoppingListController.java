@@ -2,9 +2,12 @@ package lt.galdebar.monmonapi.api;
 
 import lt.galdebar.monmonapi.context.security.AuthTokenDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.LoginAttemptDTO;
-import lt.galdebar.monmonapi.services.ShoppingListService;
-import lt.galdebar.monmonapi.services.exceptions.*;
-import org.apache.coyote.Response;
+import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListDTO;
+import lt.galdebar.monmonapi.services.shoppinglists.ShoppingListService;
+import lt.galdebar.monmonapi.services.shoppinglists.exceptions.InvalidListRequest;
+import lt.galdebar.monmonapi.services.shoppinglists.exceptions.InvalidPassword;
+import lt.galdebar.monmonapi.services.shoppinglists.exceptions.ListNameEmpty;
+import lt.galdebar.monmonapi.services.shoppinglists.exceptions.ListNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,10 +24,10 @@ public class ShoppingListController {
     private ShoppingListService service;
 
     @PostMapping("/create")
-    public String createList(@RequestBody LoginAttemptDTO createRequest) {
+    public String createList(@RequestBody ShoppingListDTO createRequest) {
         try {
             service.createList(createRequest);
-        } catch (InvalidCreateListRequest exists) {
+        } catch (InvalidListRequest exists) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exists.getMessage());
         }
         return "List created";

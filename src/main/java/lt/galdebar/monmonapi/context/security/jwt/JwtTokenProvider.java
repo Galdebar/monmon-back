@@ -3,7 +3,6 @@ package lt.galdebar.monmonapi.context.security.jwt;
 import io.jsonwebtoken.*;
 import lt.galdebar.monmonapi.context.security.ShoppingListDetailsService;
 import lt.galdebar.monmonapi.context.security.jwt.exceptions.InvalidJwtAuthenticationException;
-import lt.galdebar.monmonapi.services.ShoppingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

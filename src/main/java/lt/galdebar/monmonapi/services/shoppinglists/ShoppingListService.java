@@ -1,4 +1,4 @@
-package lt.galdebar.monmonapi.services;
+package lt.galdebar.monmonapi.services.shoppinglists;
 
 import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonapi.context.security.AuthTokenDTO;
@@ -6,36 +6,34 @@ import lt.galdebar.monmonapi.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.LoginAttemptDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntity;
-import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntityToDTOAdapter;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingListRepo;
-import lt.galdebar.monmonapi.services.exceptions.*;
+import lt.galdebar.monmonapi.services.shoppinglists.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-
-import static java.time.LocalDateTime.*;
 
 @Service
 @RequiredArgsConstructor
 public class ShoppingListService {
     private final ShoppingListRepo repo;
     private final PasswordEncoder passwordEncoder;
-    private final ShoppingListEntityToDTOAdapter adapter;
     @Autowired
     private JwtTokenProvider tokenProvider;
 
-    public ShoppingListDTO createList(LoginAttemptDTO createRequest) {
-        checkIfCreateRequestValid(createRequest);
-        ShoppingListEntity entity = new ShoppingListEntity();
-        entity.setName(createRequest.getName());
-        entity.setPassword(passwordEncoder.encode(createRequest.getPassword()));
-        entity.setTimeCreated(now());
-        entity.setLastUsedTime(now());
+    public ShoppingListDTO createList(ShoppingListDTO createRequest) {
+        ShoppingListEntity entityToSave = new ShoppingListEntity(createRequest);
+        entityToSave.setPassword(
+                passwordEncoder.encode(entityToSave.getPassword())
+        );
 
-        ShoppingListEntity savedEntity = repo.save(entity);
-        return adapter.entityToDTO(savedEntity);
+        if (repo.findByNameIgnoreCase(entityToSave.getName()) != null) {
+            throw new ListAlreadyExists(createRequest.getName());
+        }
+
+        return repo.save(entityToSave).getDTO();
     }
 
     public ShoppingListEntity findByListName(String listName) {
@@ -64,19 +62,10 @@ public class ShoppingListService {
         return new AuthTokenDTO(foundList.getName(), token);
     }
 
-    private void checkIfCreateRequestValid(LoginAttemptDTO createRequest) {
-        if(createRequest.getPassword().trim().isEmpty() && createRequest.getName().trim().isEmpty()){
-            throw new InvalidCreateListRequest("List name and password fiends cannot be empty.");
-        }
-        if (createRequest.getName().trim().isEmpty()) {
-            throw new InvalidCreateListRequest("List name cannot be empty");
-        }
-        if(createRequest.getPassword().trim().isEmpty()){
-            throw new InvalidCreateListRequest("Password cannot be empty");
-        }
-        if (repo.findByNameIgnoreCase(createRequest.getName()) != null) {
-            throw new ListAlreadyExists(createRequest.getName());
-        }
+    public ShoppingListEntity getCurrentList(){
+        return repo.findByNameIgnoreCase(
+                SecurityContextHolder.getContext().getAuthentication().getName()
+        );
     }
 
     private void checkIfLoginRequestvalid(LoginAttemptDTO request){

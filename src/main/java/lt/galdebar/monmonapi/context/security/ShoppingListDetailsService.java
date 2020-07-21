@@ -1,8 +1,7 @@
 package lt.galdebar.monmonapi.context.security;
 
-import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntity;
-import lt.galdebar.monmonapi.services.ShoppingListService;
+import lt.galdebar.monmonapi.services.shoppinglists.ShoppingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
