@@ -7,6 +7,7 @@ import lt.galdebar.monmonapi.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonapi.services.shoppingitems.exceptions.ItemNotFound;
 import lt.galdebar.monmonapi.services.shoppinglists.ShoppingListService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class ShoppingItemService {
         return foundItems.stream().map(ShoppingItemEntity::getDTO).collect(Collectors.toList());
     }
 
+    @Transactional
     public ShoppingItemDTO addItem(ShoppingItemDTO shoppingItemDTO) {
         //add category
         //find deal
@@ -33,6 +35,7 @@ public class ShoppingItemService {
         return itemRepo.save(entityToSave).getDTO();
     }
 
+    @Transactional
     public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) {
         if (!itemRepo.existsById(shoppingItemDTO.getId())) {
             throw new ItemNotFound("Could not find item with ID: " + shoppingItemDTO.getId());
@@ -42,6 +45,7 @@ public class ShoppingItemService {
         return itemRepo.save(itemToSave).getDTO();
     }
 
+    @Transactional
     public boolean deleteItem(ShoppingItemDTO shoppingItemDTO) {
         if (!itemRepo.existsById(shoppingItemDTO.getId())) {
             throw new ItemNotFound("Could not find item with ID: " + shoppingItemDTO.getId());
@@ -51,4 +55,27 @@ public class ShoppingItemService {
         return true;
     }
 
+    @Transactional
+    public boolean deleteAllItems() {
+        List<ShoppingItemEntity> itemEntities = getAllCurrentItems();
+        itemRepo.deleteAll(itemEntities);
+        return true;
+    }
+
+    @Transactional
+    public List<ShoppingItemDTO> unmarkAll() {
+        List<ShoppingItemEntity> entities = getAllCurrentItems();
+        entities
+                .forEach(item -> item.setInCart(false));
+        itemRepo.saveAll(entities);
+
+        return entities
+                .stream()
+                .map(ShoppingItemEntity::getDTO)
+                .collect(Collectors.toList());
+    }
+
+    private List<ShoppingItemEntity> getAllCurrentItems() {
+        return itemRepo.findByShoppingList(listService.getCurrentList());
+    }
 }

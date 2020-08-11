@@ -34,6 +34,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -75,55 +76,9 @@ public class ShoppingItemControllerTest {
         assertNotNull(itemsController);
     }
 
-    @Test
-    void givenNoAuthToken_whenGetAllItems_thenReturnForbidden() throws Exception {
-        mockMvc.perform(get("/items/getall")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isForbidden());
-    }
 
     @Test
-    void givenNoAuthToken_whenAddItem_thenReturnForbidden() throws Exception {
-        String itemName = "testItem";
-        ShoppingItemDTO testItem = new ShoppingItemDTO();
-        testItem.setItemName(itemName);
-
-        mockMvc.perform(post("/items/add")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testItem)))
-                .andDo(print())
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void givenNoAuthToken_whenUpdateItem_thenReturnForbidden() throws Exception {
-        String itemName = "testItem";
-        ShoppingItemDTO testItem = new ShoppingItemDTO();
-        testItem.setItemName(itemName);
-
-        mockMvc.perform(post("/items/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testItem)))
-                .andDo(print())
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void givenNoAuthToken_whenDeleteItem_thenReturnForbidden() throws Exception {
-        String itemName = "testItem";
-        ShoppingItemDTO testItem = new ShoppingItemDTO();
-        testItem.setItemName(itemName);
-
-        mockMvc.perform(delete("/items/delete")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testItem)))
-                .andDo(print())
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void givenValidToken_whenGetAll_thenReturnArrayOfItems() throws Exception {
+    void whenGetAll_thenReturnArrayOfItems() throws Exception {
         String testListName = "testList";
         String testListPassword = "testListPassword";
         AuthTokenDTO authTokenDTO = createListAndLogin(testListName, testListPassword);
@@ -165,12 +120,18 @@ public class ShoppingItemControllerTest {
 
     }
 
+    @Test
+    void givenNoAuthToken_whenGetAllItems_thenReturnForbidden() throws Exception {
+        mockMvc.perform(get("/items/getall")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
 
     @Test
     void givenValidItem_whenAddItem_thenItemAddedToDBandReturnSameItem() throws Exception {
-        String testListName = "testList";
-        String testListPassword = "testListPassword";
-        AuthTokenDTO authTokenDTO = createListAndLogin(testListName, testListPassword);
+        AuthTokenDTO authTokenDTO = createListAndLogin();
 
         String testItemName = "testItem";
         ShoppingItemDTO expectedItem = new ShoppingItemDTO();
@@ -198,6 +159,58 @@ public class ShoppingItemControllerTest {
         assertNotNull(actualItem.getId());
         assertNotNull(itemRepo.findById(actualItem.getId()));
     }
+
+    @Test
+    void givenNoAuthToken_whenAddItem_thenReturnForbidden() throws Exception {
+        String itemName = "testItem";
+        ShoppingItemDTO testItem = new ShoppingItemDTO();
+        testItem.setItemName(itemName);
+
+        mockMvc.perform(post("/items/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testItem)))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenNullItemName_whenAddItem_thenReturnBadRequest() {
+    }
+
+    @Test
+    void givenBlankItemName_whenAddItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+        String testItemName = "";
+        ShoppingItemDTO expectedItem = new ShoppingItemDTO();
+        expectedItem.setItemName(testItemName);
+        Map<String, String> postRequest = new HashMap<>();
+        postRequest.put("itemName", testItemName);
+        postRequest.put("itemCategory", "");
+        postRequest.put("quantity", "1");
+        postRequest.put("comment", "");
+
+        String response = mockMvc.perform(post("/items/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(expectedItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("name"));
+
+    }
+
+    @Test
+    void givenEmptyItemName_whenAddItem_thenReturnBadRequest() {
+    }
+
+    @Test
+    void givenInvalidQuantity_whenAddItem_thenReturnBadRequest() {
+    }
+
+    //later check addinng item with incorrect category ?
 
     @Test
     void givenValidItem_whenUpdateItem_thenReturnUpdatedItemAndUpdateDB() throws Exception {
@@ -255,6 +268,43 @@ public class ShoppingItemControllerTest {
     }
 
     @Test
+    void givenNoAuthToken_whenUpdateItem_thenReturnForbidden() throws Exception {
+        String itemName = "testItem";
+        ShoppingItemDTO testItem = new ShoppingItemDTO();
+        testItem.setItemName(itemName);
+
+        mockMvc.perform(post("/items/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testItem)))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenIncorrectID_whenUpdateItem_thenReturnNotFound() {
+    }
+
+    @Test
+    void givenBlankID_whenUpdateItem_thenReturnBadRequest() {
+    }
+
+    @Test
+    void givenEmptyID_whenUpdateItem_thenReturnBadRequest() {
+    }
+
+    @Test
+    void givenEmptyItemName_whenUpdateItem_thenReturnBadRequest() {
+    }
+
+    @Test
+    void givenBlankItemName_whenUpdateItem_thenReturnBadRequest() {
+    }
+
+    @Test
+    void givenInvalidQuantity_whenUpdateItem_thenReturnBadRequest() {
+    }
+
+    @Test
     void givenValidItem_whenDeleteItem_thenReturnOKAndUpdateDB() throws Exception {
         AuthTokenDTO authTokenDTO = createListAndLogin();
 
@@ -283,6 +333,123 @@ public class ShoppingItemControllerTest {
         assertEquals(0, itemRepo.count());
 
     }
+
+    @Test
+    void givenNoAuthToken_whenDeleteItem_thenReturnForbidden() throws Exception {
+        String itemName = "testItem";
+        ShoppingItemDTO testItem = new ShoppingItemDTO();
+        testItem.setItemName(itemName);
+
+        mockMvc.perform(delete("/items/delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testItem)))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenIncorrectID_whenDeleteItem_thenReturnNotFound() {
+    }
+
+    @Test
+    void givenBlankId_whenDeleteItem_thenReturnBadRequest() {
+    }
+
+    @Test
+    void whenDeleteAllItems_thenReturnOKAndRemoveDBEntries() throws Exception {
+        AuthTokenDTO authToken = createListAndLogin();
+        String altListName = "altList";
+        createListAndLogin(altListName, altListName);
+
+        String testName1 = "iauhwd";
+        String testName2 = "liouiahuowd";
+
+        ShoppingItemEntity testEntity1 = new ShoppingItemEntity();
+        testEntity1.setItemName(testName1);
+        testEntity1.setShoppingList(listRepo.findByNameIgnoreCase(authToken.getName()));
+        ShoppingItemEntity testEntity2 = new ShoppingItemEntity();
+        testEntity2.setItemName(testName2);
+        testEntity2.setShoppingList(listRepo.findByNameIgnoreCase(authToken.getName()));
+        ShoppingItemEntity testEntity3 = new ShoppingItemEntity();
+        testEntity3.setItemName(testName1);
+        testEntity3.setShoppingList(listRepo.findByNameIgnoreCase(altListName));
+
+
+        itemRepo.save(testEntity1);
+        itemRepo.save(testEntity2);
+        itemRepo.save(testEntity3);
+
+        assertEquals(3, itemRepo.count());
+
+        mockMvc.perform(delete("/items/delete/all")
+                .header("Authorization", "Bearer " + authToken.getToken()))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        assertEquals(1, itemRepo.count());
+    }
+
+    @Test
+    void givenNoAuthToken_whenDeleteAll_thenReturnForbidden() throws Exception {
+        mockMvc.perform(delete("/items/delete/all")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+
+    @Test
+    void whenUnmarkAllItems_thenUpdateItemsInDBAndReturnFullList() throws Exception {
+        AuthTokenDTO authToken = createListAndLogin();
+
+        String testName1 = "iauhwd";
+        String testName2 = "liouiahuowd";
+
+        ShoppingItemEntity testEntity1 = new ShoppingItemEntity();
+        testEntity1.setItemName(testName1);
+        testEntity1.setInCart(true);
+        testEntity1.setShoppingList(listRepo.findByNameIgnoreCase(authToken.getName()));
+        ShoppingItemEntity testEntity2 = new ShoppingItemEntity();
+        testEntity2.setItemName(testName2);
+        testEntity2.setInCart(true);
+        testEntity2.setShoppingList(listRepo.findByNameIgnoreCase(authToken.getName()));
+        ShoppingItemEntity testEntity3 = new ShoppingItemEntity();
+        testEntity3.setItemName(testName1);
+        testEntity3.setShoppingList(listRepo.findByNameIgnoreCase(authToken.getName()));
+
+
+        itemRepo.save(testEntity1);
+        itemRepo.save(testEntity2);
+        itemRepo.save(testEntity3);
+
+
+        String response = mockMvc.perform(get("/items/unmark/all")
+                .header("Authorization", "Bearer " + authToken.getToken()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        List<ShoppingItemDTO> actualItems = objectMapper.readValue(response, new TypeReference<List<ShoppingItemDTO>>() {
+        });
+
+        assertEquals(3, actualItems.size());
+
+        actualItems = actualItems
+                .stream()
+                .filter(ShoppingItemDTO::isInCart)
+                .collect(Collectors.toList());
+
+        assertEquals(0, actualItems.size());
+    }
+
+    @Test
+    void givenNoAuuthToken_whenUnmarkAll_thenRetuurnForbidden() throws Exception {
+        mockMvc.perform(delete("/items/unmark/all")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
 
     private AuthTokenDTO createListAndLogin() throws Exception {
         String listName = "testList";
@@ -332,9 +499,7 @@ public class ShoppingItemControllerTest {
     }
 
     //unauthorized with CRUD methods without token.
-    // test CRUD methods with auth token.
-    // delete all items
-    // unmark all items
+    // mark item ??
     // bad request if adding blank item name.
     // bad request if quantity less than 1
 
