@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonapi.persistence.domain.shoppingitems.ShoppingItemDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppingitems.ShoppingItemEntity;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingItemRepo;
+import lt.galdebar.monmonapi.services.shoppingitems.exceptions.ItemNotFound;
 import lt.galdebar.monmonapi.services.shoppinglists.ShoppingListService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +31,24 @@ public class ShoppingItemService {
         //find deal
         ShoppingItemEntity entityToSave = new ShoppingItemEntity(shoppingItemDTO);
         return itemRepo.save(entityToSave).getDTO();
+    }
+
+    public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) {
+        if (!itemRepo.existsById(shoppingItemDTO.getId())) {
+            throw new ItemNotFound("Could not find item with ID: " + shoppingItemDTO.getId());
+        }
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity(shoppingItemDTO);
+
+        return itemRepo.save(itemToSave).getDTO();
+    }
+
+    public boolean deleteItem(ShoppingItemDTO shoppingItemDTO) {
+        if (!itemRepo.existsById(shoppingItemDTO.getId())) {
+            throw new ItemNotFound("Could not find item with ID: " + shoppingItemDTO.getId());
+        }
+
+        itemRepo.deleteById(shoppingItemDTO.getId());
+        return true;
     }
 
 }

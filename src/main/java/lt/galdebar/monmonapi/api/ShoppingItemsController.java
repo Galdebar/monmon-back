@@ -15,24 +15,24 @@ public class ShoppingItemsController {
     private ShoppingItemService itemService;
 
     @GetMapping("/getall")
-    public List<ShoppingItemDTO> getAllItems(){
+    public List<ShoppingItemDTO> getAllItems() {
 
         return itemService.getAll();
     }
 
-    @PostMapping("/additem")
-    public ShoppingItemDTO addItem(@RequestBody ShoppingItemDTO shoppingItemDTO){
+    @PostMapping("/add")
+    public ShoppingItemDTO addItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
         return itemService.addItem(shoppingItemDTO);
     }
 
-    @PostMapping("/updateitem")
-    public ShoppingItemDTO updateItem(@RequestBody ShoppingItemDTO shoppingItemDTO){
-        return shoppingItemDTO;
+    @PostMapping("/update")
+    public ShoppingItemDTO updateItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
+        return itemService.updateItem(shoppingItemDTO);
     }
 
-    @DeleteMapping("/deleteitem")
-    public boolean deleteItem(@RequestBody ShoppingItemDTO shoppingItemDTO){
-        return true;
+    @DeleteMapping("/delete")
+    public boolean deleteItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
+        return itemService.deleteItem(shoppingItemDTO);
     }
 
 }
