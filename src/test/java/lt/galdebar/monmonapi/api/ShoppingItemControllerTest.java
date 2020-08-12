@@ -7,26 +7,15 @@ import lt.galdebar.monmonapi.persistence.domain.shoppingitems.ShoppingItemEntity
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntity;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingListRepo;
-import org.junit.Before;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
-import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.type.TypeReference;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +26,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ContextConfiguration(initializers = {ListTestContainersConfig.Initializer.class})
 @TestPropertySource(locations = "classpath:test.properties")
-public class ShoppingItemControllerTest {
+class ShoppingItemControllerTest {
 
     @Autowired
     private ShoppingItemRepo itemRepo;
@@ -66,7 +54,7 @@ public class ShoppingItemControllerTest {
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         itemRepo.deleteAll();
         listRepo.deleteAll();
     }
@@ -174,25 +162,16 @@ public class ShoppingItemControllerTest {
     }
 
     @Test
-    void givenNullItemName_whenAddItem_thenReturnBadRequest() {
-    }
-
-    @Test
-    void givenBlankItemName_whenAddItem_thenReturnBadRequest() throws Exception {
+    void givenNullItemName_whenAddItem_thenReturnBadRequest() throws Exception {
         AuthTokenDTO authTokenDTO = createListAndLogin();
 
-        String testItemName = "";
-        ShoppingItemDTO expectedItem = new ShoppingItemDTO();
-        expectedItem.setItemName(testItemName);
-        Map<String, String> postRequest = new HashMap<>();
-        postRequest.put("itemName", testItemName);
-        postRequest.put("itemCategory", "");
-        postRequest.put("quantity", "1");
-        postRequest.put("comment", "");
+        String testItemName = null;
+        ShoppingItemDTO testItem = new ShoppingItemDTO();
+        testItem.setItemName(testItemName);
 
         String response = mockMvc.perform(post("/items/add")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(expectedItem))
+                .content(objectMapper.writeValueAsString(testItem))
                 .header("Authorization", "Bearer " + authTokenDTO.getToken()))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -203,11 +182,64 @@ public class ShoppingItemControllerTest {
     }
 
     @Test
-    void givenEmptyItemName_whenAddItem_thenReturnBadRequest() {
+    void givenBlankItemName_whenAddItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+        String testItemName = "";
+        ShoppingItemDTO testItem = new ShoppingItemDTO();
+        testItem.setItemName(testItemName);
+
+        String response = mockMvc.perform(post("/items/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("name"));
+
     }
 
     @Test
-    void givenInvalidQuantity_whenAddItem_thenReturnBadRequest() {
+    void givenEmptyItemName_whenAddItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+        String testItemName = "          ";
+        ShoppingItemDTO testItem = new ShoppingItemDTO();
+        testItem.setItemName(testItemName);
+
+        String response = mockMvc.perform(post("/items/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("name"));
+
+    }
+
+    @Test
+    void givenInvalidQuantity_whenAddItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+        String testItemName = "ooiahwd";
+        ShoppingItemDTO testItem = new ShoppingItemDTO();
+        testItem.setItemName(testItemName);
+        testItem.setQuantity(-2);
+
+        String response = mockMvc.perform(post("/items/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("quantity"));
+
     }
 
     //later check addinng item with incorrect category ?
@@ -281,27 +313,231 @@ public class ShoppingItemControllerTest {
     }
 
     @Test
-    void givenIncorrectID_whenUpdateItem_thenReturnNotFound() {
+    void givenIncorrectID_whenUpdateItem_thenReturnNotFound() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+
+        String testItemName = "testItem";
+
+        String updatedItemCategory = "someCategory";
+        String updatedItemComment = "oiuaogwhldiuhuga";
+        Integer updatedItemQuantity = 10;
+        boolean updatedItemIsInCart = true;
+
+        ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+        itemToSave.setShoppingList(shoppingList);
+        itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+
+        Long testItemID = 321L;
+
+        ShoppingItemDTO requestItem = new ShoppingItemDTO();
+        requestItem.setId(testItemID);
+        requestItem.setItemName(testItemName);
+        requestItem.setItemCategory(updatedItemCategory);
+        requestItem.setQuantity(updatedItemQuantity);
+        requestItem.setComment(updatedItemComment);
+        requestItem.setInCart(updatedItemIsInCart);
+
+        mockMvc.perform(post("/items/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+
     }
 
     @Test
-    void givenBlankID_whenUpdateItem_thenReturnBadRequest() {
+    void givenNullID_whenUpdateItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+
+        String testItemName = "testItem";
+
+        String updatedItemCategory = "someCategory";
+        String updatedItemComment = "oiuaogwhldiuhuga";
+        Integer updatedItemQuantity = 10;
+        boolean updatedItemIsInCart = true;
+
+        ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+        itemToSave.setShoppingList(shoppingList);
+        itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+
+        Long testItemID = null;
+
+        ShoppingItemDTO requestItem = new ShoppingItemDTO();
+        requestItem.setId(testItemID);
+        requestItem.setItemName(testItemName);
+        requestItem.setItemCategory(updatedItemCategory);
+        requestItem.setQuantity(updatedItemQuantity);
+        requestItem.setComment(updatedItemComment);
+        requestItem.setInCart(updatedItemIsInCart);
+
+        String response = mockMvc.perform(post("/items/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("empty"));
+    }
+
+
+    @Test
+    void givenEmptyItemName_whenUpdateItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+
+        String testItemName = "testItem";
+
+        String updatedItemCategory = "someCategory";
+        String updatedItemComment = "oiuaogwhldiuhuga";
+        Integer updatedItemQuantity = 10;
+        boolean updatedItemIsInCart = true;
+
+        ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+        itemToSave.setShoppingList(shoppingList);
+        itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+
+        Long testItemID = itemRepo.save(itemToSave).getId();
+
+        ShoppingItemDTO requestItem = new ShoppingItemDTO();
+        requestItem.setId(testItemID);
+        requestItem.setItemName("");
+        requestItem.setItemCategory(updatedItemCategory);
+        requestItem.setQuantity(updatedItemQuantity);
+        requestItem.setComment(updatedItemComment);
+        requestItem.setInCart(updatedItemIsInCart);
+
+        String response = mockMvc.perform(post("/items/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("name"));
+
     }
 
     @Test
-    void givenEmptyID_whenUpdateItem_thenReturnBadRequest() {
+    void givenBlankItemName_whenUpdateItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+
+        String testItemName = "testItem";
+
+        String updatedItemCategory = "someCategory";
+        String updatedItemComment = "oiuaogwhldiuhuga";
+        Integer updatedItemQuantity = 10;
+        boolean updatedItemIsInCart = true;
+
+        ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+        itemToSave.setShoppingList(shoppingList);
+        itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+
+        Long testItemID = itemRepo.save(itemToSave).getId();
+
+        ShoppingItemDTO requestItem = new ShoppingItemDTO();
+        requestItem.setId(testItemID);
+        requestItem.setItemName("     ");
+        requestItem.setItemCategory(updatedItemCategory);
+        requestItem.setQuantity(updatedItemQuantity);
+        requestItem.setComment(updatedItemComment);
+        requestItem.setInCart(updatedItemIsInCart);
+
+        String response = mockMvc.perform(post("/items/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("name"));
     }
 
     @Test
-    void givenEmptyItemName_whenUpdateItem_thenReturnBadRequest() {
+    void givenNullItemName_whenUpdateItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+
+        String testItemName = "testItem";
+
+        String updatedItemCategory = "someCategory";
+        String updatedItemComment = "oiuaogwhldiuhuga";
+        Integer updatedItemQuantity = 10;
+        boolean updatedItemIsInCart = true;
+
+        ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+        itemToSave.setShoppingList(shoppingList);
+        itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+
+        Long testItemID = itemRepo.save(itemToSave).getId();
+
+        ShoppingItemDTO requestItem = new ShoppingItemDTO();
+        requestItem.setId(testItemID);
+        requestItem.setItemName(null);
+        requestItem.setItemCategory(updatedItemCategory);
+        requestItem.setQuantity(updatedItemQuantity);
+        requestItem.setComment(updatedItemComment);
+        requestItem.setInCart(updatedItemIsInCart);
+
+        String response = mockMvc.perform(post("/items/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("name"));
     }
 
     @Test
-    void givenBlankItemName_whenUpdateItem_thenReturnBadRequest() {
-    }
+    void givenInvalidQuantity_whenUpdateItem_thenReturnBadRequest() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
 
-    @Test
-    void givenInvalidQuantity_whenUpdateItem_thenReturnBadRequest() {
+
+        String testItemName = "testItem";
+
+        String updatedItemCategory = "someCategory";
+        String updatedItemComment = "oiuaogwhldiuhuga";
+        Integer updatedItemQuantity = -10;
+        boolean updatedItemIsInCart = true;
+
+        ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+        itemToSave.setShoppingList(shoppingList);
+        itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+
+        Long testItemID = itemRepo.save(itemToSave).getId();
+
+        ShoppingItemDTO requestItem = new ShoppingItemDTO();
+        requestItem.setId(testItemID);
+        requestItem.setItemName(testItemName);
+        requestItem.setItemCategory(updatedItemCategory);
+        requestItem.setQuantity(updatedItemQuantity);
+        requestItem.setComment(updatedItemComment);
+        requestItem.setInCart(updatedItemIsInCart);
+
+        String response = mockMvc.perform(post("/items/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertTrue(response.toLowerCase().contains("quantity"));
     }
 
     @Test
@@ -348,11 +584,57 @@ public class ShoppingItemControllerTest {
     }
 
     @Test
-    void givenIncorrectID_whenDeleteItem_thenReturnNotFound() {
+    void givenIncorrectID_whenDeleteItem_thenReturnNotFound() throws Exception {
+        AuthTokenDTO authTokenDTO = createListAndLogin();
+
+
+        String testItemName = "testItem";
+
+        ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+        itemToSave.setShoppingList(shoppingList);
+        itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+
+        Long testItemID = 0L;
+
+        ShoppingItemDTO requestItem = new ShoppingItemDTO();
+        requestItem.setId(testItemID);
+        requestItem.setItemName(testItemName);
+
+        mockMvc.perform(delete("/items/delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+
     }
 
     @Test
-    void givenBlankId_whenDeleteItem_thenReturnBadRequest() {
+    void givenNullId_whenDeleteItem_thenReturnBadRequest() throws Exception {
+            AuthTokenDTO authTokenDTO = createListAndLogin();
+
+
+            String testItemName = "testItem";
+
+            ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+            ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+            itemToSave.setShoppingList(shoppingList);
+            itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+
+            Long testItemID = null;
+
+            ShoppingItemDTO requestItem = new ShoppingItemDTO();
+            requestItem.setId(testItemID);
+            requestItem.setItemName(testItemName);
+
+            mockMvc.perform(delete("/items/delete")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(requestItem))
+                    .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest());
+
     }
 
     @Test

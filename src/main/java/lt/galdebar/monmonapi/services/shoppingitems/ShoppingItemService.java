@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonapi.persistence.domain.shoppingitems.ShoppingItemDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppingitems.ShoppingItemEntity;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingItemRepo;
+import lt.galdebar.monmonapi.services.shoppingitems.exceptions.InvalidShoppingItemRequest;
 import lt.galdebar.monmonapi.services.shoppingitems.exceptions.ItemNotFound;
 import lt.galdebar.monmonapi.services.shoppinglists.ShoppingListService;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,13 @@ public class ShoppingItemService {
 
     @Transactional
     public ShoppingItemDTO updateItem(ShoppingItemDTO shoppingItemDTO) {
-        if (!itemRepo.existsById(shoppingItemDTO.getId())) {
+        if(shoppingItemDTO.getId() == null){
+            throw new InvalidShoppingItemRequest("ID field cannot be empty");
+        }
+
+        Optional<ShoppingItemEntity> entityOptional = itemRepo.findById(shoppingItemDTO.getId());
+        if (entityOptional.isEmpty() ||
+                !entityOptional.get().getShoppingList().getId().equals(listService.getCurrentList().getId())) {
             throw new ItemNotFound("Could not find item with ID: " + shoppingItemDTO.getId());
         }
         ShoppingItemEntity itemToSave = new ShoppingItemEntity(shoppingItemDTO);
@@ -47,6 +54,9 @@ public class ShoppingItemService {
 
     @Transactional
     public boolean deleteItem(ShoppingItemDTO shoppingItemDTO) {
+        if(shoppingItemDTO.getId() == null){
+            throw new InvalidShoppingItemRequest("ID field cannot be empty");
+        }
         if (!itemRepo.existsById(shoppingItemDTO.getId())) {
             throw new ItemNotFound("Could not find item with ID: " + shoppingItemDTO.getId());
         }
