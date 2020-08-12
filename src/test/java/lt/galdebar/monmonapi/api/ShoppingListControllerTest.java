@@ -3,7 +3,9 @@ package lt.galdebar.monmonapi.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.context.security.AuthTokenDTO;
+import lt.galdebar.monmonapi.persistence.domain.shoppingitems.ShoppingItemDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntity;
+import lt.galdebar.monmonapi.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingListRepo;
 import lt.galdebar.monmonapi.services.shoppinglists.exceptions.ListAlreadyExists;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,7 +40,10 @@ class ShoppingListControllerTest {
     private ShoppingListController controller;
 
     @Autowired
-    private ShoppingListRepo repo;
+    private ShoppingListRepo listRepo;
+
+    @Autowired
+    private ShoppingItemRepo itemRepo;
 
     @Autowired
     private MockMvc mockMvc;
@@ -54,7 +60,7 @@ class ShoppingListControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        repo.deleteAll();
+        listRepo.deleteAll();
     }
 
     @Test
@@ -65,7 +71,7 @@ class ShoppingListControllerTest {
         requestObject.put("name", listName);
         requestObject.put("password", listPassword);
 
-        assertEquals(0, repo.count());
+        assertEquals(0, listRepo.count());
 
         String response = mockMvc.perform(post("/lists/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -74,7 +80,7 @@ class ShoppingListControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        List<ShoppingListEntity> savedLists = (List<ShoppingListEntity>) repo.findAll();
+        List<ShoppingListEntity> savedLists = (List<ShoppingListEntity>) listRepo.findAll();
 
         assertNotNull(response);
         assertFalse(response.trim().isEmpty());
@@ -102,7 +108,7 @@ class ShoppingListControllerTest {
         entityToSave.setPassword(passwordEncoder.encode(listPassword));
         entityToSave.setTimeCreated(LocalDateTime.now());
         entityToSave.setLastUsedTime(LocalDateTime.now());
-        repo.save(entityToSave);
+        listRepo.save(entityToSave);
 
         String response = mockMvc.perform(post("/lists/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -135,7 +141,7 @@ class ShoppingListControllerTest {
         entityToSave.setPassword(passwordEncoder.encode(listPassword));
         entityToSave.setTimeCreated(LocalDateTime.now());
         entityToSave.setLastUsedTime(LocalDateTime.now());
-        repo.save(entityToSave);
+        listRepo.save(entityToSave);
 
         String response = mockMvc.perform(post("/lists/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -162,7 +168,7 @@ class ShoppingListControllerTest {
         entityToSave.setPassword(passwordEncoder.encode(listPassword));
         entityToSave.setTimeCreated(LocalDateTime.now());
         entityToSave.setLastUsedTime(LocalDateTime.now());
-        repo.save(entityToSave);
+        listRepo.save(entityToSave);
 
         String response = mockMvc.perform(post("/lists/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -189,7 +195,7 @@ class ShoppingListControllerTest {
         entityToSave.setPassword(passwordEncoder.encode(listPassword));
         entityToSave.setTimeCreated(LocalDateTime.now());
         entityToSave.setLastUsedTime(LocalDateTime.now());
-        repo.save(entityToSave);
+        listRepo.save(entityToSave);
 
         String response = mockMvc.perform(post("/lists/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -216,7 +222,7 @@ class ShoppingListControllerTest {
         entityToSave.setPassword(passwordEncoder.encode(listPassword));
         entityToSave.setTimeCreated(LocalDateTime.now());
         entityToSave.setLastUsedTime(LocalDateTime.now());
-        repo.save(entityToSave);
+        listRepo.save(entityToSave);
 
         String response = mockMvc.perform(post("/lists/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -244,7 +250,7 @@ class ShoppingListControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getErrorMessage();
 
-        assertEquals(0, repo.count());
+        assertEquals(0, listRepo.count());
         assert response != null;
         assertTrue(response.contains("empty"));
 
@@ -266,7 +272,7 @@ class ShoppingListControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getErrorMessage();
 
-        assertEquals(0, repo.count());
+        assertEquals(0, listRepo.count());
         assert response != null;
         assertTrue(response.contains("empty"));
     }
@@ -287,7 +293,7 @@ class ShoppingListControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getErrorMessage();
 
-        assertEquals(0, repo.count());
+        assertEquals(0, listRepo.count());
         assert response != null;
         assertTrue(response.contains("empty"));
     }
@@ -308,7 +314,7 @@ class ShoppingListControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getErrorMessage();
 
-        assertEquals(0, repo.count());
+        assertEquals(0, listRepo.count());
         assert response != null;
         assertTrue(response.contains("empty"));
     }
@@ -325,10 +331,10 @@ class ShoppingListControllerTest {
         testEntity.setPassword(listPassword);
         testEntity.setTimeCreated(LocalDateTime.now().minusDays(1));
         testEntity.setLastUsedTime(LocalDateTime.now().minusHours(8));
-        repo.save(testEntity);
+        listRepo.save(testEntity);
 
 
-        assertEquals(1, repo.count());
+        assertEquals(1, listRepo.count());
 
         String response = mockMvc.perform(post("/lists/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -341,6 +347,53 @@ class ShoppingListControllerTest {
         ListAlreadyExists expectedException = new ListAlreadyExists(listName);
 
         assertEquals(response, expectedException.getMessage());
+    }
+
+    @Test
+    void givenValidtoken_whenDeleteList_thenDeleteListAndItems() throws Exception {
+        String listName = "testList";
+        String listPassword = "testListPassword";
+
+        Map<String, String> listRequest = new HashMap<>();
+        listRequest.put("name", listName);
+        listRequest.put("password", listPassword);
+
+        mockMvc.perform(post("/lists/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(listRequest)))
+                .andExpect(status().isOk());
+
+        String loginResponse = mockMvc.perform(post("/lists/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(listRequest)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        AuthTokenDTO authToken = objectMapper.readValue(loginResponse, AuthTokenDTO.class);
+
+        ShoppingItemDTO shoppingItem = new ShoppingItemDTO();
+        shoppingItem.setItemName("someName");
+
+        mockMvc.perform(post("/items/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(shoppingItem))
+                .header("Authorization", "Bearer " + authToken.getToken()))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+
+        String deleteResponse = mockMvc.perform(delete("/lists/delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + authToken.getToken()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertNull(listRepo.findByNameIgnoreCase(listName));
+        assertEquals(0, listRepo.count());
+
+        assertNull(listRepo.findByNameIgnoreCase(shoppingItem.getItemName()));
+        assertEquals(0, listRepo.count());
     }
 
 }

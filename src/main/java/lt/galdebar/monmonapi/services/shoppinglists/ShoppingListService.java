@@ -7,6 +7,7 @@ import lt.galdebar.monmonapi.persistence.domain.shoppinglists.LoginAttemptDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListDTO;
 import lt.galdebar.monmonapi.persistence.domain.shoppinglists.ShoppingListEntity;
 import lt.galdebar.monmonapi.persistence.repositories.ShoppingListRepo;
+import lt.galdebar.monmonapi.services.shoppingitems.ShoppingItemService;
 import lt.galdebar.monmonapi.services.shoppinglists.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -75,5 +76,10 @@ public class ShoppingListService {
         if(request.getPassword().trim().isEmpty()){
             throw new InvalidPassword("Password field empty");
         }
+    }
+
+    public boolean delete() {
+        repo.delete(getCurrentList());
+        return true;
     }
 }

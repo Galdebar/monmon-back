@@ -10,10 +10,7 @@ import lt.galdebar.monmonapi.services.shoppinglists.exceptions.ListNameEmpty;
 import lt.galdebar.monmonapi.services.shoppinglists.exceptions.ListNotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -22,6 +19,9 @@ public class ShoppingListController {
 
     @Autowired
     private ShoppingListService service;
+
+    @Autowired
+    private ShoppingItemsController itemsController;
 
     @PostMapping("/create")
     public String createList(@RequestBody ShoppingListDTO createRequest) {
@@ -42,5 +42,11 @@ public class ShoppingListController {
         } catch (InvalidPassword | ListNameEmpty exception){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, exception.getMessage());
         }
+    }
+
+    @DeleteMapping("/delete")
+    public boolean delete(){
+        itemsController.deleteAllItems();
+        return service.delete();
     }
 }
