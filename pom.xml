@@ -86,6 +86,59 @@
 			<scope>test</scope>
 		</dependency>
 
+
+
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.2.11</version>
+		</dependency>
+
+<!--		FOR CATEGORIES PARSER -->
+
+		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.17</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.17</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-search-orm -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-search-orm</artifactId>
+
+			<version>5.11.4.Final</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-core -->
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+			<version>3.8.8</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-maven-plugin -->
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-maven-plugin</artifactId>
+			<version>3.8.8</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.11.0</version>
+			<scope>compile</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
