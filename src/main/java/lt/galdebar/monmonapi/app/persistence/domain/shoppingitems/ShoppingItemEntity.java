@@ -27,7 +27,6 @@ public class ShoppingItemEntity {
     public ShoppingItemEntity(ShoppingItemDTO dto) {
         checkIfDTOValid(dto);
         this.itemName = dto.getItemName();
-        this.quantity = dto.getQuantity();
         this.isInCart = dto.isInCart();
 
         if (dto.getId() != null) {
@@ -36,6 +35,10 @@ public class ShoppingItemEntity {
 
         if (dto.getItemCategory() != null) {
             this.itemCategory = dto.getItemCategory();
+        }
+
+        if(dto.getQuantity() != null){
+            this.quantity = dto.getQuantity();
         }
 
         if (dto.getComment() != null) {
