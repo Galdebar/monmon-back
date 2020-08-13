@@ -1,8 +1,0 @@
--------------------------------------------------------------------------------
-Test set: lt.galdebar.monmon.categoriesparser.ExcelParserIntegrationTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 107.563 s <<< FAILURE! - in lt.galdebar.monmon.categoriesparser.ExcelParserIntegrationTests
-lt.galdebar.monmon.categoriesparser.ExcelParserIntegrationTests  Time elapsed: 107.563 s  <<< ERROR!
-java.lang.ExceptionInInitializerError
-	at lt.galdebar.monmon.categoriesparser.ExcelParserIntegrationTests.<clinit>(ExcelParserIntegrationTests.java:44)
-

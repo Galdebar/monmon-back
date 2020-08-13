@@ -1,8 +1,0 @@
-mongo:
-  image: mongo:latest
-#  container_name: mongo
-  environment:
-    NAME: monmonmongo
-    MONGO_INITDB_ROOT_USERNAME: mongo
-    MONGO_INITDB_ROOT_PASSWORD: letmein
-    COMPOSE_CONVERT_WINDOWS_PATHS: 1
