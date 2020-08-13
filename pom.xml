@@ -86,15 +86,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
-
-		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>42.2.11</version>
-		</dependency>
-
 <!--		FOR CATEGORIES PARSER -->
 
 		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
