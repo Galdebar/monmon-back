@@ -1,0 +1,769 @@
+function slider() {
+
+}
+
+
+//------------------------------------------------------
+slider.prototype.init = function (query, options, options_resize) {
+
+    var self = this;
+
+    self.$swiper_container = $(query);
+    self.$next = self.$swiper_container.next();
+
+    if (typeof options == 'string') {
+        self.setOptions(options);
+    } else {
+        self.options = options;
+
+        if (typeof options_resize == 'undefined')
+            self.options_resize = null;
+        else
+            self.options_resize = options_resize;
+    }
+
+    self.swiper = new Swiper(query, self.options);
+
+
+    if (typeof options == 'string' && options == 'offers') {
+        setTimeout(function () {
+            self.swiper.swipeTo(0, 0);
+        }, 500);
+    }
+
+    self.initArrows();
+    self.resizeElements();
+
+    self.$swiper_container.find(".cover").addClass("cover2");
+
+}
+
+
+//------------------------------------------------------
+slider.prototype.setOptions = function (type) {
+
+    var self = this;
+
+    switch (type) {
+
+        //---------------------------
+        case "fullsize_offers":
+
+            var slides_cnt = self.$swiper_container.find('.swiper-slide').length;
+            var loop = slides_cnt > 1 ? true : false;
+            var resistance = slides_cnt > 1 ? false : '100%';
+            var noSwiping = slides_cnt > 1 ? false : true;
+
+            self.options = {
+                mode: 'horizontal',
+                loop: loop,
+                resistance: resistance,
+                noSwiping: noSwiping,
+                autoplay: 8000
+            };
+
+            self.options_resize = {
+                position: {
+                    marginTop: 0.35,
+                    centerText: true
+                },
+                size: {
+                    base: {
+                        minHeight: 550,
+                        heightRatioHeight: 1,
+                        heightSubtrackObjects: ['header']
+                    },
+                    m: {
+                        minHeight: 330,
+                        height: function () {
+                            var offer_h = 330;
+                            var header_h = $('header').outerHeight();
+                            return app_.w_h - header_h - offer_h;
+                        }
+                    },
+                    mob_m: {
+                        maxHeight: 400,
+                        heightRatioHeight: 1.02
+                    }
+                }
+            };
+
+            break;
+
+
+        //---------------------------
+        case 'fullsize':
+
+            var slides_cnt = self.$swiper_container.find('.swiper-slide').length;
+            var loop = slides_cnt > 1 ? true : false;
+            var resistance = slides_cnt > 1 ? false : '100%';
+            var noSwiping = slides_cnt > 1 ? false : true;
+
+            self.options = {
+                mode: 'horizontal',
+                loop: loop,
+                resistance: resistance,
+                noSwiping: noSwiping,
+            };
+
+            self.options_resize = {
+                position: {
+                    marginTop: 0.15,
+                    centerText: true
+                },
+                size: {
+                    base: {
+                        minHeight: 600,
+                        heightRatioHeight: 1,
+                        heightSubtrackObjects: ['header']
+                    },
+                    m: {
+                        minHeight: 500,
+                        height: function () {
+                            var offer_h = 330;
+                            var header_h = $('header').outerHeight();
+                            return app_.w_h - header_h - offer_h;
+                        }
+                    },
+                    mob_m: {
+                        maxHeight: 400,
+                        heightRatioHeight: 1.02
+                    }
+                }
+
+            };
+
+            break;
+
+
+        //---------------------------
+        case 'offers':
+
+            self.options = {
+                mode: 'horizontal',
+                // autoplay: 5000,
+                loop: true,
+                initialSlide: 1,
+                slidesPerView: 'auto',
+                centeredSlides: true
+            };
+
+            self.options_resize = {
+                size: {
+                    base: {
+                        height: 300,
+                        widthSlide: function () {
+                            return Math.floor(self.$swiper_container.outerWidth() / 10 * 4)
+                        }
+                    },
+
+                    s: {
+                        height: 300,
+                        widthSlide: function () {
+                            return self.$swiper_container.outerWidth() / 2
+                        }
+                    },
+
+                    mob_l: {
+                        height: 300,
+                        widthSlide: function () {
+                            return self.$swiper_container.outerWidth() / 1.5
+                        }
+                    },
+
+
+                    mob_m: {
+                        height: 300,
+                        widthSlide: function () {
+                            return self.$swiper_container.outerWidth()
+                        }
+                    }
+                }
+
+            };
+            break;
+
+
+        //---------------------------
+        case 'issues':
+
+            self.options = {
+                mode: 'horizontal',
+                // autoplay: 5000,
+                loop: true,
+                initialSlide: 1,
+                loopedSlides: 5,
+                slidesPerView: 'auto',
+                centeredSlides: true
+            };
+
+            self.options_resize = {
+                size: {
+                    base: {
+                        height: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 2.2 * 1.41)
+                        },
+                        widthSlide: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 2.2)
+                        }
+                    },
+
+                    mob_l: {
+                        height: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 2.5 * 1.41)
+                        },
+                        widthSlide: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 2.6)
+                        }
+                    },
+
+                    mob_m: {
+                        height: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 4.3 * 1.41)
+                        },
+                        widthSlide: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 4.3)
+                        }
+                    },
+
+
+                    mob_s: {
+                        height: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 7 * 1.41)
+                        },
+                        widthSlide: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 7)
+                        }
+                    },
+
+                    /*
+
+                     mob_s: {
+                     height: function(){ return Math.ceil( self.$swiper_container.outerWidth() / 10 * 8 * 1.596 )   },
+                     widthSlide: function(){ return Math.ceil( self.$swiper_container.outerWidth() / 10 * 8 )  }
+                     }
+
+                     */
+
+
+                }
+
+            };
+            break;
+
+        //---------------------------
+        case 'initiative':
+
+            self.options = {
+                mode: 'horizontal',
+                loop: false,
+                slidesPerView: 'auto',
+                centeredSlides: false,
+                draggable: false,
+                onSlideChangeStart: function (swiper) {
+                    initiativeResponsive(swiper);
+                },
+                onInit: function (swiper) {
+                    var screenWidth = screen.width;
+
+                    if (swiper.slides.length > 5 && screenWidth >= 900) {
+                        $('.rightc').show();
+                    }
+                },
+                onSlideTouch: function (swiper) {
+                    initiativeResponsive(swiper);
+                },
+            };
+
+            self.options_resize = {
+                size: {
+                    base: {
+                        height: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 2.2 * 1.41);
+                        },
+                        widthSlide: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 2.2);
+                        }
+                    },
+
+                    mob_l: {
+                        height: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 2.5 * 1.41);
+                        },
+                        widthSlide: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 2.6);
+                        }
+                    },
+
+                    mob_m: {
+                        height: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 4.3 * 1.41)
+                        },
+                        widthSlide: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 4.3)
+                        }
+                    },
+
+
+                    mob_s: {
+                        height: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 7 * 1.41)
+                        },
+                        widthSlide: function () {
+                            return Math.ceil(self.$swiper_container.outerWidth() / 10 * 7)
+                        }
+                    },
+                }
+
+            };
+            break;
+
+        //---------------------------
+        case 'shops':
+
+            self.options = {
+                mode: 'horizontal',
+                // autoplay: 5000,
+                loop: true,
+                //initialSlide: 0,
+                //loopedSlides: 8,
+                slidesPerView: 'auto'
+                //centeredSlides: true
+
+            };
+
+            self.options_resize = {
+                size: {
+                    base: {
+                        height: 100,
+                        widthSlide: 200
+                    }
+
+                    /*
+                     mob_l: {
+                     height: 100,
+                     widthSlide: 170
+                     },
+                     */
+                }
+            };
+            break;
+
+        //---------------------------
+        case 'recipe_menu':
+            self.options = {
+                mode: 'horizontal',
+                loop: false,
+                slidesPerView: 'auto',
+                speed: 500,
+                preventLinks: true
+            };
+
+            break;
+
+
+        //---------------------------
+        case 'images':
+
+            self.options = {
+                mode: 'horizontal',
+                loop: true,
+                slidesPerView: 'auto',
+                centeredSlides: true,
+                //shortSwipes: false
+            };
+
+            self.options_resize = {
+                size: {
+                    base: {
+                        minHeight: 500,
+                        height: 500,
+                        widthSlide: function () {
+                            return Math.floor(self.$swiper_container.width() / 10 * 7);
+                        }
+                    },
+                    m: {
+                        minHeight: 500,
+                        height: 500,
+                        widthSlide: function () {
+                            return Math.floor(self.$swiper_container.width() / 10 * 7);
+                        }
+                    },
+                    mob_m: {
+                        maxHeight: 400,
+                        heightRatioHeight: 1.02,
+                        widthSlide: function () {
+                            return self.$swiper_container.width();
+                        }
+                    }
+                }
+            }
+            break;
+
+    }
+
+}
+
+//------------------------------------------------------
+slider.prototype.initArrows = function () {
+
+    var self = this;
+
+    var $arrow_left = self.$swiper_container.find(".arrow.left");
+    if ($arrow_left.length) {
+        var $parent = $arrow_left.parent().parent();
+
+        if ($parent.hasClass("arrow_c"))
+            self.$arrow_left = $parent;
+        else
+            self.$arrow_left = $arrow_left;
+
+        self.$arrow_left.click(function () {
+            self.swiper.swipePrev();
+        });
+    } else
+        self.$arrow_left = false;
+
+
+    var $arrow_right = self.$swiper_container.find(".arrow.right");
+    if ($arrow_right.length) {
+        var $parent = $arrow_right.parent().parent();
+
+        if ($parent.hasClass("arrow_c"))
+            self.$arrow_right = $parent;
+        else
+            self.$arrow_right = $arrow_right;
+
+        self.$arrow_right.click(function () {
+            self.swiper.swipeNext();
+        });
+    } else
+        self.$arrow_right = false;
+
+
+}
+
+//------------------------------------------------------
+slider.prototype.getSwiperHeight = function (size) {
+
+    var self = this;
+    var h;
+    if (!size)
+        return false;
+
+    if (size.height != undefined) {
+        if (typeof size.height == 'function')
+            h = size.height();
+        else
+            h = size.height;
+    } else if (size.heightRatioHeight != undefined)
+        h = Math.floor(app_.w_h * size.heightRatioHeight);
+
+    else if (size.heightRatioWidth != undefined)
+        h = Math.floor(app_.w_w * size.heightRatioWidth);
+
+    if (size.heightSubtrackObjects != undefined) {
+        var subtract = 0;
+        for (var i = 0; i < size.heightSubtrackObjects.length; i++) {
+            var query = size.heightSubtrackObjects[i];
+            var ob_h = $(query).outerHeight(true);
+            subtract += ob_h;
+        }
+
+        h -= subtract;
+
+    }
+
+    if (size.maxHeight != undefined && h > size.maxHeight)
+        h = size.maxHeight;
+
+    if (size.minHeight != undefined && h < size.minHeight)
+        h = size.minHeight;
+
+    return h;
+
+}
+
+//------------------------------------------------------
+slider.prototype.getSwiperWidth = function (size) {
+
+    var self = this;
+
+    if (!size)
+        return false;
+
+    if (size.width != undefined)
+        return size.width;
+
+    else if (size.widthRatioHeight != undefined)
+        return Math.floor(app_.w_h * size.widthRatioHeight);
+
+    else if (size.widthRatioWidth != undefined)
+        return Math.floor(app_.w_w * size.widthRatioWidth);
+
+    return false;
+
+}
+
+//------------------------------------------------------
+slider.prototype.getSwiperSlideWidth = function (size) {
+
+    var self = this;
+
+    if (!size)
+        return false;
+
+    if (size.widthSlide != undefined) {
+        if (typeof size.widthSlide == 'function')
+            return size.widthSlide();
+        else
+            return size.widthSlide;
+    } else
+        return false;
+
+}
+
+
+//------------------------------------------------------
+slider.prototype.getSizeOptions = function () {
+
+    var self = this;
+    var respBreak = app_.getResponsiveBreak();
+
+    //var options_resize = self.options_resize.size;
+
+    if (!self.options_resize || !self.options_resize.size) {
+        return false;
+    }
+
+    var size = self.options_resize.size;
+
+    if (size[respBreak.name] != undefined)
+        return size[respBreak.name];
+
+    var options_index = 'base';
+    for (var break_name in app_.responsiveBreakes) {
+
+        var break_ = app_.responsiveBreakes[break_name];
+        for (var slider_break_name in size) {
+
+            if (slider_break_name != 'base') {
+                if (size[break_name] != undefined && break_ >= respBreak.res) {
+                    options_index = break_name;
+                }
+            }
+        }
+    }
+
+    return size[options_index];
+
+}
+
+
+//------------------------------------------------------
+slider.prototype.getPositionOptions = function () {
+
+    var self = this;
+
+    options = {
+        minMarginTop: 180,
+        marginTop: 0.35
+    };
+
+    if (self.options_resize.position == undefined)
+        return {marginTop: 0, positionNext: false};
+    else {
+        $.extend(true, options, self.options_resize.position);
+        options.marginTop *= self.height;
+        options.positionNext = true;
+
+        return options;
+    }
+}
+
+
+//------------------------------------------------------
+slider.prototype.positionElements = function () {
+
+    var self = this;
+    var respBreak = app_.getResponsiveBreak();
+
+    var slider_h = self.height;
+    var options = self.getPositionOptions();
+
+    if (respBreak.res > 1280) {
+        if (options.marginTop < options.minMarginTop)
+            options.marginTop = options.minMarginTop
+    } else {
+        options.marginTop = 0;
+    }
+
+    if (options.centerText != undefined && options.centerText) {
+
+        var text_h = slider_h - options.marginTop;
+
+
+        self.$swiper_container.find(".text_con").each(function () {
+
+            var $tc = $(this);
+            $btn = $tc.find('.btn');
+
+            $btn.css({marginTop: ""});
+            var text_h_real = $tc.actual('outerHeight');
+
+            var tc_mt = (text_h - text_h_real) / 2;
+            if (tc_mt < 20) {
+                $btn.css({marginTop: 20});
+
+                var text_h_real = $tc.actual('outerHeight');
+                var tc_mt = (text_h - text_h_real) / 2;
+            }
+
+            $tc.css({marginTop: tc_mt});
+        });
+
+        self.$swiper_container.find(".tag").each(function () {
+
+            $(this).css({height: text_h, width: text_h});
+
+
+        });
+
+    }
+
+
+    if (respBreak.res > 1280)
+        marg_top = -options.marginTop;
+    else
+        marg_top = 0;
+
+    if (options.positionNext && self.$arrow_left) {
+        if (respBreak.res > 1280) {
+            var top = parseInt((slider_h + marg_top) / 2);
+            self.$arrow_left.css({top: top});
+            self.$arrow_right.css({top: top});
+        } else {
+            self.$arrow_left.css({top: ''});
+            self.$arrow_right.css({top: ''});
+        }
+    }
+
+    if (options.positionNext) {
+        self.$next
+            .css({marginTop: marg_top})
+            .attr("data-margin-top", marg_top);
+    }
+
+    if (respBreak.res <= 670) {
+        self.changeBackgroundImage('mobile');
+    } else {
+        self.changeBackgroundImage('desktop');
+    }
+}
+
+
+//------------------------------------------------------
+slider.prototype.resizeElements = function () {
+    var self = this;
+
+    var size = self.getSizeOptions();
+
+    var w = self.getSwiperWidth(size);
+    var w_slide = self.getSwiperSlideWidth(size);
+    if (!w_slide && w)
+        w_slide = w;
+
+    var h = self.getSwiperHeight(size);
+
+    if (!w && !h && !w_slide)
+        return;
+
+    if (w) {
+        self.$swiper_container.css({width: w});
+    }
+
+    if (w_slide) {
+        self.$swiper_container.find(".swiper-slide").css({width: w_slide});
+    }
+
+    if (h) {
+        self.height = h;
+        self.$swiper_container.css({height: h});
+        self.$swiper_container.find(".swiper-slide").css({height: h});
+    }
+
+    self.positionElements();
+    self.swiper.resizeFix();
+
+}
+
+//------------------------------------------------------
+slider.prototype.resizeElementsEnd = function () {
+
+    var self = this;
+
+    self.resizeElements();
+    self.swiper.resizeFix();
+    self.swiper.reInit();
+
+    self.swiper.swipeTo(self.swiper.activeIndex - 1, 0);
+
+}
+
+slider.prototype.changeBackgroundImage = function (type) {
+    var self = this;
+
+    $(self.swiper.slides).each(function (k, v) {
+        var $slide = $('.cover2.bg', v);
+
+        if ($slide.hasClass(type == 'mobile' ? 'desktop' : 'mobile')) {
+            var picture = $slide.data(type == 'mobile' ? 'mobile-image' : 'desktop-image');
+            if (picture.length > 0) {
+                $slide.attr('style', 'background-image: url(' + picture + ');');
+                if (type == 'mobile') {
+                    $slide.addClass('mobile');
+                    $slide.removeClass('desktop');
+                } else {
+                    $slide.addClass('desktop');
+                    $slide.removeClass('mobile');
+                }
+            }
+        }
+    });
+};
+
+function initiativeResponsive(swiper) {
+    if (swiper.slides.length > 5) {
+        var screenWidth = window.innerWidth;
+
+        var swiperActiveIndex = swiper.activeIndex;
+        var slidesLength = swiper.slides.length;
+
+        if (swiperActiveIndex && (screenWidth >= 900)) {
+            var slidesInPage = 7;
+
+            if (screenWidth < 1180) {
+                slidesInPage = 6;
+            } else if (screenWidth < 1080) {
+                slidesInPage = 5;
+            } else if (screenWidth < 1000) {
+                slidesInPage = 4;
+            }
+
+            slidesLength = slidesLength - slidesInPage;
+
+            if (slidesLength >= swiperActiveIndex) {
+                $('.rightc').show();
+            } else {
+                $('.rightc').hide();
+            }
+
+            if (swiperActiveIndex) {
+                $('.leftc').show();
+            }
+        } else {
+            $('.leftc').hide();
+            $('.rightc').show();
+        }
+    }
+}

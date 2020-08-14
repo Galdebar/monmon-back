@@ -25,7 +25,8 @@ public class ShoppingItemEntity {
     private ShoppingListEntity shoppingList;
 
     public ShoppingItemEntity(ShoppingItemDTO dto) {
-        checkIfDTOValid(dto);
+        dto.checkIfValid();
+//        checkIfDTOValid(dto);
         this.itemName = dto.getItemName();
         this.isInCart = dto.isInCart();
 

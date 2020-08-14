@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.categoriesparser;
 
 
+import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.categoriesparser.persistence.domain.ShoppingCategoryEntity;
 import lt.galdebar.monmonapi.categoriesparser.persistence.repositories.CategoriesRepo;
 import lt.galdebar.monmonapi.categoriesparser.persistence.repositories.KeywordsRepo;
@@ -27,7 +28,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = {"classpath:categoriesparser/test.properties"})
-@ContextConfiguration(initializers = {ExcelParserIntegrationTests.Initializer.class})
+@ContextConfiguration(initializers = {ListTestContainersConfig.Initializer.class})
 @SpringBootTest
 public class ExcelParserIntegrationTests {
 

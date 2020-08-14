@@ -32,6 +32,7 @@ public class ShoppingItemService {
 
     @Transactional
     public ShoppingItemDTO addItem(ShoppingItemDTO shoppingItemDTO) {
+        shoppingItemDTO.checkIfValid();
         if(shoppingItemDTO.getItemCategory() == null || shoppingItemDTO.getItemCategory().trim().isEmpty()){
             shoppingItemDTO.setItemCategory(
                     categoryService.findCategoryByKeyword(shoppingItemDTO.getItemName()).getCategoryName()
