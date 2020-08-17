@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.app.services.shoppinglists;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.InvalidPassword;
 import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.ListAlreadyExists;
@@ -15,14 +16,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ShoppingListService {
     private final ShoppingListRepo repo;
     private final PasswordEncoder passwordEncoder;
+    @Getter
+    private final int LIST_DELETION_GRACE_PERIOD = 48;
     @Autowired
     private JwtTokenProvider tokenProvider;
 
@@ -31,6 +38,8 @@ public class ShoppingListService {
         entityToSave.setPassword(
                 passwordEncoder.encode(entityToSave.getPassword())
         );
+        entityToSave.setTimeCreated(LocalDateTime.now());
+        entityToSave.setLastUsedTime(LocalDateTime.now());
 
         if (repo.findByNameIgnoreCase(entityToSave.getName()) != null) {
             throw new ListAlreadyExists(createRequest.getName());
@@ -47,6 +56,7 @@ public class ShoppingListService {
         return foundList;
     }
 
+    @Transactional
     public AuthTokenDTO login(LoginAttemptDTO loginRequest) {
         checkIfLoginRequestvalid(loginRequest);
         ShoppingListEntity foundList = repo.findByNameIgnoreCase(loginRequest.getName());
@@ -61,6 +71,9 @@ public class ShoppingListService {
                 foundList.getName(),
                 Collections.singletonList(foundList.toString())
         );
+        foundList.setLastUsedTime(LocalDateTime.now());
+        repo.save(foundList);
+
 
         return new AuthTokenDTO(foundList.getName(), token);
     }
@@ -80,8 +93,50 @@ public class ShoppingListService {
         }
     }
 
-    public boolean delete() {
+    @Transactional
+    public LocalDateTime markListForDeletion(){
+        ShoppingListEntity list = getCurrentList();
+        if(list.isPendingDeletion()){
+            return list.getDeletionTime();
+        }
+
+        list.setPendingDeletion(true);
+        list.setDeletionTime(getListDeletionDate());
+        repo.save(list);
+        return list.getDeletionTime();
+    }
+
+    @Transactional
+    public boolean deleteList() {
         repo.delete(getCurrentList());
         return true;
     }
+
+    @Transactional
+    public void deleteList(String listName){
+        ShoppingListEntity list = findByListName(listName);
+        repo.delete(list);
+    }
+
+    public List<ShoppingListDTO> getListsPendingDeletion() {
+        List<ShoppingListEntity> foundLists = repo.findByIsPendingDeletion(true);
+        return foundLists.stream()
+                .filter(shoppingListEntity -> shoppingListEntity.getDeletionTime().isBefore(LocalDateTime.now()))
+                .map(ShoppingListEntity::getDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<ShoppingListDTO> getOldLists(LocalDateTime cutoffDate){
+        List<ShoppingListEntity> foundLists = repo.findByLastUsedTimeBefore(
+                cutoffDate
+        );
+        return foundLists.stream()
+                .map(ShoppingListEntity::getDTO)
+                .collect(Collectors.toList());
+    }
+
+    private LocalDateTime getListDeletionDate() {
+        return LocalDateTime.now().plusHours(LIST_DELETION_GRACE_PERIOD);
+    }
+
 }

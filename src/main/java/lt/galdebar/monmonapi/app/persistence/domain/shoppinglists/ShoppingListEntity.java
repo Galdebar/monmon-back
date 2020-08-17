@@ -19,8 +19,10 @@ public class ShoppingListEntity {
     private Long id;
     private String name;
     private String password;
-    private LocalDateTime timeCreated = now();
-    private LocalDateTime lastUsedTime = now();
+    private LocalDateTime timeCreated = null;
+    private LocalDateTime lastUsedTime = null;
+    private boolean isPendingDeletion = false;
+    private LocalDateTime deletionTime = null;
 
     public ShoppingListEntity(ShoppingListDTO dto) {
         checkIfDTOValid(dto);

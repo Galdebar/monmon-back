@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/lists")
 public class ShoppingListController {
@@ -45,8 +47,10 @@ public class ShoppingListController {
     }
 
     @DeleteMapping("/delete")
-    public boolean delete(){
-        itemsController.deleteAllItems();
-        return service.delete();
+    public String delete(){
+//        itemsController.deleteAllItems();
+//        return service.deleteList();
+        LocalDateTime deletionTime = service.markListForDeletion();
+        return "List marked for deletion. Will be deleted at " + deletionTime + ". Deletion will be cancelled if logged in";
     }
 }

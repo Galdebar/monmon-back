@@ -3,6 +3,7 @@ package lt.galdebar.monmonapi.app.services.shoppingitems;
 import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppingitems.ShoppingItemDTO;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppingitems.ShoppingItemEntity;
+import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ShoppingListEntity;
 import lt.galdebar.monmonapi.app.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonapi.app.services.shoppingitems.exceptions.InvalidShoppingItemRequest;
 import lt.galdebar.monmonapi.app.services.shoppingitems.exceptions.ItemNotFound;
@@ -40,6 +41,7 @@ public class ShoppingItemService {
         }
         //find deal
         ShoppingItemEntity entityToSave = new ShoppingItemEntity(shoppingItemDTO);
+        entityToSave.setShoppingList(listService.getCurrentList());
         return itemRepo.save(entityToSave).getDTO();
     }
 
@@ -76,6 +78,13 @@ public class ShoppingItemService {
     public boolean deleteAllItems() {
         List<ShoppingItemEntity> itemEntities = getAllCurrentItems();
         itemRepo.deleteAll(itemEntities);
+        return true;
+    }
+
+    @Transactional
+    public boolean deleteAllItems(ShoppingListEntity listEntity){
+        List<ShoppingItemEntity> foundItems = itemRepo.findByShoppingList(listEntity);
+        itemRepo.deleteAll(foundItems);
         return true;
     }
 

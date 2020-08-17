@@ -66,14 +66,18 @@ class ShoppingItemControllerTest {
 
 
     @Test
-    void whenGetAll_thenReturnArrayOfItems() throws Exception {
+    void whenGetAll_thenReturnArrayOfItemsOnlyForCurrentList() throws Exception {
         String testListName = "testList";
         String testListPassword = "testListPassword";
         AuthTokenDTO authTokenDTO = createListAndLogin(testListName, testListPassword);
 
+        String altListName = "altList";
+        createListAndLogin(altListName, testListPassword);
+
         String testItemName1 = "item1";
         String testItemName2 = "item2";
-        ShoppingListEntity listEntity = listRepo.findByNameIgnoreCase(testListName);
+        ShoppingListEntity testListEntity = listRepo.findByNameIgnoreCase(testListName);
+        ShoppingListEntity altListEntity = listRepo.findByNameIgnoreCase(altListName);
 
         ShoppingItemEntity testItem1 = new ShoppingItemEntity();
         testItem1.setComment("");
@@ -81,18 +85,28 @@ class ShoppingItemControllerTest {
         testItem1.setQuantity(1);
         testItem1.setItemCategory("");
         testItem1.setItemName(testItemName1);
-        testItem1.setShoppingList(listEntity);
+        testItem1.setShoppingList(testListEntity);
         ShoppingItemEntity testItem2 = new ShoppingItemEntity();
         testItem2.setComment("");
         testItem2.setInCart(false);
         testItem2.setQuantity(1);
         testItem2.setItemCategory("");
         testItem2.setItemName(testItemName2);
-        testItem2.setShoppingList(listEntity);
+        testItem2.setShoppingList(testListEntity);
+
+        ShoppingItemEntity testItem3 = new ShoppingItemEntity();
+        testItem3.setComment("");
+        testItem3.setInCart(true);
+        testItem3.setQuantity(1);
+        testItem3.setItemCategory("");
+        testItem3.setItemName(testItemName1);
+        testItem3.setShoppingList(altListEntity);
 
         itemRepo.save(testItem1);
         itemRepo.save(testItem2);
-        listRepo.save(listEntity);
+        itemRepo.save(testItem3);
+        listRepo.save(testListEntity);
+        listRepo.save(altListEntity);
 
 
         String response = mockMvc.perform(get("/items/getall")
@@ -612,28 +626,28 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenNullId_whenDeleteItem_thenReturnBadRequest() throws Exception {
-            AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLogin();
 
 
-            String testItemName = "testItem";
+        String testItemName = "testItem";
 
-            ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
-            ShoppingItemEntity itemToSave = new ShoppingItemEntity();
-            itemToSave.setShoppingList(shoppingList);
-            itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
+        ShoppingListEntity shoppingList = listRepo.findByNameIgnoreCase(authTokenDTO.getName());
+        ShoppingItemEntity itemToSave = new ShoppingItemEntity();
+        itemToSave.setShoppingList(shoppingList);
+        itemToSave.setItemName(testItemName); // no need to set any other blank fields, since they're set by default
 
-            Long testItemID = null;
+        Long testItemID = null;
 
-            ShoppingItemDTO requestItem = new ShoppingItemDTO();
-            requestItem.setId(testItemID);
-            requestItem.setItemName(testItemName);
+        ShoppingItemDTO requestItem = new ShoppingItemDTO();
+        requestItem.setId(testItemID);
+        requestItem.setItemName(testItemName);
 
-            mockMvc.perform(delete("/items/delete")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(requestItem))
-                    .header("Authorization", "Bearer " + authTokenDTO.getToken()))
-                    .andDo(print())
-                    .andExpect(status().isBadRequest());
+        mockMvc.perform(delete("/items/delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestItem))
+                .header("Authorization", "Bearer " + authTokenDTO.getToken()))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
 
     }
 
