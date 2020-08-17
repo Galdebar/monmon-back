@@ -15,6 +15,6 @@ public class RunScraper implements ApplicationListener<ContextRefreshedEvent> {
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-//        webScraperAPI.runScrapers();
+        webScraperAPI.runScrapers();
     }
 }
