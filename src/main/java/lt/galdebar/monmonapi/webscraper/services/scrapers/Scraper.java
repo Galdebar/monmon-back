@@ -69,18 +69,17 @@ public abstract class Scraper implements IsWebScraper {
     }
 
     public boolean updateOffersDB() {
-//        if (isDocumentValid) {
-//            List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
-//            List<ItemOnOffer> translatedItems = TRANSLATOR.translate(unprocessedItems);
-//            List<ShoppingItemDealDTO> finalDeals = assignKeywordHelper.assignKeywords(translatedItems);
-//            List<ShoppingItemDealEntity> returnedEntities = dealsRepo.saveAll(ADAPTER.dtoToEntity(finalDeals));
-//            if (returnedEntities.size() == finalDeals.size()) {
-//                return true;
-//            } else return false;
-//        } else return false;
 
         if(isDocumentValid){
-            List<ItemOnOffer> unprocessedItems = getItemsOnOffer();
+            List<ItemOnOffer> unprocessedItems;
+
+            try {
+                unprocessedItems = getItemsOnOffer();
+            } catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
+
             try {
                 staggeredTranslateAndPush(unprocessedItems);
                 return true;
