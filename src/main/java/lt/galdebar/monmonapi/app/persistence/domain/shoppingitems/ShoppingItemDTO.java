@@ -2,6 +2,7 @@ package lt.galdebar.monmonapi.app.persistence.domain.shoppingitems;
 
 import lombok.*;
 import lt.galdebar.monmonapi.app.services.shoppingitems.exceptions.InvalidShoppingItemRequest;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,6 +19,7 @@ public class ShoppingItemDTO {
     private Integer quantity;
     private String comment;
     private boolean isInCart = false;
+    private ShoppingItemDealDTO deal;
 
     public boolean checkIfValid() {
         if (this.itemName == null || this.itemName.trim().isEmpty()) {

@@ -23,4 +23,13 @@ public class ShoppingItemDealEntity {
         this.shopTitle = "";
         this.price = 0.0f;
     }
+
+    public ShoppingItemDealDTO getDTO(){
+        return new ShoppingItemDealDTO(
+                itemKeyword,
+                itemBrand,
+                shopTitle,
+                price
+        );
+    }
 }

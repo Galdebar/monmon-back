@@ -9,6 +9,7 @@ import lt.galdebar.monmonapi.app.services.shoppingitems.exceptions.InvalidShoppi
 import lt.galdebar.monmonapi.app.services.shoppingitems.exceptions.ItemNotFound;
 import lt.galdebar.monmonapi.app.services.shoppinglists.ShoppingListService;
 import lt.galdebar.monmonapi.categoriesparser.services.ShoppingItemCategoryService;
+import lt.galdebar.monmonapi.webscraper.services.ShoppingItemDealFinderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class ShoppingItemService {
     private final ShoppingItemRepo itemRepo;
     private final ShoppingListService listService;
     private final ShoppingItemCategoryService categoryService;
+    private final ShoppingItemDealFinderService dealFinder;
 
     public List<ShoppingItemDTO> getAll() {
         List<ShoppingItemEntity> foundItems = itemRepo.findByShoppingList(
@@ -39,10 +41,9 @@ public class ShoppingItemService {
                     categoryService.findCategoryByKeyword(shoppingItemDTO.getItemName()).getCategoryName()
             );
         }
-        //find deal
         ShoppingItemEntity entityToSave = new ShoppingItemEntity(shoppingItemDTO);
         entityToSave.setShoppingList(listService.getCurrentList());
-        return itemRepo.save(entityToSave).getDTO();
+        return attatchDeal(itemRepo.save(entityToSave).getDTO());
     }
 
     @Transactional
@@ -58,7 +59,7 @@ public class ShoppingItemService {
         }
         ShoppingItemEntity itemToSave = new ShoppingItemEntity(shoppingItemDTO);
 
-        return itemRepo.save(itemToSave).getDTO();
+        return attatchDeal(itemRepo.save(itemToSave).getDTO());
     }
 
     @Transactional
@@ -101,7 +102,22 @@ public class ShoppingItemService {
                 .collect(Collectors.toList());
     }
 
+//    public List<ShoppingItemDTO> refreshDeals(){
+//        return getAllCurrentItems()
+//                .stream()
+//                .map(ShoppingItemEntity::getDTO)
+//                .map(this::attatchDeal)
+//                .collect(Collectors.toList());
+//    }
+
     private List<ShoppingItemEntity> getAllCurrentItems() {
         return itemRepo.findByShoppingList(listService.getCurrentList());
+    }
+
+    private ShoppingItemDTO attatchDeal(ShoppingItemDTO item){
+        item.setDeal(
+                dealFinder.getBestDeal(item.getItemName())
+        );
+        return item;
     }
 }

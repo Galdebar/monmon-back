@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lt.galdebar.monmonapi.app.services.shoppingitems.exceptions.InvalidShoppingItemRequest;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ShoppingListEntity;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
 
 import javax.persistence.*;
 
@@ -24,9 +25,9 @@ public class ShoppingItemEntity {
     @JoinColumn(name = "list_id")
     private ShoppingListEntity shoppingList;
 
+
     public ShoppingItemEntity(ShoppingItemDTO dto) {
         dto.checkIfValid();
-//        checkIfDTOValid(dto);
         this.itemName = dto.getItemName();
         this.isInCart = dto.isInCart();
 
@@ -55,7 +56,6 @@ public class ShoppingItemEntity {
         dto.setQuantity(quantity);
         dto.setComment(comment);
         dto.setInCart(isInCart);
-
         return dto;
     }
 
