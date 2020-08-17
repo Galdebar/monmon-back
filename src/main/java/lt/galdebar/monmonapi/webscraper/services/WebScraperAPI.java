@@ -19,7 +19,7 @@ public class WebScraperAPI {
         return webScrapers;
     }
 
-    @Async
+//    @Async
     public void runScrapers() {
         log.info("Running scrapers.");
         for (IsWebScraper scraper : webScrapers) {
