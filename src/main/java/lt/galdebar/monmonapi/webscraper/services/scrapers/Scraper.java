@@ -71,7 +71,7 @@ public abstract class Scraper implements IsWebScraper {
     }
 
     public boolean updateOffersDB() {
-
+        log.info("Updating offers. " + SHOP.getShopName());
         if(isDocumentValid){
             List<ItemOnOffer> unprocessedItems;
 
