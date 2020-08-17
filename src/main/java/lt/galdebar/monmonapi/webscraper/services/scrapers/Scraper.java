@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Log4j2
 public abstract class Scraper implements IsWebScraper {
     protected final String URL;
     protected final String CONTAINER_NAME;
@@ -93,6 +95,8 @@ public abstract class Scraper implements IsWebScraper {
     //This method is a bad necessity, because I'm not using Google's translate API.
     //So the translator allowance is 100 requests per hour.
     private void staggeredTranslateAndPush(List<ItemOnOffer> itemsOnOffer) throws InterruptedException {
+        log.info("Translating items");
+        log.info(itemsOnOffer.toString());
         int maxItemsInBatch = 50;
         int numOfBatches = (itemsOnOffer.size() % maxItemsInBatch == 0) ?
                 (itemsOnOffer.size() / maxItemsInBatch) : (itemsOnOffer.size() / maxItemsInBatch + 1);
