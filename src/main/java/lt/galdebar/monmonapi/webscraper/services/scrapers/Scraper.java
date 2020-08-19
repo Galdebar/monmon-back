@@ -6,8 +6,9 @@ import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
 import lt.galdebar.monmonapi.webscraper.services.helpers.AssignKeywordHelper;
-import lt.galdebar.monmonapi.webscraper.services.helpers.ItemTranslator;
+import lt.galdebar.monmonapi.webscraper.services.helpers.translators.HackyGoogleItemTranslator;
 import lt.galdebar.monmonapi.webscraper.services.helpers.ShoppingIitemDealAdapter;
+import lt.galdebar.monmonapi.webscraper.services.helpers.translators.IsItemTranslator;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.helpers.IsHTMLElementParserHelper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.nodes.Document;
@@ -29,7 +30,7 @@ public abstract class Scraper implements IsWebScraper {
     @Getter
     protected final ShopNames SHOP;
 
-    protected final ItemTranslator TRANSLATOR = new ItemTranslator();
+    protected final IsItemTranslator TRANSLATOR = new HackyGoogleItemTranslator();
     protected final ShoppingIitemDealAdapter ADAPTER = new ShoppingIitemDealAdapter();
     protected final IsHTMLElementParserHelper elementParser;
 
@@ -95,8 +96,7 @@ public abstract class Scraper implements IsWebScraper {
     //This method is a bad necessity, because I'm not using Google's translate API.
     //So the translator allowance is 100 requests per hour.
     private void staggeredTranslateAndPush(List<ItemOnOffer> itemsOnOffer) throws InterruptedException {
-    log.info(this.SHOP + " Running staggered translate and push");
-    log.info(itemsOnOffer.toString());
+    log.info(this.SHOP + " Running staggered translate and push for " + itemsOnOffer.size() + " items.");
         int maxItemsInBatch = 50;
         int numOfBatches = (itemsOnOffer.size() % maxItemsInBatch == 0) ?
                 (itemsOnOffer.size() / maxItemsInBatch) : (itemsOnOffer.size() / maxItemsInBatch + 1);

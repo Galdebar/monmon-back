@@ -53,7 +53,6 @@ public class RimiScraper extends Scraper {
 
     @Override
     public List<ItemOnOffer> getItemsOnOffer() {
-        log.info("RIMI scraper getting iteems on offere");
             Elements elements = document.getElementsByClass(CONTAINER_NAME).get(3)
                     .getElementsByClass(ITEM_NAME);
             return elementsToScrapedItems(elements);
@@ -65,9 +64,4 @@ public class RimiScraper extends Scraper {
                 .getElementsByClass(ITEM_NAME);
         return elementsToScrapedItems(elements);
     }
-//
-//    @Override
-//    public boolean updateOffersDB() {
-//        return false;
-//    }
 }

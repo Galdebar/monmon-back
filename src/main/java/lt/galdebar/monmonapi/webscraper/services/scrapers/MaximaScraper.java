@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Maxima website scraper.
  */
-//@Component
+@Component
 public class MaximaScraper extends Scraper {
     private final int ITEMS_PER_PAGE = 45;
 

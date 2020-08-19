@@ -1,10 +1,13 @@
-package lt.galdebar.monmonapi.webscraper.services.helpers;
+package lt.galdebar.monmonapi.webscraper.services.helpers.translators;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class ItemTranslator {
+public class HackyGoogleItemTranslator implements IsItemTranslator {
     private final String URL = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=lt&tl=en&dt=t&q=";
     private final String[] wordsToFilter = {"for"};
     private final int REQUESTDELAY = 5;
@@ -42,9 +45,9 @@ public class ItemTranslator {
         );
     }
 
-    private String translateString(String name) {
-        String url = URL + name;
-        String translatedName = name;
+    public String translateString(String string) {
+        String url = URL + string;
+        String translatedName = string;
         try {
             Connection.Response response = Jsoup.connect(url)
                     .ignoreContentType(true)
@@ -55,10 +58,11 @@ public class ItemTranslator {
             translatedName = jsonNode.get(0).get(0).get(0).asText();
         } catch (IOException e) {
             e.printStackTrace();
-            translatedName = name;
+            translatedName = string;
         } finally {
             return filterString(translatedName);
         }
+
     }
 
     private String filterString(String string) {

@@ -4,7 +4,7 @@ import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
-import lt.galdebar.monmonapi.webscraper.services.helpers.ItemTranslator;
+import lt.galdebar.monmonapi.webscraper.services.helpers.translators.HackyGoogleItemTranslator;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.MaximaScraper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.ShopNames;
 import org.junit.After;
@@ -36,7 +36,7 @@ public class ShoppingItemDealFinderServiceTests {
     private ShoppingItemDealsRepo dealsRepo;
 
     private MaximaScraper maximaScraper = new MaximaScraper();
-    private ItemTranslator translator = new ItemTranslator();
+    private HackyGoogleItemTranslator translator = new HackyGoogleItemTranslator();
 
     @Before
     public void setUp() {
