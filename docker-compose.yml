@@ -11,20 +11,8 @@ services:
       POSTGRES_USER: ${PostgresUser}
       POSTGRES_PASSWORD: ${PostgresPass}
       PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - ./pg_data:/var/lib/postgresql/data/pgdata
-  mongo:
-    image: mongo:latest
-    restart: always
-    container_name: mongo
-    environment:
-      NAME: ${MongoDBName}
-      MONGO_INITDB_ROOT_USERNAME: ${MongoDBUser}
-      MONGO_INITDB_ROOT_PASSWORD: ${MongoDBPass}
-    ports:
-      - ${MongoDBPort}:${MongoDBPort}
-    volumes:
-      - ./mongo_data:/data/db
+#    volumes:
+#      - ./pg_data:/var/lib/postgresql/data/pgdata
   postgres_test:
     image: postgres:12.2-alpine
     container_name: postgres_test
@@ -36,13 +24,3 @@ services:
       POSTGRES_USER: ${PostgresUser}
       POSTGRES_PASSWORD: ${PostgresPass}
       PGDATA: /var/lib/postgresql/data/pgdata
-  mongo_test:
-    image: mongo:latest
-    restart: always
-    container_name: mongo_test
-    environment:
-      NAME: ${MongoTestName}
-      MONGO_INITDB_ROOT_USERNAME: ${MongoDBUser}
-      MONGO_INITDB_ROOT_PASSWORD: ${MongoDBPass}
-    ports:
-      - ${MongoTestPort}:${MongoDBPort}

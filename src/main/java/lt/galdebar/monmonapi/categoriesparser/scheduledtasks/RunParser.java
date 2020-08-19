@@ -16,10 +16,7 @@ public class RunParser implements ApplicationListener<ContextRefreshedEvent> {
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         log.info("Running Categories Parser");
-        runExcelParser();
-    }
 
-    private void runExcelParser() {
         if(categoriesParser.isParserValid()){
             log.info("Running Shopping Item Categories Parser");
             categoriesParser.pushCategoriesToDB();
@@ -27,4 +24,5 @@ public class RunParser implements ApplicationListener<ContextRefreshedEvent> {
             log.error("Excel Parser Invalid, cannot retrieve categories!");
         }
     }
+
 }

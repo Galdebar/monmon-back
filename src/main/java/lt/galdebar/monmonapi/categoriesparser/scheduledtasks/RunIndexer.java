@@ -11,17 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Log4j2
 public class RunIndexer implements ApplicationListener<ApplicationReadyEvent> {
-//    @PersistenceContext
-//    private EntityManager entityManager;
     @Autowired
     private SearchIndexer searchIndexer;
 
     @Override
     @Transactional
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-//        log.info("Running Categories and Keywords Indexer");
-//        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
-//        fullTextEntityManager.createIndexer().start();
+
         searchIndexer.runIndexer();
     }
 }

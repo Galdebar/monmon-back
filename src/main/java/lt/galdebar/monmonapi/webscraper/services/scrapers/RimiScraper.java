@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
+import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.helpers.RimiParserHelper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Connection;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@Log4j2
 public class RimiScraper extends Scraper {
 
     public RimiScraper() {
@@ -47,8 +49,11 @@ public class RimiScraper extends Scraper {
         } else isDocumentValid = false;
     }
 
+
+
     @Override
     public List<ItemOnOffer> getItemsOnOffer() {
+        log.info("RIMI scraper getting iteems on offere");
             Elements elements = document.getElementsByClass(CONTAINER_NAME).get(3)
                     .getElementsByClass(ITEM_NAME);
             return elementsToScrapedItems(elements);
@@ -60,9 +65,9 @@ public class RimiScraper extends Scraper {
                 .getElementsByClass(ITEM_NAME);
         return elementsToScrapedItems(elements);
     }
-
-    @Override
-    public boolean updateOffersDB() {
-        return false;
-    }
+//
+//    @Override
+//    public boolean updateOffersDB() {
+//        return false;
+//    }
 }
