@@ -2,10 +2,8 @@ package lt.galdebar.monmonapi.app.services.shoppinglists;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.InvalidPassword;
-import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.ListAlreadyExists;
-import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.ListNameEmpty;
-import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.ListNotFound;
+import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ChangePasswordRequest;
+import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.*;
 import lt.galdebar.monmonapi.app.context.security.AuthTokenDTO;
 import lt.galdebar.monmonapi.app.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.LoginAttemptDTO;
@@ -78,25 +76,25 @@ public class ShoppingListService {
         return new AuthTokenDTO(foundList.getName(), token);
     }
 
-    public ShoppingListEntity getCurrentList(){
+    public ShoppingListEntity getCurrentList() {
         return repo.findByNameIgnoreCase(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
     }
 
-    private void checkIfLoginRequestvalid(LoginAttemptDTO request){
-        if(request.getName().trim().isEmpty()){
+    private void checkIfLoginRequestvalid(LoginAttemptDTO request) {
+        if (request.getName().trim().isEmpty()) {
             throw new ListNameEmpty();
         }
-        if(request.getPassword().trim().isEmpty()){
+        if (request.getPassword().trim().isEmpty()) {
             throw new InvalidPassword("Password field empty");
         }
     }
 
     @Transactional
-    public LocalDateTime markListForDeletion(){
+    public LocalDateTime markListForDeletion() {
         ShoppingListEntity list = getCurrentList();
-        if(list.isPendingDeletion()){
+        if (list.isPendingDeletion()) {
             return list.getDeletionTime();
         }
 
@@ -113,7 +111,7 @@ public class ShoppingListService {
     }
 
     @Transactional
-    public void deleteList(String listName){
+    public void deleteList(String listName) {
         ShoppingListEntity list = findByListName(listName);
         repo.delete(list);
     }
@@ -126,7 +124,7 @@ public class ShoppingListService {
                 .collect(Collectors.toList());
     }
 
-    public List<ShoppingListDTO> getOldLists(LocalDateTime cutoffDate){
+    public List<ShoppingListDTO> getOldLists(LocalDateTime cutoffDate) {
         List<ShoppingListEntity> foundLists = repo.findByLastUsedTimeBefore(
                 cutoffDate
         );
@@ -135,8 +133,38 @@ public class ShoppingListService {
                 .collect(Collectors.toList());
     }
 
+    public void changePassword(ChangePasswordRequest changeRequest) {
+        checkIfPasswordChangeRequestValid(changeRequest);
+        ShoppingListEntity currentList = getCurrentList();
+        currentList.setPassword(
+                passwordEncoder.encode(changeRequest.getNewPassword())
+        );
+        repo.save(currentList);
+    }
+
+    private void checkIfPasswordChangeRequestValid(ChangePasswordRequest changeRequest) {
+        String currentPassword = getCurrentList().getPassword();
+        if (changeRequest == null ||
+                ((changeRequest.getOldPassword() == null || changeRequest.getOldPassword().trim().isEmpty()) &&
+                        (changeRequest.getNewPassword() == null || changeRequest.getNewPassword().trim().isEmpty()))) {
+            throw new InvalidListRequest("Request cannot be empty");
+        }
+        if (changeRequest.getOldPassword() == null || changeRequest.getOldPassword().trim().isEmpty()) {
+            throw new InvalidListRequest("Old password field cannot be empty");
+        }
+        if (changeRequest.getNewPassword() == null || changeRequest.getNewPassword().trim().isEmpty()) {
+            throw new InvalidListRequest("New password field cannot be empty");
+        }
+        if(!passwordEncoder.matches(changeRequest.getOldPassword(),currentPassword)){
+            throw new InvalidListRequest("Old password doesn't match the current one");
+        }
+        if(passwordEncoder.matches(changeRequest.getNewPassword(),currentPassword)){
+            throw new InvalidListRequest("New password must be different from the old one");
+        }
+
+    }
+
     private LocalDateTime getListDeletionDate() {
         return LocalDateTime.now().plusHours(LIST_DELETION_GRACE_PERIOD);
     }
-
 }

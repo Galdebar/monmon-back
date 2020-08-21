@@ -34,9 +34,11 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers("/lists/create",
-                        "lists/login").permitAll()
+                        "/lists/login").permitAll()
                 .antMatchers(
-                        "/items/**"
+                        "/items/**",
+                        "/lists/delete",
+                        "/lists/changepassword"
                 ).hasAuthority("user");
 
         http

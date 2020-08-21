@@ -1,9 +1,11 @@
 package lt.galdebar.monmonapi.app.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.app.context.security.AuthTokenDTO;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppingitems.ShoppingItemDTO;
+import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ChangePasswordRequest;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ShoppingListEntity;
 import lt.galdebar.monmonapi.app.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonapi.app.persistence.repositories.ShoppingListRepo;
@@ -362,27 +364,12 @@ class ShoppingListControllerTest {
     void givenValidTooken_whenDeleteList_thenSetListPendingDeletion() throws Exception {
         String listName = "testList";
         String listPassword = "testListPassword";
+        String authToken = createListLoginAndGetAuthToken(listName, listPassword);
 
-        Map<String, String> listRequest = new HashMap<>();
-        listRequest.put("name", listName);
-        listRequest.put("password", listPassword);
-
-        mockMvc.perform(post("/lists/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(listRequest)))
-                .andExpect(status().isOk());
-
-        String loginResponse = mockMvc.perform(post("/lists/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(listRequest)))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        AuthTokenDTO authToken = objectMapper.readValue(loginResponse, AuthTokenDTO.class);
 
         String deleteResponse = mockMvc.perform(delete("/lists/delete")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + authToken.getToken()))
+                .header("Authorization", "Bearer " + authToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -400,51 +387,198 @@ class ShoppingListControllerTest {
     }
 
 
-//    @Test
-//    void givenValidtoken_whenDeleteList_thenDeleteListAndItems() throws Exception {
-//        String listName = "testList";
-//        String listPassword = "testListPassword";
-//
-//        Map<String, String> listRequest = new HashMap<>();
-//        listRequest.put("name", listName);
-//        listRequest.put("password", listPassword);
-//
-//        mockMvc.perform(post("/lists/create")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(listRequest)))
-//                .andExpect(status().isOk());
-//
-//        String loginResponse = mockMvc.perform(post("/lists/login")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(listRequest)))
-//                .andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        AuthTokenDTO authToken = objectMapper.readValue(loginResponse, AuthTokenDTO.class);
-//
-//        ShoppingItemDTO shoppingItem = new ShoppingItemDTO();
-//        shoppingItem.setItemName("someName");
-//
-//        mockMvc.perform(post("/items/add")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(shoppingItem))
-//                .header("Authorization", "Bearer " + authToken.getToken()))
-//                .andDo(print())
-//                .andExpect(status().isOk());
-//
-//
-//        String deleteResponse = mockMvc.perform(delete("/lists/delete")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .header("Authorization", "Bearer " + authToken.getToken()))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        assertNull(listRepo.findByNameIgnoreCase(listName));
-//        assertEquals(0, listRepo.count());
-//
-//        assertNull(listRepo.findByNameIgnoreCase(shoppingItem.getItemName()));
-//        assertEquals(0, listRepo.count());
-//    }
+    @Test
+    void givenValidToken_whenChangePassword_thenUpdatePassword() throws Exception {
+        String listName = "TestList";
+        String oldPassword = "oldPassword";
+        String newPassword = "newPassword";
 
+        String authToken = createListLoginAndGetAuthToken(listName, oldPassword);
+
+        ChangePasswordRequest changeRequest = new ChangePasswordRequest(oldPassword, newPassword);
+
+        String changePasswordResponse = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequest))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn().getResponse().getContentAsString();
+
+        ShoppingListEntity actualList = listRepo.findByNameIgnoreCase(listName);
+
+        assertTrue(changePasswordResponse.toLowerCase().contains("password changed"));
+        assertFalse(passwordEncoder.matches(
+                oldPassword,
+                actualList.getPassword()
+        ));
+        assertTrue(passwordEncoder.matches(
+                newPassword,
+                actualList.getPassword()
+        ));
+
+    }
+
+    @Test
+    void givenSamePassword_whenChangePassword_thenBadRequest() throws Exception {
+        String listName = "TestList";
+        String oldPassword = "oldPassword";
+
+        String authToken = createListLoginAndGetAuthToken(listName, oldPassword);
+
+        ChangePasswordRequest changeRequest = new ChangePasswordRequest(oldPassword, oldPassword);
+
+        String changePasswordResponse = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequest))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getErrorMessage();
+
+        ShoppingListEntity actualList = listRepo.findByNameIgnoreCase(listName);
+
+        assertTrue(changePasswordResponse.toLowerCase().contains("must be different"));
+
+    }
+
+
+    @Test
+    void givenBadOldPassword_whenChangePassword_thenBadRequest() throws Exception {
+        String listName = "TestList";
+        String oldPassword = "oldPassword";
+        String newPassword = "newPassword";
+
+        String authToken = createListLoginAndGetAuthToken(listName, oldPassword);
+
+        ChangePasswordRequest changeRequest = new ChangePasswordRequest("oiuawhyd", newPassword);
+
+        String changePasswordResponse = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequest))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getErrorMessage();
+
+        ShoppingListEntity actualList = listRepo.findByNameIgnoreCase(listName);
+
+        assertTrue(changePasswordResponse.toLowerCase().contains("match"));
+
+    }
+
+    @Test
+    void givenEmptyFields_whenChangePassword_thenBadRequest() throws Exception {
+        String listName = "TestList";
+        String oldPassword = "oldPassword";
+        String newPassword = "newPassword";
+
+        String authToken = createListLoginAndGetAuthToken(listName, oldPassword);
+
+        ChangePasswordRequest changeRequestBothEmpty = new ChangePasswordRequest("", "");
+
+        String changePasswordResponseBothEmpty = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequestBothEmpty))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getErrorMessage();
+
+
+        assertTrue(changePasswordResponseBothEmpty.toLowerCase().contains("empty"));
+
+        ChangePasswordRequest changeRequestOldEmpty = new ChangePasswordRequest("", newPassword);
+
+        String changePasswordResponseOldEmpty = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequestOldEmpty))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getErrorMessage();
+
+
+        assertTrue(changePasswordResponseOldEmpty.toLowerCase().contains("empty"));
+
+        ChangePasswordRequest changeRequestNewEmpty = new ChangePasswordRequest(oldPassword, "");
+
+        String changePasswordResponseNewEmpty = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequestNewEmpty))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getErrorMessage();
+
+
+        assertTrue(changePasswordResponseNewEmpty.toLowerCase().contains("empty"));
+
+        ChangePasswordRequest changeRequestBothBlank = new ChangePasswordRequest("    ", "    ");
+
+        String changePasswordResponseBothBlank = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequestBothBlank))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getErrorMessage();
+
+
+        assertTrue(changePasswordResponseBothBlank.toLowerCase().contains("empty"));
+
+        ChangePasswordRequest changeRequestOldBlank = new ChangePasswordRequest("   ", newPassword);
+
+        String changePasswordResponseOldBlank = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequestOldBlank))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getErrorMessage();
+
+
+        assertTrue(changePasswordResponseOldBlank.toLowerCase().contains("empty"));
+
+        ChangePasswordRequest changeRequestNewBlank = new ChangePasswordRequest(oldPassword, "    ");
+
+        String changePasswordResponseNewBlank = mockMvc.perform(post("/lists/changepassword")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changeRequestNewBlank))
+                .header("Authorization", "Bearer " + authToken))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn().getResponse().getErrorMessage();
+
+
+        assertTrue(changePasswordResponseNewBlank.toLowerCase().contains("empty"));
+
+        ShoppingListEntity actualList = listRepo.findByNameIgnoreCase(listName);
+        assertTrue(passwordEncoder.matches(
+                oldPassword,
+                actualList.getPassword()
+        ));
+    }
+
+
+
+    private String createListLoginAndGetAuthToken(String listName, String listPassword) throws Exception {
+        Map<String, String> listRequest = new HashMap<>();
+        listRequest.put("name", listName);
+        listRequest.put("password", listPassword);
+
+        mockMvc.perform(post("/lists/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(listRequest)))
+                .andExpect(status().isOk());
+
+        String loginResponse = mockMvc.perform(post("/lists/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(listRequest)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        AuthTokenDTO authToken = objectMapper.readValue(loginResponse, AuthTokenDTO.class);
+        return authToken.getToken();
+    }
 }

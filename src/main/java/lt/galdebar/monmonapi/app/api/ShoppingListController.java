@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.app.api;
 
+import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ChangePasswordRequest;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.LoginAttemptDTO;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ShoppingListDTO;
 import lt.galdebar.monmonapi.app.services.shoppinglists.ShoppingListService;
@@ -39,18 +40,26 @@ public class ShoppingListController {
     public AuthTokenDTO login(@RequestBody LoginAttemptDTO loginRequest) {
         try {
             return service.login(loginRequest);
-        } catch (ListNotFound notFound){
+        } catch (ListNotFound notFound) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, notFound.getMessage());
-        } catch (InvalidPassword | ListNameEmpty exception){
+        } catch (InvalidPassword | ListNameEmpty exception) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, exception.getMessage());
         }
     }
 
     @DeleteMapping("/delete")
-    public String delete(){
-//        itemsController.deleteAllItems();
-//        return service.deleteList();
+    public String delete() {
         LocalDateTime deletionTime = service.markListForDeletion();
         return "List marked for deletion. Will be deleted at " + deletionTime + ". Deletion will be cancelled if logged in";
+    }
+
+    @PostMapping("/changepassword")
+    public String changePassword(@RequestBody ChangePasswordRequest changeRequest) {
+        try {
+            service.changePassword(changeRequest);
+        } catch (InvalidListRequest e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        return "Password changed successfully";
     }
 }
