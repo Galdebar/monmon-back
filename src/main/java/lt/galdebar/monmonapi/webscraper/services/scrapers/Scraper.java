@@ -97,7 +97,7 @@ public abstract class Scraper implements IsWebScraper {
     //So the translator allowance is 100 requests per hour.
     private void staggeredTranslateAndPush(List<ItemOnOffer> itemsOnOffer) throws InterruptedException {
     log.info(this.SHOP + " Running staggered translate and push for " + itemsOnOffer.size() + " items.");
-        int maxItemsInBatch = 50;
+        int maxItemsInBatch = 45;
         int numOfBatches = (itemsOnOffer.size() % maxItemsInBatch == 0) ?
                 (itemsOnOffer.size() / maxItemsInBatch) : (itemsOnOffer.size() / maxItemsInBatch + 1);
 

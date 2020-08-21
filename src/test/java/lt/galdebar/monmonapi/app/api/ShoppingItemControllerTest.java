@@ -69,10 +69,10 @@ class ShoppingItemControllerTest {
     void whenGetAll_thenReturnArrayOfItemsOnlyForCurrentList() throws Exception {
         String testListName = "testList";
         String testListPassword = "testListPassword";
-        AuthTokenDTO authTokenDTO = createListAndLogin(testListName, testListPassword);
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO(testListName, testListPassword);
 
         String altListName = "altList";
-        createListAndLogin(altListName, testListPassword);
+        createListAndLoginAndGetAuthTokenDTO(altListName, testListPassword);
 
         String testItemName1 = "item1";
         String testItemName2 = "item2";
@@ -133,7 +133,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenValidItem_whenAddItem_thenItemAddedToDBandReturnSameItem() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
         String testItemName = "testItem";
         ShoppingItemDTO expectedItem = new ShoppingItemDTO();
@@ -177,7 +177,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenNullItemName_whenAddItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
         String testItemName = null;
         ShoppingItemDTO testItem = new ShoppingItemDTO();
@@ -197,7 +197,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenBlankItemName_whenAddItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
         String testItemName = "";
         ShoppingItemDTO testItem = new ShoppingItemDTO();
@@ -217,7 +217,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenEmptyItemName_whenAddItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
         String testItemName = "          ";
         ShoppingItemDTO testItem = new ShoppingItemDTO();
@@ -237,7 +237,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenInvalidQuantity_whenAddItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
         String testItemName = "ooiahwd";
         ShoppingItemDTO testItem = new ShoppingItemDTO();
@@ -260,7 +260,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenValidItem_whenUpdateItem_thenReturnUpdatedItemAndUpdateDB() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -328,7 +328,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenIncorrectID_whenUpdateItem_thenReturnNotFound() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -364,7 +364,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenNullID_whenUpdateItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -403,7 +403,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenEmptyItemName_whenUpdateItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -442,7 +442,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenBlankItemName_whenUpdateItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -480,7 +480,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenNullItemName_whenUpdateItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -518,7 +518,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenInvalidQuantity_whenUpdateItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -556,7 +556,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenValidItem_whenDeleteItem_thenReturnOKAndUpdateDB() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -599,7 +599,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenIncorrectID_whenDeleteItem_thenReturnNotFound() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -626,7 +626,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void givenNullId_whenDeleteItem_thenReturnBadRequest() throws Exception {
-        AuthTokenDTO authTokenDTO = createListAndLogin();
+        AuthTokenDTO authTokenDTO = createListAndLoginAndGetAuthTokenDTO();
 
 
         String testItemName = "testItem";
@@ -653,9 +653,9 @@ class ShoppingItemControllerTest {
 
     @Test
     void whenDeleteAllItems_thenReturnOKAndRemoveDBEntries() throws Exception {
-        AuthTokenDTO authToken = createListAndLogin();
+        AuthTokenDTO authToken = createListAndLoginAndGetAuthTokenDTO();
         String altListName = "altList";
-        createListAndLogin(altListName, altListName);
+        createListAndLoginAndGetAuthTokenDTO(altListName, altListName);
 
         String testName1 = "iauhwd";
         String testName2 = "liouiahuowd";
@@ -696,7 +696,7 @@ class ShoppingItemControllerTest {
 
     @Test
     void whenUnmarkAllItems_thenUpdateItemsInDBAndReturnFullList() throws Exception {
-        AuthTokenDTO authToken = createListAndLogin();
+        AuthTokenDTO authToken = createListAndLoginAndGetAuthTokenDTO();
 
         String testName1 = "iauhwd";
         String testName2 = "liouiahuowd";
@@ -739,7 +739,7 @@ class ShoppingItemControllerTest {
     }
 
     @Test
-    void givenNoAuuthToken_whenUnmarkAll_thenRetuurnForbidden() throws Exception {
+    void givenNoAuthToken_whenUnmarkAll_thenReturnForbidden() throws Exception {
         mockMvc.perform(delete("/items/unmark/all")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -747,7 +747,7 @@ class ShoppingItemControllerTest {
     }
 
 
-    private AuthTokenDTO createListAndLogin() throws Exception {
+    private AuthTokenDTO createListAndLoginAndGetAuthTokenDTO() throws Exception {
         String listName = "testList";
         String listPassword = "testListPassword";
 
@@ -772,7 +772,7 @@ class ShoppingItemControllerTest {
         return objectMapper.readValue(response, AuthTokenDTO.class);
     }
 
-    private AuthTokenDTO createListAndLogin(String listName, String listPassword) throws Exception {
+    private AuthTokenDTO createListAndLoginAndGetAuthTokenDTO(String listName, String listPassword) throws Exception {
         Map<String, String> listRequest = new HashMap<>();
         listRequest.put("name", listName);
         listRequest.put("password", listPassword);
@@ -793,11 +793,4 @@ class ShoppingItemControllerTest {
 
         return objectMapper.readValue(response, AuthTokenDTO.class);
     }
-
-    //unauthorized with CRUD methods without token.
-    // mark item ??
-    // bad request if adding blank item name.
-    // bad request if quantity less than 1
-
-    // later connect categories module and test category
 }

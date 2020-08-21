@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.categoriesparser.persistence.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.util.Set;
@@ -15,5 +16,6 @@ public class CategoryDTO {
 //    @NonNull
     private String categoryName;
 //    @NonNull
+    @JsonIgnore
     private Set<String> keywords;
 }

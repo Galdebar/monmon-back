@@ -7,6 +7,7 @@ import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.*;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Indexed
@@ -30,5 +31,17 @@ public class ShoppingCategoryEntity {
     public ShoppingCategoryEntity(String categoryName, Set<ShoppingKeywordEntity> keywords) {
         this.categoryName = categoryName;
         this.keywords = keywords;
+    }
+
+    public CategoryDTO getDTO(){
+        CategoryDTO dto = new CategoryDTO();
+        dto.setCategoryName(categoryName);
+        dto.setKeywords(
+                keywords
+                        .stream()
+                        .map(ShoppingKeywordEntity::getKeyword)
+                        .collect(Collectors.toSet())
+        );
+        return dto;
     }
 }
