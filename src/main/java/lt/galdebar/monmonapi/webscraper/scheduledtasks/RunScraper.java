@@ -23,10 +23,10 @@ public class RunScraper implements ApplicationListener<ApplicationReadyEvent> {
     @Override
     @Async
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        log.info("Running Web Scrapers.");
-        for(IsWebScraper scraper: webScrapers){
-            log.info("Running scraper for shop: " + scraper.getSHOP());
-            scraper.updateOffersDB();
-        }
+//        log.info("Running Web Scrapers.");
+//        for(IsWebScraper scraper: webScrapers){
+//            log.info("Running scraper for shop: " + scraper.getSHOP());
+//            scraper.updateOffersDB();
+//        }
     }
 }

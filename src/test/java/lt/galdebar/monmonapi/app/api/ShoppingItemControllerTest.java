@@ -693,6 +693,52 @@ class ShoppingItemControllerTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void whenDeleteAllItemsInCart_thenReturnOKAndRemoveDBEntries() throws Exception {
+        AuthTokenDTO authToken = createListAndLoginAndGetAuthTokenDTO();
+        String altListName = "altList";
+        createListAndLoginAndGetAuthTokenDTO(altListName, altListName);
+
+        String testName1 = "iauhwd";
+        String testName2 = "liouiahuowd";
+
+        ShoppingItemEntity testEntity1 = new ShoppingItemEntity();
+        testEntity1.setItemName(testName1);
+        testEntity1.setShoppingList(listRepo.findByNameIgnoreCase(authToken.getName()));
+        ShoppingItemEntity testEntity2 = new ShoppingItemEntity();
+        testEntity2.setItemName(testName2);
+        testEntity2.setInCart(true);
+        testEntity2.setShoppingList(listRepo.findByNameIgnoreCase(authToken.getName()));
+        ShoppingItemEntity testEntity3 = new ShoppingItemEntity();
+        testEntity3.setItemName(testName1);
+        testEntity3.setShoppingList(listRepo.findByNameIgnoreCase(altListName));
+
+
+        itemRepo.save(testEntity1);
+        itemRepo.save(testEntity2);
+        itemRepo.save(testEntity3);
+
+        assertEquals(3, itemRepo.count());
+
+        mockMvc.perform(delete("/items/delete/incart")
+                .header("Authorization", "Bearer " + authToken.getToken()))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        assertEquals(2, itemRepo.count());
+        assertEquals(1, itemRepo.findByShoppingList(
+                listRepo.findByNameIgnoreCase(authToken.getName())
+        ));
+    }
+
+    @Test
+    void givenNoAuthToken_whenDeleteAllInCaart_thenReturnForbidden() throws Exception {
+        mockMvc.perform(delete("/items/delete/incart")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
 
     @Test
     void whenUnmarkAllItems_thenUpdateItemsInDBAndReturnFullList() throws Exception {

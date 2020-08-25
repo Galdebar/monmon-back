@@ -18,12 +18,14 @@ public class ShoppingItemsController {
     @Autowired
     private ShoppingItemService itemService;
 
+    @CrossOrigin
     @GetMapping("/getall")
     public List<ShoppingItemDTO> getAllItems() {
 
         return itemService.getAll();
     }
 
+    @CrossOrigin
     @PostMapping("/add")
     public ShoppingItemDTO addItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
         try {
@@ -33,6 +35,7 @@ public class ShoppingItemsController {
         }
     }
 
+    @CrossOrigin
     @PostMapping("/update")
     public ShoppingItemDTO updateItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
         try {
@@ -44,6 +47,7 @@ public class ShoppingItemsController {
         }
     }
 
+    @CrossOrigin
     @DeleteMapping("/delete")
     public boolean deleteItem(@RequestBody ShoppingItemDTO shoppingItemDTO) {
         try {
@@ -53,11 +57,19 @@ public class ShoppingItemsController {
         }
     }
 
+    @CrossOrigin
     @DeleteMapping("/delete/all")
     public boolean deleteAllItems() {
         return itemService.deleteAllItems();
     }
 
+    @CrossOrigin
+    @DeleteMapping("/delete/incart")
+    public boolean deletteAlllItemsInCart(){
+        return itemService.deleteAllItemsInCart();
+    }
+
+    @CrossOrigin
     @GetMapping("/unmark/all")
     public List<ShoppingItemDTO> unmarkAllItems() {
         return itemService.unmarkAll();

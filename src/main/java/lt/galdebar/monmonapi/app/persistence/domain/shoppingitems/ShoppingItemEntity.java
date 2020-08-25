@@ -59,6 +59,27 @@ public class ShoppingItemEntity {
         return dto;
     }
 
+    public void update(ShoppingItemDTO shoppingItemDTO) {
+        if(shoppingItemDTO.getItemName() != null){
+            this.itemName = shoppingItemDTO.getItemName();
+        }
+
+        if(shoppingItemDTO.getItemCategory() != null){
+            this.itemCategory = shoppingItemDTO.getItemCategory();
+        }
+
+        if(shoppingItemDTO.getQuantity() != null){
+            this.quantity = shoppingItemDTO.getQuantity();
+        }
+
+        if(shoppingItemDTO.getComment() != null){
+            this.comment = shoppingItemDTO.getComment();
+        }
+
+        this.isInCart = shoppingItemDTO.isInCart();
+
+    }
+
     private void checkIfDTOValid(ShoppingItemDTO shoppingItemDTO) {
         if (shoppingItemDTO.getItemName() == null || shoppingItemDTO.getItemName().trim().isEmpty()) {
             throw new InvalidShoppingItemRequest("Item must have a name");

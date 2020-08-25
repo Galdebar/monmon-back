@@ -57,7 +57,8 @@ public class ShoppingItemService {
                 !entityOptional.get().getShoppingList().getId().equals(listService.getCurrentList().getId())) {
             throw new ItemNotFound("Could not find item with ID: " + shoppingItemDTO.getId());
         }
-        ShoppingItemEntity itemToSave = new ShoppingItemEntity(shoppingItemDTO);
+        ShoppingItemEntity itemToSave = entityOptional.get();
+        itemToSave.update(shoppingItemDTO);
 
         return attatchDeal(itemRepo.save(itemToSave).getDTO());
     }
@@ -90,6 +91,18 @@ public class ShoppingItemService {
     }
 
     @Transactional
+    public boolean deleteAllItemsInCart() {
+        List<ShoppingItemEntity> itemEntities = getAllCurrentItems();
+        itemRepo.deleteAll(
+                itemEntities
+                .stream()
+                .filter(ShoppingItemEntity::isInCart)
+                .collect(Collectors.toList())
+        );
+        return true;
+    }
+
+    @Transactional
     public List<ShoppingItemDTO> unmarkAll() {
         List<ShoppingItemEntity> entities = getAllCurrentItems();
         entities
@@ -101,13 +114,13 @@ public class ShoppingItemService {
                 .map(ShoppingItemEntity::getDTO)
                 .collect(Collectors.toList());
     }
-
 //    public List<ShoppingItemDTO> refreshDeals(){
 //        return getAllCurrentItems()
 //                .stream()
 //                .map(ShoppingItemEntity::getDTO)
 //                .map(this::attatchDeal)
 //                .collect(Collectors.toList());
+
 //    }
 
     private List<ShoppingItemEntity> getAllCurrentItems() {

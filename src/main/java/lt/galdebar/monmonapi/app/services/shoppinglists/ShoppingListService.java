@@ -83,6 +83,9 @@ public class ShoppingListService {
     }
 
     private void checkIfLoginRequestvalid(LoginAttemptDTO request) {
+        if(request == null) {
+            throw new InvalidListRequest("Request cannot be empty or is formatted incorrectly");
+        }
         if (request.getName().trim().isEmpty()) {
             throw new ListNameEmpty();
         }

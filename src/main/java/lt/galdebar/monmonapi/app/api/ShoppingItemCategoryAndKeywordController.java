@@ -15,11 +15,13 @@ public class ShoppingItemCategoryAndKeywordController {
     @Autowired
     private ShoppingItemCategoryAndKeywordService service;
 
+    @CrossOrigin
     @GetMapping("/getall")
     public List<CategoryDTO> getAllCategories(){
         return service.getAllCategories();
     }
 
+    @CrossOrigin
     @PostMapping("/search")
     public List<ShoppingKeywordDTO> searchAutocomplete(@RequestBody ShoppingKeywordDTO shoppingKeywordDTO){
         return service.searchAutocomplete(shoppingKeywordDTO);
