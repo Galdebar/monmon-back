@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.app.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.app.context.security.AuthTokenDTO;
@@ -11,6 +12,8 @@ import lt.galdebar.monmonapi.app.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonapi.app.persistence.repositories.ShoppingListRepo;
 import lt.galdebar.monmonapi.app.services.shoppinglists.ShoppingListService;
 import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.ListAlreadyExists;
+import lt.galdebar.monmonapi.categoriesparser.persistence.domain.CategoryDTO;
+import lt.galdebar.monmonapi.categoriesparser.persistence.domain.ShoppingCategoryEntity;
 import org.assertj.core.data.TemporalUnitOffset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +26,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
@@ -30,10 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -243,6 +247,69 @@ class ShoppingListControllerTest {
 
         assertNotNull(response);
         assertTrue(response.contains("empty"));
+    }
+
+    @Test
+    void givenValidToken_whenLogout_thenInvalidateSessionAndToken()throws Exception{
+        String listName = "listName";
+        String listPassword = "password";
+        String authToken = createListLoginAndGetAuthToken(listName, listPassword);
+
+        String positiveResponse = mockMvc.perform(get("/categories/getall")
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+
+        List<CategoryDTO> actualCategories = objectMapper.readValue(positiveResponse, new TypeReference<List<CategoryDTO>>() {});
+
+        assertNotNull(actualCategories);
+        assertNotEquals(0,actualCategories.size());
+
+        String logoutResponse = mockMvc.perform(get("/lists/logout")
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertTrue(logoutResponse.toLowerCase().contains("logged out"));
+
+        String negativeResponse = mockMvc.perform(get("/categories/getall")
+                .header("Authorization", "Bearer " + authToken))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getErrorMessage();
+    }
+
+    @Test
+    void givenInvalidToken_whenLogout_thenReturnForbidden() throws Exception{
+        String listName = "listName";
+        String listPassword = "password";
+        String authToken = createListLoginAndGetAuthToken(listName, listPassword);
+
+        String invalidTokenResponse = mockMvc.perform(get("/lists/logout")
+                .header("Authorization", "Bearer " + "iuughawiuhd"))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getErrorMessage();
+
+        String emptyTokenResponnse = mockMvc.perform(get("/lists/logout")
+                .header("Authorization", "Bearer " + ""))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getErrorMessage();
+
+        String blankTokenResponnse = mockMvc.perform(get("/lists/logout")
+                .header("Authorization", "Bearer " + "    "))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getErrorMessage();
+
+        String noTokenResponnse = mockMvc.perform(get("/lists/logout"))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getErrorMessage();
     }
 
     @Test

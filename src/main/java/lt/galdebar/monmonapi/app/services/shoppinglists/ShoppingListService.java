@@ -70,6 +70,10 @@ public class ShoppingListService {
                 Collections.singletonList(foundList.toString())
         );
         foundList.setLastUsedTime(LocalDateTime.now());
+        if(foundList.isPendingDeletion()){
+            foundList.setPendingDeletion(false);
+            foundList.setDeletionTime(null);
+        }
         repo.save(foundList);
 
 
@@ -80,18 +84,6 @@ public class ShoppingListService {
         return repo.findByNameIgnoreCase(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
-    }
-
-    private void checkIfLoginRequestvalid(LoginAttemptDTO request) {
-        if(request == null) {
-            throw new InvalidListRequest("Request cannot be empty or is formatted incorrectly");
-        }
-        if (request.getName().trim().isEmpty()) {
-            throw new ListNameEmpty();
-        }
-        if (request.getPassword().trim().isEmpty()) {
-            throw new InvalidPassword("Password field empty");
-        }
     }
 
     @Transactional
@@ -143,6 +135,18 @@ public class ShoppingListService {
                 passwordEncoder.encode(changeRequest.getNewPassword())
         );
         repo.save(currentList);
+    }
+
+    private void checkIfLoginRequestvalid(LoginAttemptDTO request) {
+        if(request == null) {
+            throw new InvalidListRequest("Request cannot be empty or is formatted incorrectly");
+        }
+        if (request.getName().trim().isEmpty()) {
+            throw new ListNameEmpty();
+        }
+        if (request.getPassword().trim().isEmpty()) {
+            throw new InvalidPassword("Password field empty");
+        }
     }
 
     private void checkIfPasswordChangeRequestValid(ChangePasswordRequest changeRequest) {

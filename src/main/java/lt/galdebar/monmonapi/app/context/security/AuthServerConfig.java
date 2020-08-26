@@ -39,6 +39,7 @@ public class AuthServerConfig extends WebSecurityConfigurerAdapter {
                         "/items/**",
                         "/categories/**",
                         "/lists/delete",
+                        "/lists/logout",
                         "/lists/changepassword"
                 ).hasAuthority("user");
 

@@ -3,6 +3,7 @@ package lt.galdebar.monmonapi.app.context.security.jwt;
 import io.jsonwebtoken.*;
 import lt.galdebar.monmonapi.app.context.security.ShoppingListDetailsService;
 import lt.galdebar.monmonapi.app.context.security.jwt.exceptions.InvalidJwtAuthenticationException;
+import lt.galdebar.monmonapi.app.services.blacklistedtokens.BlacklistedTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,9 +26,9 @@ public class JwtTokenProvider {
 
     @Autowired
     private ShoppingListDetailsService listDetailsService;
-//
-//    @Autowired
-//    private ShoppingListService listService;
+
+    @Autowired
+    private BlacklistedTokenService tokenService;
 
     @PostConstruct
     protected void init(){
@@ -40,12 +41,14 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
                 .signWith(SignatureAlgorithm.HS256,secretKey)
                 .compact();
+//        tokenService.addToken(token);
+        return token;
     }
 
     Authentication getAuthentication(String token){
@@ -57,7 +60,7 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
-    String resolveToken(HttpServletRequest req) {
+    public String resolveToken(HttpServletRequest req) {
         String bearerToken = req.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return getActualToken(bearerToken);
@@ -67,6 +70,10 @@ public class JwtTokenProvider {
 
     boolean validateToken(String token) throws InvalidJwtAuthenticationException {
         try {
+            if(tokenService.tokenExists(token)){
+                throw new InvalidJwtAuthenticationException("Expired or invalid JWT token");
+            }
+
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             if (claims.getBody().getExpiration().before(new Date())) {
                 return false;

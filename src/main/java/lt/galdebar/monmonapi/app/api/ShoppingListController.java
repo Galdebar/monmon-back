@@ -1,9 +1,12 @@
 package lt.galdebar.monmonapi.app.api;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import lt.galdebar.monmonapi.app.context.security.jwt.JwtTokenProvider;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ChangePasswordRequest;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.LoginAttemptDTO;
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ShoppingListDTO;
+import lt.galdebar.monmonapi.app.services.blacklistedtokens.BlacklistedTokenService;
 import lt.galdebar.monmonapi.app.services.shoppinglists.ShoppingListService;
 import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.InvalidListRequest;
 import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.InvalidPassword;
@@ -13,21 +16,25 @@ import lt.galdebar.monmonapi.app.context.security.AuthTokenDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/lists")
 @Log4j2
+@RequiredArgsConstructor
 public class ShoppingListController {
 
-    @Autowired
-    private ShoppingListService service;
-
-    @Autowired
-    private ShoppingItemsController itemsController;
+    private final ShoppingListService service;
+    private final ShoppingItemsController itemsController;
+    private final BlacklistedTokenService tokenService;
+    private final JwtTokenProvider tokenProvider;
 
     @CrossOrigin
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -56,20 +63,49 @@ public class ShoppingListController {
     }
 
     @CrossOrigin
+    @GetMapping("/logout")
+    public StringResponse logout(HttpServletRequest request) {
+        invalidateSession(request);
+        return new StringResponse("Logged out");
+    }
+
+    @CrossOrigin
     @DeleteMapping("/delete")
-    public StringResponse delete() {
+    public StringResponse delete(HttpServletRequest request) {
         LocalDateTime deletionTime = service.markListForDeletion();
-        return new StringResponse("List marked for deletion. Will be deleted at " + deletionTime + ". Deletion will be cancelled if logged in");
+        invalidateSession(request);
+        return new StringResponse("List marked for deletion. Will be deleted at " + deletionTime + ". Deletion will be cancelled if logged in again.");
     }
 
     @CrossOrigin
     @PostMapping("/changepassword")
-    public StringResponse changePassword(@RequestBody ChangePasswordRequest changeRequest) {
+    public StringResponse changePassword(@RequestBody ChangePasswordRequest changeRequest, HttpServletRequest request) {
         try {
             service.changePassword(changeRequest);
+            invalidateSession(request);
         } catch (InvalidListRequest e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
         return new StringResponse("Password changed successfully");
+    }
+
+    private void invalidateSession(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        SecurityContextHolder.clearContext();
+
+        session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                cookie.setMaxAge(0);
+            }
+        }
+
+        String token = tokenProvider.resolveToken(request);
+        tokenService.addToken(token);
+
     }
 }
