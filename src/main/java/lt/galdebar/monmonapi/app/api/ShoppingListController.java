@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 @RequestMapping("/lists")
 @Log4j2
 @RequiredArgsConstructor
-public class ShoppingListController {
+public class ShoppingListController implements GetUsernameFromSecurityContext{
 
     private final ShoppingListService service;
     private final ShoppingItemsController itemsController;
@@ -53,6 +53,10 @@ public class ShoppingListController {
     @CrossOrigin
     @PostMapping("/login")
     public AuthTokenDTO login(@RequestBody LoginAttemptDTO loginRequest) {
+        log.info(
+                "Logging in: " + getUserName()
+        );
+
         try {
             return service.login(loginRequest);
         } catch (ListNotFound notFound) {
@@ -65,6 +69,10 @@ public class ShoppingListController {
     @CrossOrigin
     @GetMapping("/logout")
     public StringResponse logout(HttpServletRequest request) {
+        log.info(
+                "Logging out: " + getUserName()
+        );
+
         invalidateSession(request);
         return new StringResponse("Logged out");
     }
@@ -72,6 +80,10 @@ public class ShoppingListController {
     @CrossOrigin
     @DeleteMapping("/delete")
     public StringResponse delete(HttpServletRequest request) {
+        log.info(
+                "Markinig list for deletion: " + getUserName()
+        );
+
         LocalDateTime deletionTime = service.markListForDeletion();
         invalidateSession(request);
         return new StringResponse("List marked for deletion. Will be deleted at " + deletionTime + ". Deletion will be cancelled if logged in again.");
@@ -80,10 +92,13 @@ public class ShoppingListController {
     @CrossOrigin
     @PostMapping("/changepassword")
     public StringResponse changePassword(@RequestBody ChangePasswordRequest changeRequest, HttpServletRequest request) {
+        log.info("Changing password for list: " + getUserName()
+        );
         try {
             service.changePassword(changeRequest);
             invalidateSession(request);
         } catch (InvalidListRequest e) {
+            log.warn("Error changing password. " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
         return new StringResponse("Password changed successfully");
