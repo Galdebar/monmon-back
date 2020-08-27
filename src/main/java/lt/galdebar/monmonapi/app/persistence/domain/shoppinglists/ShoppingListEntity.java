@@ -17,7 +17,9 @@ public class ShoppingListEntity {
     @Id
     @GeneratedValue
     private Long id;
+    @Column(columnDefinition="TEXT")
     private String name;
+    @Column(columnDefinition="TEXT")
     private String password;
     private LocalDateTime timeCreated = null;
     private LocalDateTime lastUsedTime = null;

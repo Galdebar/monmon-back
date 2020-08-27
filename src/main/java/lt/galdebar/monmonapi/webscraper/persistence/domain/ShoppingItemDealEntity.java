@@ -12,7 +12,9 @@ public class ShoppingItemDealEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    @Column(columnDefinition="TEXT")
     private String itemKeyword;
+    @Column(columnDefinition="TEXT")
     private String itemBrand;
     private String shopTitle;
     private float price;

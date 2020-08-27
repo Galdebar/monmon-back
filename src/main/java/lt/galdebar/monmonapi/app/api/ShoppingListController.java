@@ -41,10 +41,12 @@ public class ShoppingListController implements GetUsernameFromSecurityContext{
     @ResponseBody
     public StringResponse createList(@RequestBody ShoppingListDTO createRequest) {
         try {
+            log.info(
+                    "Creating list: " + createRequest.getName()
+            );
             service.createList(createRequest);
         } catch (InvalidListRequest invalidRequest) {
-            log.info(invalidRequest.getMessage());
-            log.info(invalidRequest.getLocalizedMessage());
+            log.warn("Error creating list. " + invalidRequest.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, invalidRequest.getMessage());
         }
         return new StringResponse("List created successfully");
@@ -54,12 +56,13 @@ public class ShoppingListController implements GetUsernameFromSecurityContext{
     @PostMapping("/login")
     public AuthTokenDTO login(@RequestBody LoginAttemptDTO loginRequest) {
         log.info(
-                "Logging in: " + getUserName()
+                "Logging in: " + loginRequest.getName()
         );
 
         try {
             return service.login(loginRequest);
         } catch (ListNotFound notFound) {
+            log.warn("Error logging in. " + notFound.getMessage());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, notFound.getMessage());
         } catch (InvalidPassword | ListNameEmpty exception) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, exception.getMessage());

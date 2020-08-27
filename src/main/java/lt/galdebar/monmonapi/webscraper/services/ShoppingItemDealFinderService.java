@@ -32,11 +32,11 @@ public class ShoppingItemDealFinderService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        return ADAPTER.entityToDTO(dealsRepo.findByItemKeyword(keyword));
+        return ADAPTER.entityToDTO(dealsRepo.findByItemKeywordIgnoreCase(keyword));
     }
 
     public ShoppingItemDealDTO getBestDeal(String keyword) {
-        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findByItemKeyword(keyword);
+        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findByItemKeywordIgnoreCase(keyword);
         if (foundDeals.size() == 0) {
             return new ShoppingItemDealDTO();
         }

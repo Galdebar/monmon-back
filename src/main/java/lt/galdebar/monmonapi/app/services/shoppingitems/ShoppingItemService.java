@@ -30,7 +30,10 @@ public class ShoppingItemService {
         List<ShoppingItemEntity> foundItems = itemRepo.findByShoppingList(
                 listService.getCurrentList()
         );
-        return foundItems.stream().map(ShoppingItemEntity::getDTO).collect(Collectors.toList());
+        return foundItems.stream()
+                .map(ShoppingItemEntity::getDTO)
+                .map(this::attatchDeal)
+                .collect(Collectors.toList());
     }
 
     @Transactional

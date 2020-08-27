@@ -25,7 +25,7 @@ public class ShoppingKeywordEntity {
     @JoinColumn(name = "category_id")
     private ShoppingCategoryEntity shoppingItemCategory;
     @Field
-    @Column(name = "keywords")
+    @Column(name = "keywords",columnDefinition="TEXT")
     private String keyword;
 
 

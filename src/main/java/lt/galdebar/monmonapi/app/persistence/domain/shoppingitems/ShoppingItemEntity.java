@@ -19,6 +19,7 @@ public class ShoppingItemEntity {
     private String itemName;
     private String itemCategory = "";
     private Integer quantity = 1;
+    @Column(columnDefinition="TEXT")
     private String comment = "";
     private boolean isInCart = false;
     @ManyToOne

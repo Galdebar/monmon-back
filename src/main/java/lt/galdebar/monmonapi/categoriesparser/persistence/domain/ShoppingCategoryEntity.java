@@ -22,7 +22,7 @@ public class ShoppingCategoryEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @Field(name = "category_name")
-    @Column(unique = true, name = "category_name")
+    @Column(unique = true, name = "category_name",columnDefinition="TEXT")
     private String categoryName;
     @JsonBackReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "shoppingItemCategory", fetch = FetchType.EAGER)
