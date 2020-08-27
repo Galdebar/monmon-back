@@ -2,8 +2,10 @@ package lt.galdebar.monmonapi.webscraper.services.helpers.translators;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lt.galdebar.monmonapi.webscraper.services.helpers.translators.exceptions.TooManyRequestsException;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -22,7 +24,7 @@ public class HackyGoogleItemTranslator implements IsItemTranslator {
 
     public List<ItemOnOffer> translate(List<ItemOnOffer> itemsToTranslate) {
         List<ItemOnOffer> translatedItems = new ArrayList<>();
-        for(ItemOnOffer itemToTranslate:itemsToTranslate){
+        for (ItemOnOffer itemToTranslate : itemsToTranslate) {
             try {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(REQUESTDELAY));
                 translatedItems.add(translate(itemToTranslate));
@@ -56,6 +58,13 @@ public class HackyGoogleItemTranslator implements IsItemTranslator {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(responseString);
             translatedName = jsonNode.get(0).get(0).get(0).asText();
+        } catch (HttpStatusException statusException) {
+            if (statusException.getStatusCode() == 429) {
+                throw new TooManyRequestsException();
+            } else {
+                statusException.printStackTrace();
+                translatedName = string;
+            }
         } catch (IOException e) {
             e.printStackTrace();
             translatedName = string;

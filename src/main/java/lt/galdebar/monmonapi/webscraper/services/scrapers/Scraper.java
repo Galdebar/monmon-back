@@ -9,6 +9,8 @@ import lt.galdebar.monmonapi.webscraper.services.helpers.AssignKeywordHelper;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.HackyGoogleItemTranslator;
 import lt.galdebar.monmonapi.webscraper.services.helpers.ShoppingIitemDealAdapter;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.IsItemTranslator;
+import lt.galdebar.monmonapi.webscraper.services.helpers.translators.exceptions.MaxTranslateAttemptsException;
+import lt.galdebar.monmonapi.webscraper.services.helpers.translators.exceptions.TooManyRequestsException;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.helpers.IsHTMLElementParserHelper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.nodes.Document;
@@ -22,6 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 @Log4j2
 public abstract class Scraper implements IsWebScraper {
+    private final int STAGGER_DURATION_SINGLE_ITEM_MINUTES = 1;
+    private final int STAGGER_DURATION_PAUSE_MINUTES = 60;
+    private final int MAX_TRANSLATE_ATTEMPTS = 10;
     protected final String URL;
     protected final String CONTAINER_NAME;
     protected final String ITEM_NAME;
@@ -93,24 +98,39 @@ public abstract class Scraper implements IsWebScraper {
         }else return false;
     }
 
-    //This method is a bad necessity, because I'm not using Google's translate API.
-    //So the translator allowance is 100 requests per hour.
     private void staggeredTranslateAndPush(List<ItemOnOffer> itemsOnOffer) throws InterruptedException {
     log.info(this.SHOP + " Running staggered translate and push for " + itemsOnOffer.size() + " items.");
-        int maxItemsInBatch = 45;
-        int numOfBatches = (itemsOnOffer.size() % maxItemsInBatch == 0) ?
-                (itemsOnOffer.size() / maxItemsInBatch) : (itemsOnOffer.size() / maxItemsInBatch + 1);
+        itemsOnOffer.stream().forEach(itemOnOffer -> {
+            try {
+                ItemOnOffer translatedItem = translateSingleItem(itemOnOffer, 1);
+                ShoppingItemDealDTO finalDeal = assignKeywordHelper.assignKeyword(translatedItem);
+                ShoppingItemDealEntity savedEntity = dealsRepo.save(ADAPTER.dtoToEntity(finalDeal));
+                log.info("Saved item deal: " + savedEntity.toString());
+                log.info("Thread going to sleep for " + STAGGER_DURATION_SINGLE_ITEM_MINUTES + " minutes to prevent Http 429 when translating item");
+                Thread.sleep(TimeUnit.MINUTES.toMillis(STAGGER_DURATION_SINGLE_ITEM_MINUTES));
+            } catch (MaxTranslateAttemptsException e) {
+                log.warn("Max attempts at translating a single item reached. Skipping translation of this item: " + itemOnOffer.toString());
+                e.printStackTrace();
+                return;
+            }catch (InterruptedException e) {
+                e.printStackTrace();
+                return;
+            }
+        });
+    }
 
-        for (int i = 0; i < numOfBatches; i++) {
-            int startIndex = maxItemsInBatch * i;
-            int endIndex = Math.min(itemsOnOffer.size(), (startIndex + maxItemsInBatch)) - 1;
-            List<ItemOnOffer> trimmedList = itemsOnOffer.subList(startIndex, endIndex);
-
-            List<ItemOnOffer> translatedItems = TRANSLATOR.translate(trimmedList);
-            List<ShoppingItemDealDTO> finalDeals = assignKeywordHelper.assignKeywords(translatedItems);
-            List<ShoppingItemDealEntity> entities = dealsRepo.saveAll(ADAPTER.dtoToEntity(finalDeals));
-            System.out.println(entities);
-            Thread.sleep(TimeUnit.HOURS.toMillis(1));
+    private ItemOnOffer translateSingleItem(ItemOnOffer itemOnOffer, int currentAttempt) throws InterruptedException {
+        if(currentAttempt >= MAX_TRANSLATE_ATTEMPTS){
+            throw new MaxTranslateAttemptsException();
+        }
+        try{
+            itemOnOffer = TRANSLATOR.translate(itemOnOffer);
+        } catch (TooManyRequestsException e){
+            log.warn(this.SHOP + " scraper encounterd Http 429 when attempting to translate item. Thread going to sleep for " + STAGGER_DURATION_PAUSE_MINUTES + " minutes");
+            Thread.sleep(TimeUnit.MINUTES.toMillis(STAGGER_DURATION_PAUSE_MINUTES));
+            itemOnOffer = translateSingleItem(itemOnOffer,currentAttempt++);
+        } finally {
+            return itemOnOffer;
         }
     }
 
