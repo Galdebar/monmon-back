@@ -99,18 +99,7 @@ public class MaximaScraper extends Scraper {
      * @return the items on offer
      */
     public List<ItemOnOffer> getItemsOnOffer() {
-//        if (sessionID.trim().isEmpty()) {
-//
-//            Elements elements = document.getElementsByClass(ITEM_NAME);
-//            return elementsToScrapedItems(elements);
-//        }
-//        int pagesCount = countPages();
-//        List<ItemOnOffer> totalElements = new ArrayList<>();
-//        for (int i = 0; i < pagesCount; i++) {
-//            List<ItemOnOffer> fetchedPage = fetchItemsWithOffset(i);
-//            totalElements.addAll(fetchedPage);
-//        }
-//        return totalElements;
+
         return getItemsOnOffer(document);
     }
 

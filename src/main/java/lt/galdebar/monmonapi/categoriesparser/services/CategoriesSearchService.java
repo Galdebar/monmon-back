@@ -131,10 +131,6 @@ public class CategoriesSearchService {
 
 
         org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingKeywordEntity.class);
-        //        foundKeywords.sort(COMPARATOR);
-//        for(KeywordEntity keyword:foundKeywords){
-//            System.out.println(keyword.getCategory().getCategoryName());
-//        }
         return (List<ShoppingKeywordEntity>) jpaQuery.getResultList();
     }
 
@@ -163,7 +159,8 @@ public class CategoriesSearchService {
 
 
         org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingKeywordEntity.class);
-        //        foundKeywords.sort(COMPARATOR);
+//        List<ShoppingKeywordEntity> foundKeywords = (List<ShoppingKeywordEntity>) jpaQuery.setMaxResults(maxResults).getResultList();
+//                foundKeywords.sort(COMPARATOR);
 //        for(KeywordEntity keyword:foundKeywords){
 //            System.out.println(keyword.getCategory().getCategoryName());
 //        }
@@ -186,9 +183,6 @@ public class CategoriesSearchService {
         org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingCategoryEntity.class);
 
         ShoppingCategoryEntity result = (ShoppingCategoryEntity) jpaQuery.setMaxResults(1).getResultList().get(0);
-//        if (result instanceof ShoppingCategoryEntity) {
-//            return categoryConverter.convertEntityToDTO((ShoppingCategoryEntity) result);
-//        } else return null;
         return categoryConverter.convertEntityToDTO(result);
 
     }

@@ -4,12 +4,15 @@ import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
 import lt.galdebar.monmonapi.webscraper.services.helpers.ShoppingIitemDealAdapter;
+import lt.galdebar.monmonapi.webscraper.services.helpers.StringMatcherHelper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.ShopNames;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -18,6 +21,9 @@ public class ShoppingItemDealFinderService {
 
     @Autowired
     private ShoppingItemDealsRepo dealsRepo;
+
+    @Autowired
+    private StringMatcherHelper stringMatcher;
 
 
     public List<ShoppingItemDealDTO> getAllDeals() {
@@ -36,6 +42,18 @@ public class ShoppingItemDealFinderService {
     }
 
     public ShoppingItemDealDTO getBestDeal(String keyword) {
+        // shouuld just implement Lucene search and then compare search results with keyword string
+//        List<ShoppingItemDealEntity> allDeals = dealsRepo.findAll();
+//        Map<String,ShoppingItemDealEntity> dealsMap = new HashMap<>();
+//        List<String> dealEntityKeywords = new ArrayList<>();
+//        allDeals.stream().forEach(shoppingItemDealEntity -> {
+//            dealsMap.put(shoppingItemDealEntity.getOriginalTitle(),shoppingItemDealEntity);
+//            dealEntityKeywords.add(shoppingItemDealEntity.getOriginalTitle());
+//        });
+//
+//        String closestMatch = stringMatcher.findBestMatch(keyword,dealEntityKeywords);
+
+
         List<ShoppingItemDealEntity> foundDeals = dealsRepo.findByItemKeywordIgnoreCase(keyword);
         if (foundDeals.size() == 0) {
             return new ShoppingItemDealDTO();

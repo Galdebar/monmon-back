@@ -117,14 +117,6 @@ public class ShoppingItemService {
                 .map(ShoppingItemEntity::getDTO)
                 .collect(Collectors.toList());
     }
-//    public List<ShoppingItemDTO> refreshDeals(){
-//        return getAllCurrentItems()
-//                .stream()
-//                .map(ShoppingItemEntity::getDTO)
-//                .map(this::attatchDeal)
-//                .collect(Collectors.toList());
-
-//    }
 
     private List<ShoppingItemEntity> getAllCurrentItems() {
         return itemRepo.findByShoppingList(listService.getCurrentList());

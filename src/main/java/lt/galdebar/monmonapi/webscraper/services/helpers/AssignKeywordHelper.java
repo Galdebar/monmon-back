@@ -7,14 +7,19 @@ import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.lang.Math.*;
 
 @Component
 public class AssignKeywordHelper {
 
     @Autowired
     private CategoriesSearchService searchService;
+
+    @Autowired
+    private StringMatcherHelper stringMatcher;
 
     public ShoppingItemDealDTO assignKeyword(ItemOnOffer scrapedItem) {
         if (scrapedItem.getName().trim().isEmpty()) {
@@ -24,14 +29,22 @@ public class AssignKeywordHelper {
                 new ShoppingKeywordDTO("", scrapedItem.getName())
         );
         if (foundKeywords.size() > 0) {
+            String closestKeyword = stringMatcher.findBestMatch(
+                    scrapedItem.getName(),
+                    foundKeywords.stream()
+                    .map(ShoppingKeywordDTO::getKeyword)
+                    .collect(Collectors.toList())
+            );
             return new ShoppingItemDealDTO(
-                    foundKeywords.get(0).getKeyword(),
+                    scrapedItem.getName(),
+                    closestKeyword,
                     scrapedItem.getBrand(),
                     scrapedItem.getShopName(),
                     scrapedItem.getPrice()
             );
         } else {
             return new ShoppingItemDealDTO(
+                    scrapedItem.getName(),
                     scrapedItem.getName(),
                     scrapedItem.getBrand(),
                     scrapedItem.getShopName(),
@@ -51,4 +64,5 @@ public class AssignKeywordHelper {
 
         return deals;
     }
+
 }

@@ -9,6 +9,7 @@ import java.util.List;
 public class ShoppingIitemDealAdapter {
     public ShoppingItemDealDTO entityToDTO(ShoppingItemDealEntity entity) {
         return new ShoppingItemDealDTO(
+                entity.getOriginalTitle(),
                 entity.getItemKeyword(),
                 entity.getItemBrand(),
                 entity.getShopTitle(),
@@ -27,6 +28,7 @@ public class ShoppingIitemDealAdapter {
 
     public ShoppingItemDealEntity dtoToEntity(ShoppingItemDealDTO dto) {
         ShoppingItemDealEntity entity = new ShoppingItemDealEntity();
+        entity.setOriginalTitle(dto.getOriginalTitle());
         entity.setItemKeyword(dto.getItemKeyword());
         entity.setItemBrand(dto.getItemBrand());
         entity.setShopTitle(dto.getShopTitle());
