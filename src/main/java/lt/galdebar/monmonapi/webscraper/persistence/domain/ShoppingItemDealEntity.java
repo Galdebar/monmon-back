@@ -1,39 +1,45 @@
 package lt.galdebar.monmonapi.webscraper.persistence.domain;
 
 import lombok.*;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.*;
 
 @Data
-//@Document(collection = "deals")
 @Entity
+@Indexed
 @Table(name = "deals")
 public class ShoppingItemDealEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     @Column(columnDefinition="TEXT")
-    private String originalTitle;
+    @Field
+    private String title;
     @Column(columnDefinition="TEXT")
-    private String itemKeyword;
-    @Column(columnDefinition="TEXT")
-    private String itemBrand;
+    private String brand;
     private String shopTitle;
     private float price;
 
     public ShoppingItemDealEntity() {
-        this.originalTitle="";
-        this.itemKeyword ="";
-        this.itemBrand = "";
+        this.title ="";
+        this.brand = "";
         this.shopTitle = "";
         this.price = 0.0f;
     }
 
+    public ShoppingItemDealEntity(ShoppingItemDealDTO dto) {
+        this.title = dto.getTitle();
+        this.brand = dto.getItemBrand();
+        this.shopTitle = dto.getShopTitle();
+        this.price = dto.getPrice();
+    }
+
     public ShoppingItemDealDTO getDTO(){
         return new ShoppingItemDealDTO(
-                originalTitle,
-                itemKeyword,
-                itemBrand,
+                title,
+                brand,
                 shopTitle,
                 price
         );

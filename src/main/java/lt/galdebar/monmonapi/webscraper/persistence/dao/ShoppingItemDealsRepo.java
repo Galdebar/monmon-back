@@ -7,5 +7,4 @@ import java.util.List;
 
 public interface ShoppingItemDealsRepo extends JpaRepository<ShoppingItemDealEntity, Long> {
     List<ShoppingItemDealEntity> findByShopTitle(String shopTitle);
-    List<ShoppingItemDealEntity> findByItemKeywordIgnoreCase(String itemKeyword);
 }

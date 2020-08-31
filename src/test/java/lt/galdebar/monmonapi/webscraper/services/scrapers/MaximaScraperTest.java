@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
@@ -121,7 +122,7 @@ public class MaximaScraperTest {
     @Test
     public void givenValidFile_whenFetchItemsWithOffset_thenNotNull() {
         MaximaScraper scraper = new MaximaScraper();
-        List<ItemOnOffer> fetchedElements = maximaScraper.fetchItemsWithOffset(0);
+        List<ShoppingItemDealDTO> fetchedElements = maximaScraper.fetchItemsWithOffset(0);
 
         assertNotNull(fetchedElements);
     }
@@ -129,7 +130,7 @@ public class MaximaScraperTest {
     @Test
     public void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
         int expectedCount = 328;
-        List<ItemOnOffer> actualIterable = fullFileMaximaScraper.getItemsOnOffer();
+        List<ShoppingItemDealDTO> actualIterable = fullFileMaximaScraper.getItemsOnOffer();
 
         assertNotNull(actualIterable);
         assertEquals(actualIterable.size(), expectedCount);
@@ -150,14 +151,14 @@ public class MaximaScraperTest {
         String expectedItemName = "sviestas";
         String expectedItemBrand = "ROKIŠKIO";
         float expectedItemPrice = 1.09f;
-        ItemOnOffer expectedItem = new ItemOnOffer(expectedItemName, expectedItemBrand, expectedItemPrice, "ShopName");
-        ItemOnOffer actualItem = fullFileMaximaScraper.elementToScrapedShoppingItem(
+        ShoppingItemDealDTO expectedItem = new ShoppingItemDealDTO(expectedItemName, expectedItemBrand, "ShopName", expectedItemPrice);
+        ShoppingItemDealDTO actualItem = fullFileMaximaScraper.elementToScrapedShoppingItem(
                 fullFileMaximaScraper.getDocument().getElementsByClass("item").get(expectedItemIndex)
         );
 
         assertNotNull(actualItem);
-        assertTrue(actualItem.getName().equalsIgnoreCase(expectedItemName));
-        assertTrue(actualItem.getBrand().equalsIgnoreCase(expectedItemBrand));
+        assertTrue(actualItem.getTitle().equalsIgnoreCase(expectedItemName));
+        assertTrue(actualItem.getItemBrand().equalsIgnoreCase(expectedItemBrand));
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 

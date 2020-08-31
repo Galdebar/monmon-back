@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.categoriesparser.services;
 
 import lombok.extern.log4j.Log4j2;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +15,12 @@ import javax.persistence.PersistenceContext;
 
 @Component
 @Log4j2
-public class SearchIndexer {
+public class CategoriesSearchIndexer {
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
-    public SearchIndexer(final EntityManagerFactory entityManagerFactory) {
+    public CategoriesSearchIndexer(final EntityManagerFactory entityManagerFactory) {
         this.entityManager = entityManagerFactory.createEntityManager();
     }
 
@@ -33,4 +34,5 @@ public class SearchIndexer {
             e.printStackTrace();
         }
     }
+
 }

@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
 import lombok.extern.log4j.Log4j2;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.helpers.RimiParserHelper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Connection;
@@ -52,14 +53,14 @@ public class RimiScraper extends Scraper {
 
 
     @Override
-    public List<ItemOnOffer> getItemsOnOffer() {
+    public List<ShoppingItemDealDTO> getItemsOnOffer() {
             Elements elements = document.getElementsByClass(CONTAINER_NAME).get(3)
                     .getElementsByClass(ITEM_NAME);
             return elementsToScrapedItems(elements);
     }
 
     @Override
-    public List<ItemOnOffer> getItemsOnOffer(Document document) {
+    public List<ShoppingItemDealDTO> getItemsOnOffer(Document document) {
         Elements elements = document.getElementsByClass(CONTAINER_NAME).get(3)
                 .getElementsByClass(ITEM_NAME);
         return elementsToScrapedItems(elements);

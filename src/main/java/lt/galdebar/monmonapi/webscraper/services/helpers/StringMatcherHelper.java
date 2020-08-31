@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.webscraper.services.helpers;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -7,6 +8,7 @@ import java.util.*;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 
+@Log4j2
 @Component
 public class StringMatcherHelper {
     private final float PHRASE_WEIGHT = 0.5f;
@@ -25,9 +27,18 @@ public class StringMatcherHelper {
         }
 
         TreeMap<Float, String> sorted = new TreeMap<>();
-        sorted.putAll(keywordsWithWeights);
 
-        return sorted.firstEntry().getValue();
+
+        sorted.putAll(keywordsWithWeights);
+        if(sorted.size() == 0){
+            return "";
+        }
+        Float first = sorted.firstKey();
+        String result = sorted.get(first);
+        log.info(
+                "Original: " + originalString + ". Match: " + first + " --- " + result
+        );
+        return result;
     }
 
     private float findMatchValue(String originalName, String keyword) {

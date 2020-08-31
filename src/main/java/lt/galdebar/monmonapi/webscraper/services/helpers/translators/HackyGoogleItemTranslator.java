@@ -2,6 +2,7 @@ package lt.galdebar.monmonapi.webscraper.services.helpers.translators;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.exceptions.TooManyRequestsException;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Connection;
@@ -22,9 +23,9 @@ public class HackyGoogleItemTranslator implements IsItemTranslator {
     private final String[] wordsToFilter = {"for"};
     private final int REQUESTDELAY = 5;
 
-    public List<ItemOnOffer> translate(List<ItemOnOffer> itemsToTranslate) {
-        List<ItemOnOffer> translatedItems = new ArrayList<>();
-        for (ItemOnOffer itemToTranslate : itemsToTranslate) {
+    public List<ShoppingItemDealDTO> translate(List<ShoppingItemDealDTO> itemsToTranslate) {
+        List<ShoppingItemDealDTO> translatedItems = new ArrayList<>();
+        for (ShoppingItemDealDTO itemToTranslate : itemsToTranslate) {
             try {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(REQUESTDELAY));
                 translatedItems.add(translate(itemToTranslate));
@@ -36,14 +37,14 @@ public class HackyGoogleItemTranslator implements IsItemTranslator {
         return translatedItems;
     }
 
-    public ItemOnOffer translate(ItemOnOffer itemToTranslate) {
-        String translatedName = translateString(itemToTranslate.getName());
+    public ShoppingItemDealDTO translate(ShoppingItemDealDTO itemToTranslate) {
+        String translatedName = translateString(itemToTranslate.getTitle());
 
-        return new ItemOnOffer(
+        return new ShoppingItemDealDTO(
                 translatedName,
-                itemToTranslate.getBrand(),
-                itemToTranslate.getPrice(),
-                itemToTranslate.getShopName()
+                itemToTranslate.getItemBrand(),
+                itemToTranslate.getShopTitle(),
+                itemToTranslate.getPrice()
         );
     }
 

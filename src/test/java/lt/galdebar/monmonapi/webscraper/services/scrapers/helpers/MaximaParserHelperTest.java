@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers.helpers;
 
 import lt.galdebar.monmonapi.ListTestContainersConfig;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.scheduledtasks.RunScraper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
@@ -44,12 +45,12 @@ public class MaximaParserHelperTest {
         String expectedShopName = "Maxima";
         float expectedPrice = 1.09f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
-        assertEquals(expectedShopName, actualItem.getShopName());
+        assertEquals(expectedShopName, actualItem.getShopTitle());
     }
 
     @Test
@@ -59,10 +60,10 @@ public class MaximaParserHelperTest {
         String expectedBrand = "";
         float expectedPrice = 1.19f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -73,10 +74,10 @@ public class MaximaParserHelperTest {
         String expectedBrand = "";
         float expectedPrice = 0;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -87,10 +88,10 @@ public class MaximaParserHelperTest {
         String expectedBrand = "";
         float expectedPrice = 0;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -101,10 +102,10 @@ public class MaximaParserHelperTest {
         String expectedBrand = "LINKĖJIMAI IŠ KAIMO";
         float expectedPrice = 1.09f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -115,10 +116,10 @@ public class MaximaParserHelperTest {
         String expectedBrand = "LAUKUVA";
         float expectedPrice = 2.79f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -129,10 +130,10 @@ public class MaximaParserHelperTest {
         String expectedBrand = "SAMSONO DAKTARIŠKA";
         float expectedPrice = 1.74f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 

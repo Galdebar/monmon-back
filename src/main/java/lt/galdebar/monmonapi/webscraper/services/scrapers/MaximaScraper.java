@@ -2,6 +2,7 @@ package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.helpers.MaximaParserHelper;
 import org.jsoup.Connection;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
@@ -98,12 +99,12 @@ public class MaximaScraper extends Scraper {
      *
      * @return the items on offer
      */
-    public List<ItemOnOffer> getItemsOnOffer() {
+    public List<ShoppingItemDealDTO> getItemsOnOffer() {
 
         return getItemsOnOffer(document);
     }
 
-    public List<ItemOnOffer> getItemsOnOffer(Document document) {
+    public List<ShoppingItemDealDTO> getItemsOnOffer(Document document) {
         Elements elements = document.getElementsByClass(ITEM_NAME);
         return elementsToScrapedItems(elements);
     }
@@ -125,7 +126,7 @@ public class MaximaScraper extends Scraper {
         return pagesCount;
     }
 
-    List<ItemOnOffer> fetchItemsWithOffset(int pagesCount) {
+    List<ShoppingItemDealDTO> fetchItemsWithOffset(int pagesCount) {
         String url = "https://www.maxima.lt/ajax/saleloadmore";
         Document fetchedDoc;
         int offset = pagesCount * ITEMS_PER_PAGE;

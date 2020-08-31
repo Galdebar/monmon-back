@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers.helpers;
 
 import lt.galdebar.monmonapi.ListTestContainersConfig;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.scheduledtasks.RunScraper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
@@ -45,12 +46,12 @@ public class IkiParserHelperTest {
         String expectedShopName = "Iki";
         float expectedPrice = 0.99f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
-        assertEquals(expectedShopName, actualItem.getShopName());
+        assertEquals(expectedShopName, actualItem.getShopTitle());
     }
     @Test
     public void parseSimpleElementTest2() {
@@ -60,12 +61,12 @@ public class IkiParserHelperTest {
         String expectedShopName = "Iki";
         float expectedPrice = 1.49f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
-        assertEquals(expectedShopName, actualItem.getShopName());
+        assertEquals(expectedShopName, actualItem.getShopTitle());
     }
 
     @Test
@@ -75,10 +76,10 @@ public class IkiParserHelperTest {
         String expectedBrand = "";
         float expectedPrice = 0.99f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -89,10 +90,10 @@ public class IkiParserHelperTest {
         String expectedBrand = "VILKYŠKIŲ";
         float expectedPrice = 0;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -103,10 +104,10 @@ public class IkiParserHelperTest {
         String expectedBrand = "NRT ROQUEFORT";
         float expectedPrice = 2.62f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -117,10 +118,10 @@ public class IkiParserHelperTest {
         String expectedBrand = "NRT SAVOIE";
         float expectedPrice = 2.79f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -131,10 +132,10 @@ public class IkiParserHelperTest {
         String expectedBrand = "SAMSONO";
         float expectedPrice = 2.49f;
 
-        ItemOnOffer actualItem = parser.parseElement(testElement);
+        ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getName());
-        assertEquals(expectedBrand, actualItem.getBrand());
+        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedBrand, actualItem.getItemBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 

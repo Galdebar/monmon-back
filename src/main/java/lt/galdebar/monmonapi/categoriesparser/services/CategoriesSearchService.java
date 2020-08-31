@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.categoriesparser.services;
 
 import lt.galdebar.monmonapi.categoriesparser.persistence.domain.*;
+import lt.galdebar.monmonapi.webscraper.services.helpers.StringMatcherHelper;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoriesSearchService {
@@ -30,6 +32,10 @@ public class CategoriesSearchService {
 
     @Autowired
     private KeywordDTOToEntityConverter keywordConverter;
+
+    @Autowired
+    private StringMatcherHelper stringMatcher;
+
     private static final KeywordComparator COMPARATOR = new KeywordComparator();
 
     @Transactional
@@ -131,7 +137,16 @@ public class CategoriesSearchService {
 
 
         org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingKeywordEntity.class);
-        return (List<ShoppingKeywordEntity>) jpaQuery.getResultList();
+
+        List<ShoppingKeywordEntity> foundKeywords =  (List<ShoppingKeywordEntity>) jpaQuery.getResultList();
+        String bestMatch = stringMatcher.findBestMatch(
+                keywordDTO.getKeyword(),
+                foundKeywords.stream()
+                .map(ShoppingKeywordEntity::getKeyword)
+                .collect(Collectors.toList())
+        );
+
+        return foundKeywords;
     }
 
     @Transactional

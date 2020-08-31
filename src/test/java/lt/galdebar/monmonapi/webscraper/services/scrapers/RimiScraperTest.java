@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
@@ -88,7 +89,7 @@ public class RimiScraperTest {
     @Test
     public void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
         int expectedCount = 152;
-        List<ItemOnOffer> actualIterable = fullFileRimiScraper.getItemsOnOffer();
+        List<ShoppingItemDealDTO> actualIterable = fullFileRimiScraper.getItemsOnOffer();
 
         assertNotNull(actualIterable);
         assertEquals(expectedCount, actualIterable.size());
@@ -115,12 +116,12 @@ public class RimiScraperTest {
                 .getElementsByClass("offer-card")
                 .get(expectedItemIndex);
 
-        ItemOnOffer expectedItem = new ItemOnOffer(expectedItemName, expectedItemBrand, expectedItemPrice, "ShopName");
-        ItemOnOffer actualItem = fullFileRimiScraper.elementToScrapedShoppingItem(elementToParse);
+        ShoppingItemDealDTO expectedItem = new ShoppingItemDealDTO(expectedItemName, expectedItemBrand, "ShopName", expectedItemPrice);
+        ShoppingItemDealDTO actualItem = fullFileRimiScraper.elementToScrapedShoppingItem(elementToParse);
 
         assertNotNull(actualItem);
-        assertTrue(actualItem.getName().equalsIgnoreCase(expectedItemName));
-        assertTrue(actualItem.getBrand().equalsIgnoreCase(expectedItemBrand));
+        assertTrue(actualItem.getTitle().equalsIgnoreCase(expectedItemName));
+        assertTrue(actualItem.getItemBrand().equalsIgnoreCase(expectedItemBrand));
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 

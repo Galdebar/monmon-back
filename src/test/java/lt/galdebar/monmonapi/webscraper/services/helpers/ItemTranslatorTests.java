@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.webscraper.services.helpers;
 
 import lt.galdebar.monmonapi.ListTestContainersConfig;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.scheduledtasks.RunScraper;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.HackyGoogleItemTranslator;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.IsItemTranslator;
@@ -46,74 +47,74 @@ public class ItemTranslatorTests {
 
     @Test
     public void givenValidItem_whenTranslate_thenReturnTranslatedItem(){
-        ItemOnOffer itemToTranslate = new ItemOnOffer(
+        ShoppingItemDealDTO itemToTranslate = new ShoppingItemDealDTO(
                 "sviestas",
                 "ROKIŠKIO",
-                1,
-                "shopName"
+                "shopName",
+                1
         );
         String expectedName = "butter";
-        ItemOnOffer translatedItem = itemTranslator.translate(itemToTranslate);
+        ShoppingItemDealDTO translatedItem = itemTranslator.translate(itemToTranslate);
 
         assertNotNull(translatedItem);
-        assertNotEquals(itemToTranslate.getName(),translatedItem.getName());
-        assertEquals(expectedName,translatedItem.getName());
-        assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
+        assertNotEquals(itemToTranslate.getTitle(),translatedItem.getTitle());
+        assertEquals(expectedName,translatedItem.getTitle());
+        assertEquals(itemToTranslate.getItemBrand(),translatedItem.getItemBrand());
         assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
-        assertEquals(itemToTranslate.getShopName(),translatedItem.getShopName());
+        assertEquals(itemToTranslate.getShopTitle(),translatedItem.getShopTitle());
     }
 
     @Test
     public void givenComplexItem_whenTranslate_thenReturnTranslatedItem(){
-        ItemOnOffer itemToTranslate = new ItemOnOffer(
+        ShoppingItemDealDTO itemToTranslate = new ShoppingItemDealDTO(
                 "Atšaldytas kiaulienos kumpis be kaulų, be odos, vakuumuotas",
                 "ROKIŠKIO",
-                1,
-                "shopName"
+                "shopName",
+                1
         );
         String expectedName = "Chilled pork ham, boneless, skinless, vacuum";
-        ItemOnOffer translatedItem = itemTranslator.translate(itemToTranslate);
+        ShoppingItemDealDTO translatedItem = itemTranslator.translate(itemToTranslate);
 
         assertNotNull(translatedItem);
-        assertNotEquals(itemToTranslate.getName(),translatedItem.getName());
-        assertEquals(expectedName,translatedItem.getName());
-        assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
+        assertNotEquals(itemToTranslate.getTitle(),translatedItem.getTitle());
+        assertEquals(expectedName,translatedItem.getTitle());
+        assertEquals(itemToTranslate.getItemBrand(),translatedItem.getItemBrand());
         assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
     }
 
     @Test
     public void givenItemWithNoName_whenTranslate_returnTranslatedBrand(){
-        ItemOnOffer itemToTranslate = new ItemOnOffer(
+        ShoppingItemDealDTO itemToTranslate = new ShoppingItemDealDTO(
                 "KONSERVUOTOMS DARŽOVĖMS, VAISIAMS IR UOGIENĖMS",
                 "",
-                1,
-                "shopName"
+                "shopName",
+                1
         );
         String expectedName = "PRESERVED VEGETABLES, FRUIT AND JAM";
-        ItemOnOffer translatedItem = itemTranslator.translate(itemToTranslate);
+        ShoppingItemDealDTO translatedItem = itemTranslator.translate(itemToTranslate);
 
         assertNotNull(translatedItem);
-        assertNotEquals(itemToTranslate.getName(),translatedItem.getName());
-        assertEquals(expectedName,translatedItem.getName());
-        assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
+        assertNotEquals(itemToTranslate.getTitle(),translatedItem.getTitle());
+        assertEquals(expectedName,translatedItem.getTitle());
+        assertEquals(itemToTranslate.getItemBrand(),translatedItem.getItemBrand());
         assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
     }
 
     @Test
     public void givenItemWithNoName_whenTranslate_returnTranslatedBrandFiltered(){
-        ItemOnOffer itemToTranslate = new ItemOnOffer(
+        ShoppingItemDealDTO itemToTranslate = new ShoppingItemDealDTO(
                 "KOJINĖMS IR PĖDKELNĖMS",
                 "",
-                1,
-                "shopName"
+                "shopName",
+                1
         );
         String expectedName = "SOCKS AND TIGHTS";
-        ItemOnOffer translatedItem = itemTranslator.translate(itemToTranslate);
+        ShoppingItemDealDTO translatedItem = itemTranslator.translate(itemToTranslate);
 
         assertNotNull(translatedItem);
-        assertNotEquals(itemToTranslate.getName(),translatedItem.getName());
-        assertEquals(expectedName,translatedItem.getName());
-        assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
+        assertNotEquals(itemToTranslate.getTitle(),translatedItem.getTitle());
+        assertEquals(expectedName,translatedItem.getTitle());
+        assertEquals(itemToTranslate.getItemBrand(),translatedItem.getItemBrand());
         assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
     }
 }

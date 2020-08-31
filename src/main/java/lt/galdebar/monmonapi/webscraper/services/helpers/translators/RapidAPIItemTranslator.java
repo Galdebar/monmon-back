@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.webscraper.services.helpers.translators;
 
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -36,9 +37,9 @@ public class RapidAPIItemTranslator implements IsItemTranslator {
         requestEntity = new HttpEntity(headers);
     }
 
-    public List<ItemOnOffer> translate(List<ItemOnOffer> itemsToTranslate) {
-        List<ItemOnOffer> translatedItems = new ArrayList<>();
-        for(ItemOnOffer itemToTranslate:itemsToTranslate){
+    public List<ShoppingItemDealDTO> translate(List<ShoppingItemDealDTO> itemsToTranslate) {
+        List<ShoppingItemDealDTO> translatedItems = new ArrayList<>();
+        for(ShoppingItemDealDTO itemToTranslate:itemsToTranslate){
             try {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(REQUESTDELAY));
                 translatedItems.add(translate(itemToTranslate));
@@ -50,14 +51,14 @@ public class RapidAPIItemTranslator implements IsItemTranslator {
         return translatedItems;
     }
 
-    public ItemOnOffer translate(ItemOnOffer itemToTranslate) {
-        String translatedName = translateString(itemToTranslate.getName());
+    public ShoppingItemDealDTO translate(ShoppingItemDealDTO itemToTranslate) {
+        String translatedName = translateString(itemToTranslate.getTitle());
 
-        return new ItemOnOffer(
+        return new ShoppingItemDealDTO(
                 translatedName,
-                itemToTranslate.getBrand(),
-                itemToTranslate.getPrice(),
-                itemToTranslate.getShopName()
+                itemToTranslate.getItemBrand(),
+                itemToTranslate.getShopTitle(),
+                itemToTranslate.getPrice()
         );
     }
 

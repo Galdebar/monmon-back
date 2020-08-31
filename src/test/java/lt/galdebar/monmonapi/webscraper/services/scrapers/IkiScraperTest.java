@@ -1,6 +1,7 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
@@ -104,7 +105,7 @@ public class IkiScraperTest {
 
     @Test
     public void givenActualSite_whenFetchItemsWithOffset_thenNotNull() {
-        List<ItemOnOffer> fetchedElements = ikiScraper.fetchItemsWithOffset(0);
+        List<ShoppingItemDealDTO> fetchedElements = ikiScraper.fetchItemsWithOffset(0);
 
         assertNotNull(fetchedElements);
     }
@@ -112,7 +113,7 @@ public class IkiScraperTest {
     @Test
     public void givenValidFile_whenGetItemsOnOffer_thenReturnCount() {
         int expectedCount = 18;
-        List<ItemOnOffer> actualIterable = fullFileIkiScraper.getItemsOnOffer();
+        List<ShoppingItemDealDTO> actualIterable = fullFileIkiScraper.getItemsOnOffer();
 
         assertNotNull(actualIterable);
         assertEquals( expectedCount, actualIterable.size());
@@ -133,14 +134,14 @@ public class IkiScraperTest {
         String expectedItemName = "Didieji raudonieji greipfrutai";
         String expectedItemBrand = "";
         float expectedItemPrice = 1.49f;
-        ItemOnOffer expectedItem = new ItemOnOffer(expectedItemName, expectedItemBrand, expectedItemPrice, "ShopName");
-        ItemOnOffer actualItem = fullFileIkiScraper.elementToScrapedShoppingItem(
+        ShoppingItemDealDTO expectedItem = new ShoppingItemDealDTO(expectedItemName, expectedItemBrand, "ShopName", expectedItemPrice);
+        ShoppingItemDealDTO actualItem = fullFileIkiScraper.elementToScrapedShoppingItem(
                 fullFileIkiScraper.getDocument().getElementsByClass("sales-item ").get(expectedItemIndex)
         );
 
         assertNotNull(actualItem);
-        assertTrue(actualItem.getName().equalsIgnoreCase(expectedItemName));
-        assertTrue(actualItem.getBrand().equalsIgnoreCase(expectedItemBrand));
+        assertTrue(actualItem.getTitle().equalsIgnoreCase(expectedItemName));
+        assertTrue(actualItem.getItemBrand().equalsIgnoreCase(expectedItemBrand));
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 

@@ -5,14 +5,11 @@ import lombok.extern.log4j.Log4j2;
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
-import lt.galdebar.monmonapi.webscraper.services.helpers.AssignKeywordHelper;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.HackyGoogleItemTranslator;
-import lt.galdebar.monmonapi.webscraper.services.helpers.ShoppingIitemDealAdapter;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.IsItemTranslator;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.exceptions.MaxTranslateAttemptsException;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.exceptions.TooManyRequestsException;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.helpers.IsHTMLElementParserHelper;
-import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -36,7 +33,6 @@ public abstract class Scraper implements IsWebScraper {
     protected final ShopNames SHOP;
 
     protected final IsItemTranslator TRANSLATOR = new HackyGoogleItemTranslator();
-    protected final ShoppingIitemDealAdapter ADAPTER = new ShoppingIitemDealAdapter();
     protected final IsHTMLElementParserHelper elementParser;
 
     protected boolean isDocumentValid;
@@ -44,8 +40,6 @@ public abstract class Scraper implements IsWebScraper {
     @Getter
     protected Document document;
 
-    @Autowired
-    protected AssignKeywordHelper assignKeywordHelper;
 
     @Autowired
     protected ShoppingItemDealsRepo dealsRepo;
@@ -63,8 +57,8 @@ public abstract class Scraper implements IsWebScraper {
         return isDocumentValid;
     }
 
-    protected List<ItemOnOffer> elementsToScrapedItems(Elements totalElements) {
-        List<ItemOnOffer> scrapedItems = new ArrayList<>();
+    protected List<ShoppingItemDealDTO> elementsToScrapedItems(Elements totalElements) {
+        List<ShoppingItemDealDTO> scrapedItems = new ArrayList<>();
         for (Element element : totalElements) {
             scrapedItems.add(elementToScrapedShoppingItem(element));
         }
@@ -72,18 +66,18 @@ public abstract class Scraper implements IsWebScraper {
 
     }
 
-    ItemOnOffer elementToScrapedShoppingItem(Element element) {
+    ShoppingItemDealDTO elementToScrapedShoppingItem(Element element) {
         return elementParser.parseElement(element);
     }
 
     public boolean updateOffersDB() {
 
-        if(isDocumentValid){
-            List<ItemOnOffer> unprocessedItems;
+        if (isDocumentValid) {
+            List<ShoppingItemDealDTO> unprocessedItems;
 
             try {
                 unprocessedItems = getItemsOnOffer();
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 return false;
             }
@@ -95,16 +89,15 @@ public abstract class Scraper implements IsWebScraper {
                 e.printStackTrace();
                 return false;
             }
-        }else return false;
+        } else return false;
     }
 
-    private void staggeredTranslateAndPush(List<ItemOnOffer> itemsOnOffer) throws InterruptedException {
-    log.info(this.SHOP + " Running staggered translate and push for " + itemsOnOffer.size() + " items.");
+    private void staggeredTranslateAndPush(List<ShoppingItemDealDTO> itemsOnOffer) throws InterruptedException {
+        log.info(this.SHOP + " Running staggered translate and push for " + itemsOnOffer.size() + " items.");
         itemsOnOffer.stream().forEach(itemOnOffer -> {
             try {
-                ItemOnOffer translatedItem = translateSingleItem(itemOnOffer, 1);
-                ShoppingItemDealDTO finalDeal = assignKeywordHelper.assignKeyword(translatedItem);
-                ShoppingItemDealEntity savedEntity = dealsRepo.save(ADAPTER.dtoToEntity(finalDeal));
+                ShoppingItemDealDTO translatedItem = translateSingleItem(itemOnOffer, 1);
+                ShoppingItemDealEntity savedEntity = dealsRepo.save(new ShoppingItemDealEntity(translatedItem));
                 log.info("Saved item deal: " + savedEntity.toString());
                 log.info("Thread going to sleep for " + STAGGER_DURATION_SINGLE_ITEM_MINUTES + " minutes to prevent Http 429 when translating item");
                 Thread.sleep(TimeUnit.MINUTES.toMillis(STAGGER_DURATION_SINGLE_ITEM_MINUTES));
@@ -112,25 +105,25 @@ public abstract class Scraper implements IsWebScraper {
                 log.warn("Max attempts at translating a single item reached. Skipping translation of this item: " + itemOnOffer.toString());
                 e.printStackTrace();
                 return;
-            }catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
                 return;
             }
         });
     }
 
-    private ItemOnOffer translateSingleItem(ItemOnOffer itemOnOffer, int currentAttempt) throws InterruptedException {
-        if(currentAttempt >= MAX_TRANSLATE_ATTEMPTS){
+    private ShoppingItemDealDTO translateSingleItem(ShoppingItemDealDTO dealDTO, int currentAttempt) throws InterruptedException {
+        if (currentAttempt >= MAX_TRANSLATE_ATTEMPTS) {
             throw new MaxTranslateAttemptsException();
         }
-        try{
-            itemOnOffer = TRANSLATOR.translate(itemOnOffer);
-        } catch (TooManyRequestsException e){
+        try {
+            dealDTO = TRANSLATOR.translate(dealDTO);
+        } catch (TooManyRequestsException e) {
             log.warn(this.SHOP + " scraper encounterd Http 429 when attempting to translate item. Thread going to sleep for " + STAGGER_DURATION_PAUSE_MINUTES + " minutes");
             Thread.sleep(TimeUnit.MINUTES.toMillis(STAGGER_DURATION_PAUSE_MINUTES));
-            itemOnOffer = translateSingleItem(itemOnOffer,currentAttempt++);
+            dealDTO = translateSingleItem(dealDTO, currentAttempt++);
         } finally {
-            return itemOnOffer;
+            return dealDTO;
         }
     }
 

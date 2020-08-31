@@ -7,15 +7,13 @@ import lombok.*;
 @ToString
 @EqualsAndHashCode
 public class ShoppingItemDealDTO {
-    private String originalTitle;
-    private String itemKeyword;
+    private String title;
     private String itemBrand;
     private String shopTitle;
     private float price;
 
     public ShoppingItemDealDTO() {
-        this.originalTitle="";
-        this.itemKeyword ="";
+        this.title ="";
         this.itemBrand = "";
         this.shopTitle = "";
         this.price = 0.0f;

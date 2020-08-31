@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.helpers.IkiParserHelper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Connection;
@@ -51,22 +52,22 @@ public class IkiScraper extends Scraper {
     }
 
     @Override
-    public List<ItemOnOffer> getItemsOnOffer() {
+    public List<ShoppingItemDealDTO> getItemsOnOffer() {
         if (!document.location().contains(URL)) {
 
             Elements elements = document.getElementsByClass(ITEM_NAME);
             return elementsToScrapedItems(elements);
         }
         int pagesCount = countPages();
-        List<ItemOnOffer> totalElements = new ArrayList<>();
+        List<ShoppingItemDealDTO> totalElements = new ArrayList<>();
         for (int i = 0; i < pagesCount; i++) {
-            List<ItemOnOffer> fetchedPage = fetchItemsWithOffset(i);
+            List<ShoppingItemDealDTO> fetchedPage = fetchItemsWithOffset(i);
             totalElements.addAll(fetchedPage);
         }
         return totalElements;
     }
 
-    List<ItemOnOffer> fetchItemsWithOffset(int i) {
+    List<ShoppingItemDealDTO> fetchItemsWithOffset(int i) {
         int offset = ITEMS_PER_PAGE * i;
         String url = URL + "?start=" + offset;
         Document fetchedDoc;
@@ -95,7 +96,7 @@ public class IkiScraper extends Scraper {
     }
 
     @Override
-    public List<ItemOnOffer> getItemsOnOffer(Document document) {
+    public List<ShoppingItemDealDTO> getItemsOnOffer(Document document) {
 //        Elements elements = document.getElementsByClass(ITEM_NAME);
         Elements elements = document.select("." + ITEM_NAME);
         return elementsToScrapedItems(elements);

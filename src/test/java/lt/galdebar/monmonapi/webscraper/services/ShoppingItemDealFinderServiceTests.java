@@ -78,7 +78,7 @@ public class ShoppingItemDealFinderServiceTests {
         String keyword = "Eggs";
         List<ShoppingItemDealDTO> foundDeals = shoppingItemDealFinderService.getDealsByKeyword(keyword);
         int expectedSize = (int) dealsRepo.findAll().stream()
-                .filter(deal -> deal.getItemKeyword().equalsIgnoreCase(keyword)).count();
+                .filter(deal -> deal.getTitle().toLowerCase().contains(keyword.toLowerCase())).count();
 
         assertNotNull(foundDeals);
         assertEquals(expectedSize,foundDeals.size());
@@ -124,14 +124,14 @@ public class ShoppingItemDealFinderServiceTests {
     public void givenValidKeyword_whenGetBestDeal_thenReturnSingleItem() {
         String keyword = "Eggs";
         ShoppingItemDealEntity expectedDeal = dealsRepo.findAll().stream()
-                .filter(deal->deal.getItemKeyword().equalsIgnoreCase(keyword))
+                .filter(deal->deal.getTitle().toLowerCase().contains(keyword.toLowerCase()))
                 .sorted((o1, o2) -> Float.compare(o1.getPrice(),o2.getPrice()))
                 .collect(Collectors.toList())
                 .get(0);
         ShoppingItemDealDTO actualDeal = shoppingItemDealFinderService.getBestDeal(keyword);
         assertEquals(expectedDeal.getPrice(),actualDeal.getPrice(), 0.001);
         assertEquals(expectedDeal.getShopTitle(),actualDeal.getShopTitle());
-        assertEquals(expectedDeal.getItemBrand(),actualDeal.getItemBrand());
+        assertEquals(expectedDeal.getBrand(),actualDeal.getItemBrand());
     }
 
     @Test
@@ -140,7 +140,7 @@ public class ShoppingItemDealFinderServiceTests {
         ShoppingItemDealDTO actualDeal = shoppingItemDealFinderService.getBestDeal(keyword);
 
         assertNotNull(actualDeal);
-        assertEquals("",actualDeal.getItemKeyword());
+        assertEquals("",actualDeal.getTitle());
         assertEquals("",actualDeal.getItemBrand());
         assertEquals("",actualDeal.getShopTitle());
         assertEquals(0,actualDeal.getPrice(),0.001);
@@ -153,7 +153,7 @@ public class ShoppingItemDealFinderServiceTests {
         ShoppingItemDealDTO actualDeal = shoppingItemDealFinderService.getBestDeal(keyword);
 
         assertNotNull(actualDeal);
-        assertEquals("",actualDeal.getItemKeyword());
+        assertEquals("",actualDeal.getTitle());
         assertEquals("",actualDeal.getItemBrand());
         assertEquals("",actualDeal.getShopTitle());
         assertEquals(0,actualDeal.getPrice(),0.001);
@@ -165,7 +165,7 @@ public class ShoppingItemDealFinderServiceTests {
         ShoppingItemDealDTO actualDeal = shoppingItemDealFinderService.getBestDeal(keyword);
 
         assertNotNull(actualDeal);
-        assertEquals("",actualDeal.getItemKeyword());
+        assertEquals("",actualDeal.getTitle());
         assertEquals("",actualDeal.getItemBrand());
         assertEquals("",actualDeal.getShopTitle());
         assertEquals(0,actualDeal.getPrice(),0.001);
@@ -177,7 +177,7 @@ public class ShoppingItemDealFinderServiceTests {
         ShoppingItemDealDTO actualDeal = shoppingItemDealFinderService.getBestDeal(keyword);
 
         assertNotNull(actualDeal);
-        assertEquals("",actualDeal.getItemKeyword());
+        assertEquals("",actualDeal.getTitle());
         assertEquals("",actualDeal.getItemBrand());
         assertEquals("",actualDeal.getShopTitle());
         assertEquals(0,actualDeal.getPrice(),0.001);
@@ -200,8 +200,8 @@ public class ShoppingItemDealFinderServiceTests {
 
     private ShoppingItemDealEntity createDeal(String keyword, String brand, ShopNames shopName, float price) {
         ShoppingItemDealEntity deal = new ShoppingItemDealEntity();
-        deal.setItemKeyword(keyword);
-        deal.setItemBrand(brand);
+        deal.setTitle(keyword);
+        deal.setBrand(brand);
         deal.setShopTitle(shopName.getShopName());
         deal.setPrice(price);
 

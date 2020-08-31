@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers.helpers;
 
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.nodes.Element;
 
@@ -15,11 +16,11 @@ public abstract class HTMLElementParserHelper implements IsHTMLElementParserHelp
         this.shopName = shopName;
     }
 
-    public ItemOnOffer parseElement(Element element) {
+    public ShoppingItemDealDTO parseElement(Element element) {
         String name = getItemName(getTitleElement(element));
         String brand = getItemBrand(getTitleElement(element));
         float price = getItemPrice(element);
-        return new ItemOnOffer(name, brand, price, shopName);
+        return new ShoppingItemDealDTO(name, brand, shopName, price);
     }
 
     public abstract Element getTitleElement(Element element);
