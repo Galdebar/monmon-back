@@ -5,7 +5,6 @@ import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.scheduledtasks.RunScraper;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.HackyGoogleItemTranslator;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.IsItemTranslator;
-import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +58,7 @@ public class ItemTranslatorTests {
         assertNotNull(translatedItem);
         assertNotEquals(itemToTranslate.getTitle(),translatedItem.getTitle());
         assertEquals(expectedName,translatedItem.getTitle());
-        assertEquals(itemToTranslate.getItemBrand(),translatedItem.getItemBrand());
+        assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
         assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
         assertEquals(itemToTranslate.getShopTitle(),translatedItem.getShopTitle());
     }
@@ -78,7 +77,7 @@ public class ItemTranslatorTests {
         assertNotNull(translatedItem);
         assertNotEquals(itemToTranslate.getTitle(),translatedItem.getTitle());
         assertEquals(expectedName,translatedItem.getTitle());
-        assertEquals(itemToTranslate.getItemBrand(),translatedItem.getItemBrand());
+        assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
         assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
     }
 
@@ -96,7 +95,7 @@ public class ItemTranslatorTests {
         assertNotNull(translatedItem);
         assertNotEquals(itemToTranslate.getTitle(),translatedItem.getTitle());
         assertEquals(expectedName,translatedItem.getTitle());
-        assertEquals(itemToTranslate.getItemBrand(),translatedItem.getItemBrand());
+        assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
         assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
     }
 
@@ -114,7 +113,7 @@ public class ItemTranslatorTests {
         assertNotNull(translatedItem);
         assertNotEquals(itemToTranslate.getTitle(),translatedItem.getTitle());
         assertEquals(expectedName,translatedItem.getTitle());
-        assertEquals(itemToTranslate.getItemBrand(),translatedItem.getItemBrand());
+        assertEquals(itemToTranslate.getBrand(),translatedItem.getBrand());
         assertEquals(itemToTranslate.getPrice(), translatedItem.getPrice(), 0.0);
     }
 }

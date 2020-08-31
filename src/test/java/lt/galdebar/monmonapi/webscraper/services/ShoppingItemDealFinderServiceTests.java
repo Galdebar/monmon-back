@@ -131,7 +131,7 @@ public class ShoppingItemDealFinderServiceTests {
         ShoppingItemDealDTO actualDeal = shoppingItemDealFinderService.getBestDeal(keyword);
         assertEquals(expectedDeal.getPrice(),actualDeal.getPrice(), 0.001);
         assertEquals(expectedDeal.getShopTitle(),actualDeal.getShopTitle());
-        assertEquals(expectedDeal.getBrand(),actualDeal.getItemBrand());
+        assertEquals(expectedDeal.getBrand(),actualDeal.getBrand());
     }
 
     @Test
@@ -141,7 +141,7 @@ public class ShoppingItemDealFinderServiceTests {
 
         assertNotNull(actualDeal);
         assertEquals("",actualDeal.getTitle());
-        assertEquals("",actualDeal.getItemBrand());
+        assertEquals("",actualDeal.getBrand());
         assertEquals("",actualDeal.getShopTitle());
         assertEquals(0,actualDeal.getPrice(),0.001);
 
@@ -154,7 +154,7 @@ public class ShoppingItemDealFinderServiceTests {
 
         assertNotNull(actualDeal);
         assertEquals("",actualDeal.getTitle());
-        assertEquals("",actualDeal.getItemBrand());
+        assertEquals("",actualDeal.getBrand());
         assertEquals("",actualDeal.getShopTitle());
         assertEquals(0,actualDeal.getPrice(),0.001);
     }
@@ -166,7 +166,7 @@ public class ShoppingItemDealFinderServiceTests {
 
         assertNotNull(actualDeal);
         assertEquals("",actualDeal.getTitle());
-        assertEquals("",actualDeal.getItemBrand());
+        assertEquals("",actualDeal.getBrand());
         assertEquals("",actualDeal.getShopTitle());
         assertEquals(0,actualDeal.getPrice(),0.001);
     }
@@ -178,7 +178,7 @@ public class ShoppingItemDealFinderServiceTests {
 
         assertNotNull(actualDeal);
         assertEquals("",actualDeal.getTitle());
-        assertEquals("",actualDeal.getItemBrand());
+        assertEquals("",actualDeal.getBrand());
         assertEquals("",actualDeal.getShopTitle());
         assertEquals(0,actualDeal.getPrice(),0.001);
     }

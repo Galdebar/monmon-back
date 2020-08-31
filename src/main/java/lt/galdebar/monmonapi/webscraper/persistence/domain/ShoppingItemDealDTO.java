@@ -8,13 +8,13 @@ import lombok.*;
 @EqualsAndHashCode
 public class ShoppingItemDealDTO {
     private String title;
-    private String itemBrand;
+    private String brand;
     private String shopTitle;
     private float price;
 
     public ShoppingItemDealDTO() {
         this.title ="";
-        this.itemBrand = "";
+        this.brand = "";
         this.shopTitle = "";
         this.price = 0.0f;
     }

@@ -25,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
@@ -425,6 +426,27 @@ class ShoppingListControllerTest {
         ListAlreadyExists expectedException = new ListAlreadyExists(listName);
 
         assertEquals(response, expectedException.getMessage());
+    }
+
+    @Test
+    void givenTooShortPassword_whenCreateList_thenReturnBadRequest() throws Exception{
+        String listName = "listName";
+        String listPassword = "l";
+        Map<String, String> requestObject = new HashMap<>();
+        requestObject.put("name", listName);
+        requestObject.put("password", listPassword);
+
+
+        String response = mockMvc.perform(post("/lists/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestObject))
+        )
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertEquals(0, listRepo.count());
+        assert response != null;
+        assertTrue(response.trim().toLowerCase().contains("must be longer"));
     }
 
     @Test

@@ -4,13 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.exceptions.TooManyRequestsException;
-import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +38,7 @@ public class HackyGoogleItemTranslator implements IsItemTranslator {
 
         return new ShoppingItemDealDTO(
                 translatedName,
-                itemToTranslate.getItemBrand(),
+                itemToTranslate.getBrand(),
                 itemToTranslate.getShopTitle(),
                 itemToTranslate.getPrice()
         );

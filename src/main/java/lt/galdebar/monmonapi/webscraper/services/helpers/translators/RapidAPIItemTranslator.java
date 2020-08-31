@@ -1,7 +1,6 @@
 package lt.galdebar.monmonapi.webscraper.services.helpers.translators;
 
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
-import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -56,7 +55,7 @@ public class RapidAPIItemTranslator implements IsItemTranslator {
 
         return new ShoppingItemDealDTO(
                 translatedName,
-                itemToTranslate.getItemBrand(),
+                itemToTranslate.getBrand(),
                 itemToTranslate.getShopTitle(),
                 itemToTranslate.getPrice()
         );

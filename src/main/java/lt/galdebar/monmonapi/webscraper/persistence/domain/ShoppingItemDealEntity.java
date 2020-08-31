@@ -31,7 +31,7 @@ public class ShoppingItemDealEntity {
 
     public ShoppingItemDealEntity(ShoppingItemDealDTO dto) {
         this.title = dto.getTitle();
-        this.brand = dto.getItemBrand();
+        this.brand = dto.getBrand();
         this.shopTitle = dto.getShopTitle();
         this.price = dto.getPrice();
     }

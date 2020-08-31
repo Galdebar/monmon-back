@@ -3,10 +3,8 @@ package lt.galdebar.monmonapi.webscraper.services.scrapers.helpers;
 import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.scheduledtasks.RunScraper;
-import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +13,6 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,7 +47,7 @@ public class RimiParserHelperTest {
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getTitle());
-        assertEquals(expectedBrand, actualItem.getItemBrand());
+        assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
         assertEquals(expectedShopName, actualItem.getShopTitle());
 
@@ -66,7 +63,7 @@ public class RimiParserHelperTest {
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getTitle());
-        assertEquals(expectedBrand, actualItem.getItemBrand());
+        assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 
@@ -80,7 +77,7 @@ public class RimiParserHelperTest {
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
         assertEquals(expectedName, actualItem.getTitle());
-        assertEquals(expectedBrand, actualItem.getItemBrand());
+        assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
 

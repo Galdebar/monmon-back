@@ -28,10 +28,13 @@ public class ShoppingListService {
     private final PasswordEncoder passwordEncoder;
     @Getter
     private final int LIST_DELETION_GRACE_PERIOD = 48;
+    @Getter
+    private final int PASSWORD_MIN_CHARACTERS = 5;
     @Autowired
     private JwtTokenProvider tokenProvider;
 
     public ShoppingListDTO createList(ShoppingListDTO createRequest) {
+        checkPasswordLength(createRequest);
         ShoppingListEntity entityToSave = new ShoppingListEntity(createRequest);
         entityToSave.setPassword(
                 passwordEncoder.encode(entityToSave.getPassword())
@@ -146,6 +149,12 @@ public class ShoppingListService {
         }
         if (request.getPassword().trim().isEmpty()) {
             throw new InvalidPassword("Password field empty");
+        }
+    }
+
+    private void checkPasswordLength(ShoppingListDTO createRequest) {
+        if(createRequest.getPassword().trim().length() < PASSWORD_MIN_CHARACTERS){
+            throw new ListPasswordTooShort(PASSWORD_MIN_CHARACTERS);
         }
     }
 

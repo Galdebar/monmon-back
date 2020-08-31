@@ -13,7 +13,11 @@ import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.InvalidPasswo
 import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.ListNameEmpty;
 import lt.galdebar.monmonapi.app.services.shoppinglists.exceptions.ListNotFound;
 import lt.galdebar.monmonapi.app.context.security.AuthTokenDTO;
+import lt.galdebar.monmonapi.categoriesparser.scheduledtasks.RunParser;
+import lt.galdebar.monmonapi.webscraper.scheduledtasks.RunScraper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +33,8 @@ import java.time.LocalDateTime;
 @RequestMapping("/lists")
 @Log4j2
 @RequiredArgsConstructor
+@ComponentScan(excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = RunScraper.class),
+@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = RunParser.class)})
 public class ShoppingListController implements GetUsernameFromSecurityContext{
 
     private final ShoppingListService service;

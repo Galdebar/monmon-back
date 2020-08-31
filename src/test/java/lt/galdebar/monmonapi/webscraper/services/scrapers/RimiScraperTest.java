@@ -3,7 +3,6 @@ package lt.galdebar.monmonapi.webscraper.services.scrapers;
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
-import lt.galdebar.monmonapi.webscraper.services.scrapers.pojos.ItemOnOffer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -121,7 +120,7 @@ public class RimiScraperTest {
 
         assertNotNull(actualItem);
         assertTrue(actualItem.getTitle().equalsIgnoreCase(expectedItemName));
-        assertTrue(actualItem.getItemBrand().equalsIgnoreCase(expectedItemBrand));
+        assertTrue(actualItem.getBrand().equalsIgnoreCase(expectedItemBrand));
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 
