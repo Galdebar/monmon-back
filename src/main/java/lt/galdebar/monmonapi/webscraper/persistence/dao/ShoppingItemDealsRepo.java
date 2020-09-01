@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ShoppingItemDealsRepo extends JpaRepository<ShoppingItemDealEntity, Long> {
     List<ShoppingItemDealEntity> findByShopTitle(String shopTitle);
+    boolean existsShoppingItemDealEntityByUntranslatedTitle(String untranslatedTitle);
+    boolean existsShoppingItemDealEntityByTitle(String title);
 }

@@ -96,9 +96,16 @@ public abstract class Scraper implements IsWebScraper {
         log.info(this.SHOP + " Running staggered translate and push for " + itemsOnOffer.size() + " items.");
         itemsOnOffer.stream().forEach(itemOnOffer -> {
             try {
+                if (skipTranslate(itemOnOffer)) {
+                    if (!dealsRepo.existsShoppingItemDealEntityByUntranslatedTitle(itemOnOffer.getUntranslatedTitle())) {
+                        saveAndLog(itemOnOffer);
+                    }
+                    log.info("Item deal for " + itemOnOffer.getUntranslatedTitle() + " already exists, not saving");
+                    return;
+                }
+
                 ShoppingItemDealDTO translatedItem = translateSingleItem(itemOnOffer, 1);
-                ShoppingItemDealEntity savedEntity = dealsRepo.save(new ShoppingItemDealEntity(translatedItem));
-                log.info("Saved item deal: " + savedEntity.toString());
+                saveAndLog(translatedItem);
                 log.info("Thread going to sleep for " + STAGGER_DURATION_SINGLE_ITEM_MINUTES + " minutes to prevent Http 429 when translating item");
                 Thread.sleep(TimeUnit.MINUTES.toMillis(STAGGER_DURATION_SINGLE_ITEM_MINUTES));
             } catch (MaxTranslateAttemptsException e) {
@@ -110,6 +117,15 @@ public abstract class Scraper implements IsWebScraper {
                 return;
             }
         });
+    }
+
+    private boolean skipTranslate(ShoppingItemDealDTO dealDTO) {
+        return dealDTO.getUntranslatedTitle().trim().isEmpty() && !dealDTO.getTitle().trim().isEmpty();
+    }
+
+    private void saveAndLog(ShoppingItemDealDTO dealDTO) {
+        ShoppingItemDealEntity savedEntity = dealsRepo.save(new ShoppingItemDealEntity(dealDTO));
+        log.info("Saved item deal: " + savedEntity.toString());
     }
 
     private ShoppingItemDealDTO translateSingleItem(ShoppingItemDealDTO dealDTO, int currentAttempt) throws InterruptedException {

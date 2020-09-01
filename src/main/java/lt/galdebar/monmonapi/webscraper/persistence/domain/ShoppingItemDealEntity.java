@@ -16,6 +16,9 @@ public class ShoppingItemDealEntity {
     private long id;
     @Column(columnDefinition="TEXT")
     @Field
+    private String untranslatedTitle;
+    @Column(columnDefinition="TEXT")
+    @Field
     private String title;
     @Column(columnDefinition="TEXT")
     private String brand;
@@ -23,6 +26,7 @@ public class ShoppingItemDealEntity {
     private float price;
 
     public ShoppingItemDealEntity() {
+        this.untranslatedTitle = "";
         this.title ="";
         this.brand = "";
         this.shopTitle = "";
@@ -30,6 +34,7 @@ public class ShoppingItemDealEntity {
     }
 
     public ShoppingItemDealEntity(ShoppingItemDealDTO dto) {
+        this.untranslatedTitle = dto.getUntranslatedTitle();
         this.title = dto.getTitle();
         this.brand = dto.getBrand();
         this.shopTitle = dto.getShopTitle();
@@ -38,6 +43,7 @@ public class ShoppingItemDealEntity {
 
     public ShoppingItemDealDTO getDTO(){
         return new ShoppingItemDealDTO(
+                untranslatedTitle,
                 title,
                 brand,
                 shopTitle,

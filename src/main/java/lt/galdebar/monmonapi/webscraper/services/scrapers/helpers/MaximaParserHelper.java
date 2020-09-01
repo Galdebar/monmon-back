@@ -11,16 +11,16 @@ public class MaximaParserHelper extends HTMLElementParserHelper {
     public MaximaParserHelper() {
         super(ShopNames.MAXIMA.getShopName());
     }
-
-    @Override
-    public ShoppingItemDealDTO parseElement(Element element) {
-        String name = getItemName(getTitleElement(element));
-        String brand = getItemBrand(getTitleElement(element));
-        float price = getItemPrice(element);
-        if(name.equalsIgnoreCase("")) {
-            return new ShoppingItemDealDTO(brand, "",shopName, price);
-        } else return new ShoppingItemDealDTO(name,brand,shopName,price);
-    }
+//
+//    @Override
+//    public ShoppingItemDealDTO parseElement(Element element) {
+//        String untranslatedTitle = getItemName(getTitleElement(element));
+//        String brand = getItemBrand(getTitleElement(element));
+//        float price = getItemPrice(element);
+//        if(untranslatedTitle.equalsIgnoreCase("")) {
+//            return new ShoppingItemDealDTO("",brand, "",shopName, price);
+//        } else return new ShoppingItemDealDTO(untranslatedTitle,"",brand,shopName,price);
+//    }
 
     @Override
     public float getItemPrice(Element element) {
