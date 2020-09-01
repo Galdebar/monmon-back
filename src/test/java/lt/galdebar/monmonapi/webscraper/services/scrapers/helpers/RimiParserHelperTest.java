@@ -46,7 +46,7 @@ public class RimiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
         assertEquals(expectedShopName, actualItem.getShopTitle());
@@ -62,7 +62,7 @@ public class RimiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
@@ -76,7 +76,7 @@ public class RimiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }

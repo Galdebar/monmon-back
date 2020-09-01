@@ -21,7 +21,7 @@ public abstract class HTMLElementParserHelper implements IsHTMLElementParserHelp
         String brand = getItemBrand(getTitleElement(element));
         float price = getItemPrice(element);
         if(untranslatedTitle.equalsIgnoreCase("")) {
-            return new ShoppingItemDealDTO("",brand, "",shopName, price);
+            return new ShoppingItemDealDTO(brand,"", "",shopName, price);
         } else return new ShoppingItemDealDTO(untranslatedTitle,"",brand,shopName,price);
     }
 

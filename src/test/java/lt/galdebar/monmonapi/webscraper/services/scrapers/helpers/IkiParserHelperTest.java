@@ -46,7 +46,7 @@ public class IkiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
         assertEquals(expectedShopName, actualItem.getShopTitle());
@@ -61,7 +61,7 @@ public class IkiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
         assertEquals(expectedShopName, actualItem.getShopTitle());
@@ -76,7 +76,7 @@ public class IkiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
@@ -90,7 +90,7 @@ public class IkiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
@@ -104,7 +104,7 @@ public class IkiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
@@ -118,7 +118,7 @@ public class IkiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }
@@ -132,7 +132,7 @@ public class IkiParserHelperTest {
 
         ShoppingItemDealDTO actualItem = parser.parseElement(testElement);
 
-        assertEquals(expectedName, actualItem.getTitle());
+        assertEquals(expectedName, actualItem.getUntranslatedTitle());
         assertEquals(expectedBrand, actualItem.getBrand());
         assertEquals(expectedPrice, actualItem.getPrice());
     }

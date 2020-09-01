@@ -21,8 +21,8 @@ public class IkiScraper extends Scraper {
     public IkiScraper(){
         super(
                 "https://www.iki.lt/akcijos/",
-                "sales-main-wrap",
-                "sales-item ",
+                "promotions",
+                "akcija__container",
                 ShopNames.IKI,
                 new IkiParserHelper()
         );
@@ -76,7 +76,7 @@ public class IkiScraper extends Scraper {
             fetchedDoc = Jsoup.connect(url)
                     .ignoreContentType(true)
                     .method(Connection.Method.GET)
-                    .cookie("PHPSESSID", sessionID)
+//                    .cookie("PHPSESSID", sessionID)
                     .maxBodySize(0)
                     .get();
         } catch (IOException e) {

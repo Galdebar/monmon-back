@@ -1,5 +1,6 @@
 package lt.galdebar.monmonapi.webscraper.services.scrapers;
 
+import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
@@ -12,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -26,6 +28,7 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test.properties")
+@ContextConfiguration(initializers = {ListTestContainersConfig.Initializer.class})
 public class IkiScraperTest {
 
     @org.springframework.boot.test.context.TestConfiguration
@@ -91,16 +94,16 @@ public class IkiScraperTest {
         assertEquals(expectedCount, actualCount);
     }
 
-    @Test
-    public void givenActualWebsite_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
-        int singlePageItemsCount = 18;
-        int totalItemsCount = getTotalItemsFromIki();
-        int expectedPagesCount = (totalItemsCount % singlePageItemsCount == 0) ? totalItemsCount / singlePageItemsCount : totalItemsCount / singlePageItemsCount + 1;
-        int actualPagesCount = ikiScraper.countPages();
-
-        assertNotEquals(0, expectedPagesCount);
-        assertEquals(expectedPagesCount, actualPagesCount);
-    }
+//    @Test
+//    public void givenActualWebsite_whenGetNumberOfRequiredRequests_thenReturnCorrectCount() {
+//        int singlePageItemsCount = 18;
+//        int totalItemsCount = getTotalItemsFromIki();
+//        int expectedPagesCount = (totalItemsCount % singlePageItemsCount == 0) ? totalItemsCount / singlePageItemsCount : totalItemsCount / singlePageItemsCount + 1;
+//        int actualPagesCount = ikiScraper.countPages();
+//
+//        assertNotEquals(0, expectedPagesCount);
+//        assertEquals(expectedPagesCount, actualPagesCount);
+//    }
 
     @Test
     public void givenActualSite_whenFetchItemsWithOffset_thenNotNull() {
@@ -133,29 +136,29 @@ public class IkiScraperTest {
         String expectedItemName = "Didieji raudonieji greipfrutai";
         String expectedItemBrand = "";
         float expectedItemPrice = 1.49f;
-        ShoppingItemDealDTO expectedItem = new ShoppingItemDealDTO(expectedItemName, expectedItemBrand, "ShopName", expectedItemPrice);
+        ShoppingItemDealDTO expectedItem = new ShoppingItemDealDTO(expectedItemName,"", expectedItemBrand, "ShopName", expectedItemPrice);
         ShoppingItemDealDTO actualItem = fullFileIkiScraper.elementToScrapedShoppingItem(
                 fullFileIkiScraper.getDocument().getElementsByClass("sales-item ").get(expectedItemIndex)
         );
 
         assertNotNull(actualItem);
-        assertTrue(actualItem.getTitle().equalsIgnoreCase(expectedItemName));
+        assertTrue(actualItem.getUntranslatedTitle().equalsIgnoreCase(expectedItemName));
         assertTrue(actualItem.getBrand().equalsIgnoreCase(expectedItemBrand));
         assertEquals(expectedItemPrice, actualItem.getPrice(), 0.0);
     }
 
-    @Test
-    public void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
-        boolean isPushSuccessful = ikiScraper.updateOffersDB();
-        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
-
-        assertTrue(isPushSuccessful);
-        assertNotNull(foundDeals);
-        assertEquals(
-                getTotalItemsFromMaxima(),
-                foundDeals.size()
-        );
-    }
+//    @Test
+//    public void givenValidWebsite_whenUpdateOffersDB_thenDBUpdated(){
+//        boolean isPushSuccessful = ikiScraper.updateOffersDB();
+//        List<ShoppingItemDealEntity> foundDeals = dealsRepo.findAll();
+//
+//        assertTrue(isPushSuccessful);
+//        assertNotNull(foundDeals);
+//        assertEquals(
+//                getTotalItemsFromMaxima(),
+//                foundDeals.size()
+//        );
+//    }
 
     // push to db with valid website
     //push to db with invalid website

@@ -54,6 +54,7 @@ public class RapidAPIItemTranslator implements IsItemTranslator {
         String translatedName = translateString(itemToTranslate.getTitle());
 
         return new ShoppingItemDealDTO(
+                itemToTranslate.getUntranslatedTitle(),
                 translatedName,
                 itemToTranslate.getBrand(),
                 itemToTranslate.getShopTitle(),

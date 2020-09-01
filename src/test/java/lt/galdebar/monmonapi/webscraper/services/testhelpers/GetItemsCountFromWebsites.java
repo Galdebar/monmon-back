@@ -16,8 +16,8 @@ public class GetItemsCountFromWebsites {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Element totalItemsElement = doc.getElementById("items_cnt");
-        return Integer.parseInt(totalItemsElement.text());
+        Elements totalElements = doc.getElementsByClass("item");
+        return totalElements.size();
     }
 
     public static int getTotalItemsFromRimi() {
@@ -43,24 +43,26 @@ public class GetItemsCountFromWebsites {
             e.printStackTrace();
         }
 
-        Element paginationElement = document.getElementsByClass("row-sales-pagination").get(0);
-        Elements pagesList = paginationElement
-                .getElementsByTag("li");
-        String lastElementText = pagesList.get(pagesList.size() - 1).getElementsByTag("a").get(0).text();
-
-        int pagesCount = Integer.parseInt(lastElementText);
-        int itemsOnLastPage = 0;
-        try {
-            itemsOnLastPage = Jsoup
-                    .connect(mainUrl + "?start=" + (pagesCount - 1) * itemsPerPage)
-                    .maxBodySize(0)
-                    .get()
-                    .select(".sales-item")
-                    .size();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return (pagesCount-1)*itemsPerPage + itemsOnLastPage;
+        return document.getElementsByClass("akcija__container").size();
+//
+//        Element paginationElement = document.getElementsByClass("row-sales-pagination").get(0);
+//        Elements pagesList = paginationElement
+//                .getElementsByTag("li");
+//        String lastElementText = pagesList.get(pagesList.size() - 1).getElementsByTag("a").get(0).text();
+//
+//        int pagesCount = Integer.parseInt(lastElementText);
+//        int itemsOnLastPage = 0;
+//        try {
+//            itemsOnLastPage = Jsoup
+//                    .connect(mainUrl + "?start=" + (pagesCount - 1) * itemsPerPage)
+//                    .maxBodySize(0)
+//                    .get()
+//                    .select(".sales-item")
+//                    .size();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return (pagesCount-1)*itemsPerPage + itemsOnLastPage;
     }
 }

@@ -10,7 +10,8 @@ public class IkiParserHelper extends HTMLElementParserHelper {
 
     @Override
     public Element getTitleElement(Element element) {
-        return element.getElementsByClass("title").get(0).getElementsByTag("h4").get(0);
+//        return element.getElementsByClass("title").get(0).getElementsByTag("h4").get(0);
+        return element.getElementsByClass("akcija__title").get(0);
     }
 
     @Override

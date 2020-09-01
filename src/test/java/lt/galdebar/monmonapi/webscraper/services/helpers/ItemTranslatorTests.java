@@ -48,6 +48,7 @@ public class ItemTranslatorTests {
     public void givenValidItem_whenTranslate_thenReturnTranslatedItem(){
         ShoppingItemDealDTO itemToTranslate = new ShoppingItemDealDTO(
                 "sviestas",
+                "",
                 "ROKIŠKIO",
                 "shopName",
                 1
@@ -67,6 +68,7 @@ public class ItemTranslatorTests {
     public void givenComplexItem_whenTranslate_thenReturnTranslatedItem(){
         ShoppingItemDealDTO itemToTranslate = new ShoppingItemDealDTO(
                 "Atšaldytas kiaulienos kumpis be kaulų, be odos, vakuumuotas",
+                "",
                 "ROKIŠKIO",
                 "shopName",
                 1
@@ -86,6 +88,7 @@ public class ItemTranslatorTests {
         ShoppingItemDealDTO itemToTranslate = new ShoppingItemDealDTO(
                 "KONSERVUOTOMS DARŽOVĖMS, VAISIAMS IR UOGIENĖMS",
                 "",
+                "",
                 "shopName",
                 1
         );
@@ -103,6 +106,7 @@ public class ItemTranslatorTests {
     public void givenItemWithNoName_whenTranslate_returnTranslatedBrandFiltered(){
         ShoppingItemDealDTO itemToTranslate = new ShoppingItemDealDTO(
                 "KOJINĖMS IR PĖDKELNĖMS",
+                "",
                 "",
                 "shopName",
                 1

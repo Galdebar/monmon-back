@@ -34,9 +34,10 @@ public class HackyGoogleItemTranslator implements IsItemTranslator {
     }
 
     public ShoppingItemDealDTO translate(ShoppingItemDealDTO itemToTranslate) {
-        String translatedName = translateString(itemToTranslate.getTitle());
+        String translatedName = translateString(itemToTranslate.getUntranslatedTitle());
 
         return new ShoppingItemDealDTO(
+                itemToTranslate.getUntranslatedTitle(),
                 translatedName,
                 itemToTranslate.getBrand(),
                 itemToTranslate.getShopTitle(),
