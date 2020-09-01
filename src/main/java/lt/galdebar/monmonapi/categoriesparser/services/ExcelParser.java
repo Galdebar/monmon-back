@@ -265,7 +265,8 @@ public class ExcelParser {
             dtoList.add(
                     new ShoppingCategoryDTO(
                             rowDTO.getCategoryName(),
-                            rowDTO.getKeywords()
+                            rowDTO.getKeywords(),
+                            new HashSet<>()
                     )
             );
         }

@@ -82,11 +82,12 @@ class ExcelParserTest {
         expectedCategoryKeywords.add(cell7Keyword7);
         expectedCategoryKeywords.add(cell7Keyword8);
 
-        expectedList.add(new ShoppingCategoryDTO("Uncategorized", new HashSet<>()));
+        expectedList.add(new ShoppingCategoryDTO("Uncategorized", new HashSet<>(),new HashSet<>()));
         expectedList.add(
                 new ShoppingCategoryDTO(
                         cell2Keyword,
-                        expectedCategoryKeywords
+                        expectedCategoryKeywords,
+                        new HashSet<>()
                 )
         );
 

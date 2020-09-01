@@ -17,4 +17,8 @@ public class ShoppingCategoryDTO {
     @NonNull
     @JsonIgnore
     private Set<String> keywords;
+
+    @NonNull
+    @JsonIgnore
+    private Set<String> customKeywords;
 }

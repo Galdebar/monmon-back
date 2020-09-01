@@ -60,10 +60,20 @@ public class ShoppingItemService {
                 !entityOptional.get().getShoppingList().getId().equals(listService.getCurrentList().getId())) {
             throw new ItemNotFound("Could not find item with ID: " + shoppingItemDTO.getId());
         }
+
+
         ShoppingItemEntity itemToSave = entityOptional.get();
+        addCustomCategory(itemToSave, shoppingItemDTO);
         itemToSave.update(shoppingItemDTO);
 
         return attatchDeal(itemRepo.save(itemToSave).getDTO());
+    }
+
+    private void addCustomCategory(ShoppingItemEntity itemToSave, ShoppingItemDTO shoppingItemDTO) {
+        if(shoppingItemDTO.getItemCategory() == null || shoppingItemDTO.getItemCategory().trim().isEmpty()){
+            return;
+        }
+        categoryService.addCustomKeyword(shoppingItemDTO.getItemCategory(),shoppingItemDTO.getItemName());
     }
 
     @Transactional

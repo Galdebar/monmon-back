@@ -1,15 +1,14 @@
 package lt.galdebar.monmonapi.categoriesparser.services;
 
+import lt.galdebar.monmonapi.categoriesparser.persistence.domain.*;
 import lt.galdebar.monmonapi.categoriesparser.persistence.repositories.CategoriesRepo;
-import lt.galdebar.monmonapi.categoriesparser.persistence.domain.ShoppingCategoryEntity;
-import lt.galdebar.monmonapi.categoriesparser.persistence.domain.ShoppingCategoryDTO;
-import lt.galdebar.monmonapi.categoriesparser.persistence.domain.ShoppingKeywordDTO;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,15 +54,21 @@ public class ShoppingItemCategoryService {
     public ShoppingCategoryDTO findCategoryByKeyword(ShoppingKeywordDTO keywordDTO) {
 
         ShoppingCategoryDTO dtoToReturn;
-        List<ShoppingCategoryDTO> foundKeywords = searchService.findCategoriesByKeyword(
-                keywordDTO
-        );
-        if(foundKeywords.size() ==0 || foundKeywords.get(0).getKeywords().stream().noneMatch(keywordDTO.getKeyword()::equalsIgnoreCase)){
-            dtoToReturn = searchService.getUncategorized();
-        } else {
-            dtoToReturn = foundKeywords.get(0);
 
+
+
+        List<ShoppingCategoryDTO> foundCategories = new ArrayList<>();
+
+        foundCategories = searchService.findCategoriesByCustomKeyword(keywordDTO);
+
+        if(foundCategories.size() ==0 || foundCategories.get(0).getCustomKeywords().stream().noneMatch(keywordDTO.getKeyword()::equalsIgnoreCase)){
+            foundCategories = searchService.findCategoriesByKeyword(keywordDTO);
         }
+
+        if(foundCategories.size() ==0 || foundCategories.get(0).getKeywords().stream().noneMatch(keywordDTO.getKeyword()::equalsIgnoreCase)){
+            foundCategories.add(searchService.getUncategorized());
+        }
+        dtoToReturn = foundCategories.get(0);
         return dtoToReturn;
 
     }
@@ -92,6 +97,24 @@ public class ShoppingItemCategoryService {
         return searchService.searchCategory(
                 itemCategory
         );
+    }
+
+    public void addCustomKeyword(String category, String keyword){
+        ShoppingCategoryEntity foundCategory = categoryRepo.findByCategoryName(category);
+        if(foundCategory==null){
+            return;
+        }
+
+        CustomKeywordEntity customKeyword = new CustomKeywordEntity();
+        customKeyword.setCustomKeyword(keyword);
+        customKeyword.setShoppingItemCategory(foundCategory);
+
+        foundCategory
+                .getCustomKeywords()
+                .add(customKeyword);
+
+        categoryRepo.save(foundCategory);
+
     }
 
 }

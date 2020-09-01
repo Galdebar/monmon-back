@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Helper class. Converts Category DTO objects into entities ready for storage in DB.
@@ -41,20 +42,24 @@ public class CategoryDTOToEntityConverter {
         categoryEntity.setCategoryName(categoryDTO.getCategoryName());
         categoryEntity.setKeywords(keywords);
         return categoryEntity;
-//        return new ShoppingCategoryEntity(
-//                categoryDTO.getCategoryName(),
-//                keywords
-//        );
     }
 
     ShoppingCategoryDTO convertEntityToDTO(ShoppingCategoryEntity entity){
         Set<String> keywords = new HashSet<>();
+
+
         for(ShoppingKeywordEntity keywordEntity:entity.getKeywords()){
             keywords.add(keywordEntity.getKeyword());
         }
+
+        Set<String> customKeywords = entity.getCustomKeywords().stream()
+                .map(CustomKeywordEntity::getCustomKeyword)
+                .collect(Collectors.toSet());
+
         return new ShoppingCategoryDTO(
                 entity.getCategoryName(),
-                keywords
+                keywords,
+                customKeywords
         );
     }
 

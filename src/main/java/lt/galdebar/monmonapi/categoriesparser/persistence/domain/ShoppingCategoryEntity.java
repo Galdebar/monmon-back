@@ -27,6 +27,9 @@ public class ShoppingCategoryEntity {
     @JsonBackReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "shoppingItemCategory", fetch = FetchType.EAGER)
     private Set<ShoppingKeywordEntity> keywords;
+    @JsonBackReference
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "shoppingItemCategory", fetch = FetchType.EAGER)
+    private Set<CustomKeywordEntity> customKeywords;
 
     public ShoppingCategoryEntity(String categoryName, Set<ShoppingKeywordEntity> keywords) {
         this.categoryName = categoryName;

@@ -87,6 +87,15 @@ public class CategoriesSearchService {
 
     @Transactional
     public List<ShoppingKeywordDTO> findKeywords(ShoppingKeywordDTO keywordDTO, int maxResults) {
+        List<CustomKeywordEntity> foundCustomKeywords = searchCustomKeywords(keywordDTO,maxResults);
+
+        if(foundCustomKeywords.size() >0){
+            return foundCustomKeywords.stream()
+                    .map(CustomKeywordEntity::getStandardKeywordDTO)
+                    .collect(Collectors.toList());
+        }
+
+
         List<ShoppingKeywordEntity> foundKeywords = searchKeywords(keywordDTO, maxResults);
 
         List<ShoppingKeywordDTO> keywordDTOS = keywordConverter.convertEntitiesToDTOs(foundKeywords);
@@ -102,6 +111,16 @@ public class CategoriesSearchService {
         }
         return categoryConverter.convertEntitiesToDTOs(categoryEntities);
     }
+
+    public List<ShoppingCategoryDTO> findCategoriesByCustomKeyword(ShoppingKeywordDTO keywordDTO) {
+        List<CustomKeywordEntity> foundKeywords = searchCustomKeywords(keywordDTO);
+        List<ShoppingCategoryEntity> categoryEntities = new ArrayList<>();
+        for (CustomKeywordEntity keyword : foundKeywords) {
+            categoryEntities.add(keyword.getShoppingItemCategory());
+        }
+        return categoryConverter.convertEntitiesToDTOs(categoryEntities);
+    }
+
 
     public List<ShoppingCategoryDTO> findCategoriesByKeyword(ShoppingKeywordDTO keywordDTO, int maxResults) {
         List<ShoppingKeywordEntity> foundKeywords = searchKeywords(keywordDTO, maxResults);
@@ -139,12 +158,12 @@ public class CategoriesSearchService {
         org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ShoppingKeywordEntity.class);
 
         List<ShoppingKeywordEntity> foundKeywords =  (List<ShoppingKeywordEntity>) jpaQuery.getResultList();
-        String bestMatch = stringMatcher.findBestMatch(
-                keywordDTO.getKeyword(),
-                foundKeywords.stream()
-                .map(ShoppingKeywordEntity::getKeyword)
-                .collect(Collectors.toList())
-        );
+//        String bestMatch = stringMatcher.findBestMatch(
+//                keywordDTO.getKeyword(),
+//                foundKeywords.stream()
+//                .map(ShoppingKeywordEntity::getKeyword)
+//                .collect(Collectors.toList())
+//        );
 
         return foundKeywords;
     }
@@ -180,6 +199,66 @@ public class CategoriesSearchService {
 //            System.out.println(keyword.getCategory().getCategoryName());
 //        }
         return (List<ShoppingKeywordEntity>) jpaQuery.setMaxResults(maxResults).getResultList();
+    }
+
+    @Transactional
+    private List<CustomKeywordEntity> searchCustomKeywords(ShoppingKeywordDTO keywordDTO) {
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
+                .getAnalyzer(CustomKeywordEntity.class);
+        String analyzedString = analyzeString(customAnalyzer, keywordDTO.getKeyword());
+
+        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
+                .forEntity(CustomKeywordEntity.class).get();
+
+        if (analyzedString.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Query query = queryBuilder
+                .keyword()
+                .fuzzy()
+                .withEditDistanceUpTo(2)
+                .withPrefixLength(2)
+                .onField("customKeyword")
+                .matching(analyzedString)
+                .createQuery();
+
+
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, CustomKeywordEntity.class);
+
+        List<CustomKeywordEntity> foundKeywords =  (List<CustomKeywordEntity>) jpaQuery.getResultList();
+        return foundKeywords;
+    }
+
+    @Transactional
+    private List<CustomKeywordEntity> searchCustomKeywords(ShoppingKeywordDTO keywordDTO,int maxResults) {
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
+                .getAnalyzer(CustomKeywordEntity.class);
+        String analyzedString = analyzeString(customAnalyzer, keywordDTO.getKeyword());
+
+        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
+                .forEntity(CustomKeywordEntity.class).get();
+
+        if (analyzedString.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Query query = queryBuilder
+                .keyword()
+                .fuzzy()
+                .withEditDistanceUpTo(2)
+                .withPrefixLength(2)
+                .onField("customKeyword")
+                .matching(analyzedString)
+                .createQuery();
+
+
+        org.hibernate.search.jpa.FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, CustomKeywordEntity.class);
+
+        List<CustomKeywordEntity> foundKeywords =  (List<CustomKeywordEntity>) jpaQuery.setMaxResults(maxResults).getResultList();
+        return foundKeywords;
     }
 
     @Transactional
