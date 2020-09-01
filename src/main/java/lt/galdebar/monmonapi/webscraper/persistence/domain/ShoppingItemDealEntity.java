@@ -14,7 +14,7 @@ public class ShoppingItemDealEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column(name = "untranslated_title",columnDefinition="TEXT")
+    @Column(columnDefinition="TEXT")
     @Field
     private String untranslatedTitle;
     @Column(columnDefinition="TEXT")

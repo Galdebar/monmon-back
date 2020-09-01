@@ -63,10 +63,12 @@ public class ShoppingItemDealFinderService {
     public ShoppingItemDealDTO getBestDeal(String keyword) {
         List<ShoppingItemDealDTO> foundDeals = searchDealsByUntranslatedTitle(keyword);
 
-        if(foundDeals.size() ==0){
-            foundDeals = searchDealsByTranslatedTitle(keyword);
+        if(foundDeals.size() >0){
+            ShoppingItemDealDTO bestDeal = findBestDeal(foundDeals);
+            bestDeal.setTitle(bestDeal.getUntranslatedTitle());
+            return bestDeal;
         }
-
+        foundDeals = searchDealsByTranslatedTitle(keyword);
         return findBestDeal(foundDeals);
     }
 
@@ -136,7 +138,7 @@ public class ShoppingItemDealFinderService {
                 .fuzzy()
                 .withEditDistanceUpTo(1)
                 .withPrefixLength(1)
-                .onField("untranslated_title")
+                .onField("untranslatedTitle")
                 .matching(analyzedString)
                 .createQuery();
 
