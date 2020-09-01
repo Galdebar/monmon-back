@@ -57,37 +57,34 @@ public class ShoppingItemDealFinderService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        return searchDeals(keyword);
+        return searchDealsByTranslatedTitle(keyword);
     }
 
     public ShoppingItemDealDTO getBestDeal(String keyword) {
-        // shouuld just implement Lucene search and then compare search results with keyword string
-//        List<ShoppingItemDealEntity> allDeals = dealsRepo.findAll();
-//        Map<String,ShoppingItemDealEntity> dealsMap = new HashMap<>();
-//        List<String> dealEntityKeywords = new ArrayList<>();
-//        allDeals.stream().forEach(shoppingItemDealEntity -> {
-//            dealsMap.put(shoppingItemDealEntity.getOriginalTitle(),shoppingItemDealEntity);
-//            dealEntityKeywords.add(shoppingItemDealEntity.getOriginalTitle());
-//        });
-//
-//        String closestMatch = stringMatcher.findBestMatch(keyword,dealEntityKeywords);
+        List<ShoppingItemDealDTO> foundDeals = searchDealsByUntranslatedTitle(keyword);
 
+        if(foundDeals.size() ==0){
+            foundDeals = searchDealsByTranslatedTitle(keyword);
+        }
 
-        List<ShoppingItemDealDTO> foundDeals = searchDeals(keyword);
-        if (foundDeals.size() == 0) {
+        return findBestDeal(foundDeals);
+    }
+
+    private ShoppingItemDealDTO findBestDeal(List<ShoppingItemDealDTO> deals){
+        if (deals.size() == 0) {
             return new ShoppingItemDealDTO();
         }
-        if (foundDeals.size() > 1) {
-            ShoppingItemDealDTO bestDeal = foundDeals.stream()
+        if (deals.size() > 1) {
+            ShoppingItemDealDTO bestDeal = deals.stream()
                     .sorted((o1, o2) -> Float.compare(o1.getPrice(), o2.getPrice()))
                     .collect(Collectors.toList())
                     .get(0);
             return bestDeal;
-        } else return foundDeals.get(0);
+        } else return deals.get(0);
     }
 
     @Transactional
-    public List<ShoppingItemDealDTO> searchDeals(String keyword){
+    public List<ShoppingItemDealDTO> searchDealsByTranslatedTitle(String keyword){
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
                 .getAnalyzer(ShoppingItemDealEntity.class);
@@ -106,6 +103,40 @@ public class ShoppingItemDealFinderService {
                 .withEditDistanceUpTo(2)
                 .withPrefixLength(2)
                 .onField("title")
+                .matching(analyzedString)
+                .createQuery();
+
+        FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(
+                query,
+                ShoppingItemDealEntity.class
+        );
+
+        List<ShoppingItemDealEntity> queryResults = jpaQuery.setMaxResults(MAX_QUERY_RESULTS).getResultList();
+        return queryResults.stream()
+                .map(ShoppingItemDealEntity::getDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<ShoppingItemDealDTO> searchDealsByUntranslatedTitle(String keyword){
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
+                .getAnalyzer(ShoppingItemDealEntity.class);
+        String analyzedString = analyzeString(customAnalyzer, keyword);
+
+        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
+                .forEntity(ShoppingItemDealEntity.class).get();
+
+        if(analyzedString.trim().isEmpty()){
+            return new ArrayList<ShoppingItemDealDTO>();
+        }
+
+        Query query = queryBuilder
+                .keyword()
+                .fuzzy()
+                .withEditDistanceUpTo(1)
+                .withPrefixLength(1)
+                .onField("untranslated_title")
                 .matching(analyzedString)
                 .createQuery();
 
