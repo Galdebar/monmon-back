@@ -78,6 +78,7 @@ public abstract class HTMLElementParserHelper implements IsHTMLElementParserHelp
     }
 
     List<String> generateSectionsSeparatedByCommas(String fullTitle) {
+        fullTitle = removePerenthesses(fullTitle);
         List<String> initialList = new ArrayList<>(Arrays.asList(fullTitle.split(",")));
         if (initialList.size() > 1) {
             //Unknown if readding the comma is needed
@@ -96,6 +97,11 @@ public abstract class HTMLElementParserHelper implements IsHTMLElementParserHelp
         }
 
         return initialList;
+    }
+
+    private String removePerenthesses(String fullTitle) {
+
+        return fullTitle.replaceAll("\\s*\\([^\\)]*\\)\\s*", " ");
     }
 
     List<String> filterTitleSubsectionsAfterFirstComma(List<String> subsections) {
