@@ -4,6 +4,7 @@ import lt.galdebar.monmonapi.ListTestContainersConfig;
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
+import lt.galdebar.monmonapi.webscraper.scheduledtasks.RunScraper;
 import lt.galdebar.monmonapi.webscraper.services.helpers.translators.HackyGoogleItemTranslator;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.MaximaScraper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.ShopNames;
@@ -13,6 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -21,12 +24,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static lt.galdebar.monmonapi.webscraper.services.scrapers.ShopNames.*;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(initializers = {ListTestContainersConfig.Initializer.class})
+@ComponentScan(excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = RunScraper.class)})
 public class ShoppingItemDealFinderServiceTests {
 
     @Autowired
@@ -64,7 +69,7 @@ public class ShoppingItemDealFinderServiceTests {
 
     @Test
     public void whenGetDealsByShopName_thenReturnList() {
-        for (ShopNames shop : ShopNames.values()) {
+        for (ShopNames shop : values()) {
             int expectedNumOfDeals = (int) dealsRepo.findAll().stream()
                     .filter(deal -> deal.getShopTitle().equalsIgnoreCase(shop.getShopName())).count();
             List<ShoppingItemDealDTO> foundDeals = shoppingItemDealFinderService.getDealByShop(shop);
@@ -183,17 +188,57 @@ public class ShoppingItemDealFinderServiceTests {
         assertEquals(0,actualDeal.getPrice(),0.001);
     }
 
+    @Test
+    public void givenLithuanianKeyword_whenGetBestDeal_thenReturnItemMatchingUntranslatedTitle(){
+        String lithuanianKeyword = "kiausiniai";
+
+        ShoppingItemDealEntity expectedDeal = new ShoppingItemDealEntity();
+        expectedDeal.setUntranslatedTitle("kaimiški kiaušiniai");
+        expectedDeal.setTitle("country eggs");
+        expectedDeal.setBrand("RIDO");
+        expectedDeal.setShopTitle(RIMI.getShopName());
+        expectedDeal.setPrice(0.25f);
+
+        ShoppingItemDealEntity alternativeDeal1 = new ShoppingItemDealEntity();
+        alternativeDeal1.setUntranslatedTitle("kiaušiniai");
+        alternativeDeal1.setTitle("eggs");
+        alternativeDeal1.setBrand("RIDO");
+        alternativeDeal1.setShopTitle(MAXIMA.getShopName());
+        alternativeDeal1.setPrice(0.69f);
+
+        ShoppingItemDealEntity alternativeDeal2 = new ShoppingItemDealEntity();
+        alternativeDeal2.setUntranslatedTitle("kazkas kito");
+        alternativeDeal2.setTitle("country eggs");
+        alternativeDeal2.setBrand("RIDO");
+        alternativeDeal2.setShopTitle(IKI.getShopName());
+        alternativeDeal2.setPrice(0.20f);
+
+        dealsRepo.save(expectedDeal);
+        dealsRepo.save(alternativeDeal1);
+        dealsRepo.save(alternativeDeal2);
+
+        ShoppingItemDealDTO actualDeal = shoppingItemDealFinderService.getBestDeal(lithuanianKeyword);
+
+        assertEquals(expectedDeal.getUntranslatedTitle(), actualDeal.getUntranslatedTitle());
+        assertEquals(expectedDeal.getUntranslatedTitle(), actualDeal.getTitle());
+        assertEquals(expectedDeal.getBrand(), actualDeal.getBrand());
+        assertEquals(expectedDeal.getShopTitle(), actualDeal.getShopTitle());
+        assertEquals(expectedDeal.getPrice(), actualDeal.getPrice(),0.001f);
+
+    }
+    //prioritize untranslated deal
+
 
     private void addItemsToDB() {
         List<ShoppingItemDealEntity> deals = new ArrayList<>();
         deals.add(
-                createDeal("Eggs", "", ShopNames.MAXIMA, 1f)
+                createDeal("Eggs", "", MAXIMA, 1f)
         );
         deals.add(
-                createDeal("Eggs", "", ShopNames.IKI, 0.2f)
+                createDeal("Eggs", "", IKI, 0.2f)
         );
         deals.add(
-                createDeal("Milk", "Rokiskio", ShopNames.MAXIMA, 1.5f)
+                createDeal("Milk", "Rokiskio", MAXIMA, 1.5f)
         );
         dealsRepo.saveAll(deals);
     }

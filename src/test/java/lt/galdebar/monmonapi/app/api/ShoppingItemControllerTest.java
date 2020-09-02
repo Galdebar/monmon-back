@@ -7,11 +7,15 @@ import lt.galdebar.monmonapi.app.persistence.domain.shoppingitems.ShoppingItemEn
 import lt.galdebar.monmonapi.app.persistence.domain.shoppinglists.ShoppingListEntity;
 import lt.galdebar.monmonapi.app.persistence.repositories.ShoppingItemRepo;
 import lt.galdebar.monmonapi.app.persistence.repositories.ShoppingListRepo;
+import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
+import lt.galdebar.monmonapi.webscraper.scheduledtasks.RunScraper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -34,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ContextConfiguration(initializers = {ListTestContainersConfig.Initializer.class})
 @TestPropertySource(locations = "classpath:test.properties")
+@ComponentScan(excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = RunScraper.class)})
 class ShoppingItemControllerTest {
 
     @Autowired
@@ -791,6 +796,59 @@ class ShoppingItemControllerTest {
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void givenItemWithUpdatedCategory_whenAddSameItem_thenReturnUpdatedCategory() throws Exception{
+        String itemName = "milk";
+        String expectedOriginalCategory = "Beverages";
+        String updatedCategory = "Dairy Products";
+
+        AuthTokenDTO authToken = createListAndLoginAndGetAuthTokenDTO();
+
+        ShoppingItemDTO firstItem = new ShoppingItemDTO();
+        firstItem.setItemName(itemName);
+
+        String firstItemResponse = mockMvc.perform(post("/items/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(firstItem))
+                .header("Authorization", "Bearer " + authToken.getToken()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        ShoppingItemDTO firstAddedItem = objectMapper.readValue(firstItemResponse,ShoppingItemDTO.class);
+
+        assertEquals(expectedOriginalCategory,firstAddedItem.getItemCategory());
+
+        firstAddedItem.setItemCategory(updatedCategory);
+
+        String updateResponse = mockMvc.perform(post("/items/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(firstAddedItem))
+                .header("Authorization", "Bearer " + authToken.getToken()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        ShoppingItemDTO updateItemResponse = objectMapper.readValue(updateResponse, ShoppingItemDTO.class);
+
+        assertEquals(updatedCategory, updateItemResponse.getItemCategory());
+
+        String secondItemResponse = mockMvc.perform(post("/items/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(firstItem))
+                .header("Authorization", "Bearer " + authToken.getToken()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        ShoppingItemDTO secondItem = objectMapper.readValue(secondItemResponse,ShoppingItemDTO.class);
+
+        assertEquals(updatedCategory,secondItem.getItemCategory());
+
+
+    }
+
 
 
     private AuthTokenDTO createListAndLoginAndGetAuthTokenDTO() throws Exception {

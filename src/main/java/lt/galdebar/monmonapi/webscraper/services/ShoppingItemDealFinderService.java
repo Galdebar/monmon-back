@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -33,11 +34,15 @@ public class ShoppingItemDealFinderService {
     @Autowired
     private StringMatcherHelper stringMatcher;
 
-    @Autowired
-    private EntityManager entityManager;
+//    @Autowired
+    private final EntityManager entityManager;
 
     private final int MAX_QUERY_RESULTS = 5;
 
+    @Autowired
+    public ShoppingItemDealFinderService(final EntityManagerFactory entityManagerFactory) {
+        this.entityManager = entityManagerFactory.createEntityManager();
+    }
 
     @Transactional
     public List<ShoppingItemDealDTO> getAllDeals() {
