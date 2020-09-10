@@ -3,6 +3,7 @@ package lt.galdebar.monmonapi.webscraper.services;
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
+import lt.galdebar.monmonapi.webscraper.services.exceptions.BadDealRequest;
 import lt.galdebar.monmonapi.webscraper.services.helpers.StringMatcherHelper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.ShopNames;
 import org.apache.lucene.analysis.Analyzer;
@@ -34,7 +35,7 @@ public class ShoppingItemDealFinderService {
     @Autowired
     private StringMatcherHelper stringMatcher;
 
-//    @Autowired
+    //    @Autowired
     private final EntityManager entityManager;
 
     private final int MAX_QUERY_RESULTS = 5;
@@ -52,7 +53,17 @@ public class ShoppingItemDealFinderService {
                 .collect(Collectors.toList());
     }
 
-    public List<ShoppingItemDealDTO> getDealByShop(ShopNames shop) {
+    public List<ShoppingItemDealDTO> getDealsByShop(String shopName) {
+        for (ShopNames existingName : ShopNames.values()) {
+            if (existingName.getShopName().equalsIgnoreCase(shopName)) {
+                return getDealsByShop(existingName);
+            }
+        }
+
+        throw new BadDealRequest("Invalid shop name: " + shopName);
+    }
+
+    public List<ShoppingItemDealDTO> getDealsByShop(ShopNames shop) {
         return dealsRepo.findByShopTitle(shop.getShopName()).stream()
                 .map(ShoppingItemDealEntity::getDTO)
                 .collect(Collectors.toList());
@@ -68,30 +79,80 @@ public class ShoppingItemDealFinderService {
     public ShoppingItemDealDTO getBestDeal(String keyword) {
         List<ShoppingItemDealDTO> foundDeals = searchDealsByUntranslatedTitle(keyword);
 
-        if(foundDeals.size() >0){
-            ShoppingItemDealDTO bestDeal = findBestDeal(foundDeals);
+        if (foundDeals.size() > 0) {
+            ShoppingItemDealDTO bestDeal = findBestDeal(keyword, foundDeals, false);
             bestDeal.setTitle(bestDeal.getUntranslatedTitle());
             return bestDeal;
         }
         foundDeals = searchDealsByTranslatedTitle(keyword);
-        return findBestDeal(foundDeals);
+        return findBestDeal(keyword, foundDeals, true);
     }
 
-    private ShoppingItemDealDTO findBestDeal(List<ShoppingItemDealDTO> deals){
-        if (deals.size() == 0) {
+    private ShoppingItemDealDTO findBestDeal(String originalKeyword, List<ShoppingItemDealDTO> foundDeals, boolean filterTranslated) {
+
+        List<String> bestMatchingKeywords = findBestMatchingKeywords(originalKeyword,foundDeals,filterTranslated);
+
+        if (bestMatchingKeywords.size() == 0) {
             return new ShoppingItemDealDTO();
         }
-        if (deals.size() > 1) {
-            ShoppingItemDealDTO bestDeal = deals.stream()
-                    .sorted((o1, o2) -> Float.compare(o1.getPrice(), o2.getPrice()))
-                    .collect(Collectors.toList())
-                    .get(0);
-            return bestDeal;
-        } else return deals.get(0);
+
+        if (filterTranslated) {
+            foundDeals = filterTranslatedDealsByKeywords(foundDeals, bestMatchingKeywords);
+        } else foundDeals = filterUntranslatedDealsByKeywords(foundDeals, bestMatchingKeywords);
+
+        foundDeals = foundDeals.stream()
+                .sorted((o1, o2) -> {
+                    if (stringMatcher.doStringsMatch(o1.getUntranslatedTitle(), o2.getUntranslatedTitle())) {
+
+                        return Float.compare(o1.getPrice(), o2.getPrice());
+                    } else return 0;
+                })
+                .collect(Collectors.toList());
+
+        if (foundDeals.size() > 0) {
+            return foundDeals.get(0);
+        } else return new ShoppingItemDealDTO();
+
+    }
+
+    private List<String> findBestMatchingKeywords(String originalKeyword, List<ShoppingItemDealDTO> deals, boolean filterTranslated) {
+        if (filterTranslated) {
+            return stringMatcher.findBestMatches(
+                    originalKeyword, deals.stream().map(ShoppingItemDealDTO::getTitle).collect(Collectors.toList())
+            );
+        } else {
+            return stringMatcher.findBestMatches(
+                    originalKeyword, deals.stream().map(ShoppingItemDealDTO::getUntranslatedTitle).collect(Collectors.toList())
+            );
+        }
+    }
+
+    private List<ShoppingItemDealDTO> filterUntranslatedDealsByKeywords(List<ShoppingItemDealDTO> deals, List<String> keywords) {
+        return deals.stream()
+                .filter(dealDTO -> {
+                    for (String keyword : keywords)
+                        if (dealDTO.getUntranslatedTitle().equalsIgnoreCase(keyword)) {
+                            return true;
+                        }
+                    return false;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<ShoppingItemDealDTO> filterTranslatedDealsByKeywords(List<ShoppingItemDealDTO> deals, List<String> keywords) {
+        return deals.stream()
+                .filter(dealDTO -> {
+                    for (String keyword : keywords)
+                        if (dealDTO.getTitle().equalsIgnoreCase(keyword)) {
+                            return true;
+                        }
+                    return false;
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public List<ShoppingItemDealDTO> searchDealsByTranslatedTitle(String keyword){
+    public List<ShoppingItemDealDTO> searchDealsByTranslatedTitle(String keyword) {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
                 .getAnalyzer(ShoppingItemDealEntity.class);
@@ -100,7 +161,7 @@ public class ShoppingItemDealFinderService {
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
                 .forEntity(ShoppingItemDealEntity.class).get();
 
-        if(analyzedString.trim().isEmpty()){
+        if (analyzedString.trim().isEmpty()) {
             return new ArrayList<ShoppingItemDealDTO>();
         }
 
@@ -125,7 +186,7 @@ public class ShoppingItemDealFinderService {
     }
 
     @Transactional
-    public List<ShoppingItemDealDTO> searchDealsByUntranslatedTitle(String keyword){
+    public List<ShoppingItemDealDTO> searchDealsByUntranslatedTitle(String keyword) {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         Analyzer customAnalyzer = fullTextEntityManager.getSearchFactory()
                 .getAnalyzer(ShoppingItemDealEntity.class);
@@ -134,7 +195,7 @@ public class ShoppingItemDealFinderService {
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
                 .forEntity(ShoppingItemDealEntity.class).get();
 
-        if(analyzedString.trim().isEmpty()){
+        if (analyzedString.trim().isEmpty()) {
             return new ArrayList<ShoppingItemDealDTO>();
         }
 

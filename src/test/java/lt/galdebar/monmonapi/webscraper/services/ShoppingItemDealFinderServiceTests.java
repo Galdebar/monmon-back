@@ -72,7 +72,7 @@ public class ShoppingItemDealFinderServiceTests {
         for (ShopNames shop : values()) {
             int expectedNumOfDeals = (int) dealsRepo.findAll().stream()
                     .filter(deal -> deal.getShopTitle().equalsIgnoreCase(shop.getShopName())).count();
-            List<ShoppingItemDealDTO> foundDeals = shoppingItemDealFinderService.getDealByShop(shop);
+            List<ShoppingItemDealDTO> foundDeals = shoppingItemDealFinderService.getDealsByShop(shop);
             assertNotNull(foundDeals);
             assertEquals(expectedNumOfDeals, foundDeals.size());
         }

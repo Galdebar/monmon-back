@@ -37,6 +37,7 @@ public class IkiScraper extends Scraper {
         }
     }
 
+    //just left this constructor so the tests with the old naming doesn't break
     public IkiScraper(Document doc) {
         super(
                 "https://www.iki.lt/akcijos/",
@@ -69,7 +70,7 @@ public class IkiScraper extends Scraper {
 
     List<ShoppingItemDealDTO> fetchItemsWithOffset(int i) {
         int offset = ITEMS_PER_PAGE * i;
-        String url = URL + "?start=" + offset;
+        String url = URL + "/page/" + offset + "/";
         Document fetchedDoc;
 
         try {
@@ -88,10 +89,10 @@ public class IkiScraper extends Scraper {
     }
 
     int countPages() {
-        Element paginationElement = document.getElementsByClass("row-sales-pagination").get(0);
+        Element paginationElement = document.getElementsByClass("nav-links").get(0);
         Elements pagesList =  paginationElement
-                .getElementsByTag("li");
-        String lastElementText = pagesList.get(pagesList.size()-1).getElementsByTag("a").get(0).text();
+                .getElementsByTag("a");
+        String lastElementText = pagesList.get(pagesList.size()-1).text();
         return Integer.parseInt(lastElementText);
     }
 

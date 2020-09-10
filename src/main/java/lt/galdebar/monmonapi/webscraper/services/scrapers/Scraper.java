@@ -118,7 +118,20 @@ public abstract class Scraper implements IsWebScraper {
     }
 
     private boolean skipTranslate(ShoppingItemDealDTO dealDTO) {
-        return dealsRepo.existsShoppingItemDealEntityByUntranslatedTitle(dealDTO.getUntranslatedTitle());
+//        List<ShoppingItemDealEntity> foundEntities = dealsRepo.findByUntranslatedTitle(dealDTO.getUntranslatedTitle());
+//        if(foundEntities.size()>0){
+//            for(ShoppingItemDealEntity entity:foundEntities){
+//                if(entity.getShopTitle().equalsIgnoreCase(dealDTO.getShopTitle())){
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        return false;
+        return dealsRepo.existsShoppingItemDealEntityByUntranslatedTitleAndShopTitle(
+                dealDTO.getUntranslatedTitle(),
+                dealDTO.getShopTitle()
+        );
     }
 
 

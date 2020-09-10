@@ -11,11 +11,12 @@ import static java.lang.Math.max;
 @Log4j2
 @Component
 public class StringMatcherHelper {
-    private final float PHRASE_WEIGHT = 0.5f;
-    private final float WORD_WEIGHT = 1f;
-    private final float LENGTH_WEIGHT = -0.3f;
+    private final float PHRASE_WEIGHT = 0.8f;
+    private final float WORD_WEIGHT = 0.7f;
+    private final float LENGTH_WEIGHT = 0.3f;
     private final float MIN_WEIGHT = 10f;
     private final float MAX_WEIGHT = 1f;
+    private final float cutoffPoint = 30f;
 
 
     public String findBestMatch(String originalString, List<String> keywords) {
@@ -30,7 +31,7 @@ public class StringMatcherHelper {
 
 
         sorted.putAll(keywordsWithWeights);
-        if(sorted.size() == 0){
+        if (sorted.size() == 0) {
             return "";
         }
         Float first = sorted.firstKey();
@@ -39,6 +40,29 @@ public class StringMatcherHelper {
                 "Original: " + originalString + ". Match: " + first + " --- " + result
         );
         return result;
+    }
+
+    public List<String> findBestMatches(String originalString, List<String> keywords) {
+        Map<Float, String> keywordsWithWeights = new HashMap<>();
+
+        for (String keyword : keywords) {
+            float matchValue = findMatchValue(originalString, keyword);
+            if (matchValue < cutoffPoint) {
+                keywordsWithWeights.put(matchValue, keyword);
+            }
+        }
+
+        TreeMap<Float, String> sorted = new TreeMap<>();
+
+
+        sorted.putAll(keywordsWithWeights);
+
+        return new ArrayList<>(sorted.values());
+    }
+
+    public boolean doStringsMatch(String s1, String s2) {
+        float matchValue = findMatchValue(s1, s2);
+        return matchValue < cutoffPoint;
     }
 
     private float findMatchValue(String originalName, String keyword) {
