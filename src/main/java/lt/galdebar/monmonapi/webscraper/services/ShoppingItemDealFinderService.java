@@ -3,7 +3,7 @@ package lt.galdebar.monmonapi.webscraper.services;
 import lt.galdebar.monmonapi.webscraper.persistence.dao.ShoppingItemDealsRepo;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealDTO;
 import lt.galdebar.monmonapi.webscraper.persistence.domain.ShoppingItemDealEntity;
-import lt.galdebar.monmonapi.webscraper.services.exceptions.BadDealRequest;
+import lt.galdebar.monmonapi.app.services.shoppingdeals.exceptions.BadDealRequest;
 import lt.galdebar.monmonapi.webscraper.services.helpers.StringMatcherHelper;
 import lt.galdebar.monmonapi.webscraper.services.scrapers.ShopNames;
 import org.apache.lucene.analysis.Analyzer;
@@ -51,16 +51,6 @@ public class ShoppingItemDealFinderService {
         return dealsRepo.findAll().stream()
                 .map(ShoppingItemDealEntity::getDTO)
                 .collect(Collectors.toList());
-    }
-
-    public List<ShoppingItemDealDTO> getDealsByShop(String shopName) {
-        for (ShopNames existingName : ShopNames.values()) {
-            if (existingName.getShopName().equalsIgnoreCase(shopName)) {
-                return getDealsByShop(existingName);
-            }
-        }
-
-        throw new BadDealRequest("Invalid shop name: " + shopName);
     }
 
     public List<ShoppingItemDealDTO> getDealsByShop(ShopNames shop) {

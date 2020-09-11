@@ -120,7 +120,7 @@ class ShoppingItemControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        List<ShoppingItemDTO> actualItems = objectMapper.readValue(response, new TypeReference<List<ShoppingItemEntity>>() {
+        List<ShoppingItemDTO> actualItems = objectMapper.readValue(response, new TypeReference<List<ShoppingItemDTO>>() {
         });
         assertNotNull(response);
         assertEquals(2, actualItems.size());

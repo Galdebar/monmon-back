@@ -46,7 +46,7 @@ public class ShoppingItemService {
         }
         ShoppingItemEntity entityToSave = new ShoppingItemEntity(shoppingItemDTO);
         entityToSave.setShoppingList(listService.getCurrentList());
-        return attatchDeal(itemRepo.save(entityToSave).getDTO());
+        return itemRepo.save(entityToSave).getDTO();
     }
 
     @Transactional
@@ -66,7 +66,7 @@ public class ShoppingItemService {
         addCustomCategory(itemToSave, shoppingItemDTO);
         itemToSave.update(shoppingItemDTO);
 
-        return attatchDeal(itemRepo.save(itemToSave).getDTO());
+        return itemRepo.save(itemToSave).getDTO();
     }
 
     private void addCustomCategory(ShoppingItemEntity itemToSave, ShoppingItemDTO shoppingItemDTO) {

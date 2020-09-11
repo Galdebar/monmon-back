@@ -1,4 +1,4 @@
-package lt.galdebar.monmonapi.webscraper.services.exceptions;
+package lt.galdebar.monmonapi.app.services.shoppingdeals.exceptions;
 
 public class BadDealRequest extends RuntimeException {
     public BadDealRequest(String message){

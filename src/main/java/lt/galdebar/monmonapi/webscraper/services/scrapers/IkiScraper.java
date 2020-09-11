@@ -20,7 +20,7 @@ public class IkiScraper extends Scraper {
 
     public IkiScraper(){
         super(
-                "https://www.iki.lt/akcijos/",
+                "https://iki.lt/akcijos/savaites-akcijos",
                 "promotions",
                 "akcija__container",
                 ShopNames.IKI,
@@ -60,17 +60,17 @@ public class IkiScraper extends Scraper {
             return elementsToScrapedItems(elements);
         }
         int pagesCount = countPages();
-        List<ShoppingItemDealDTO> totalElements = new ArrayList<>();
+        List<ShoppingItemDealDTO> totalDeals = new ArrayList<>();
         for (int i = 0; i < pagesCount; i++) {
-            List<ShoppingItemDealDTO> fetchedPage = fetchItemsWithOffset(i);
-            totalElements.addAll(fetchedPage);
+            List<ShoppingItemDealDTO> dealsPerPage = fetchItemsWithOffset(i);
+            totalDeals.addAll(dealsPerPage);
         }
-        return totalElements;
+        return totalDeals;
     }
 
     List<ShoppingItemDealDTO> fetchItemsWithOffset(int i) {
         int offset = ITEMS_PER_PAGE * i;
-        String url = URL + "/page/" + offset + "/";
+        String url = URL + "/page/" + i + "/";
         Document fetchedDoc;
 
         try {
@@ -92,7 +92,7 @@ public class IkiScraper extends Scraper {
         Element paginationElement = document.getElementsByClass("nav-links").get(0);
         Elements pagesList =  paginationElement
                 .getElementsByTag("a");
-        String lastElementText = pagesList.get(pagesList.size()-1).text();
+        String lastElementText = pagesList.get(pagesList.size()-2).text();
         return Integer.parseInt(lastElementText);
     }
 
