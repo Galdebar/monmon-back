@@ -32,7 +32,6 @@ public class ShoppingItemService {
         );
         return foundItems.stream()
                 .map(ShoppingItemEntity::getDTO)
-                .map(this::attatchDeal)
                 .collect(Collectors.toList());
     }
 
@@ -130,12 +129,5 @@ public class ShoppingItemService {
 
     private List<ShoppingItemEntity> getAllCurrentItems() {
         return itemRepo.findByShoppingList(listService.getCurrentList());
-    }
-
-    private ShoppingItemDTO attatchDeal(ShoppingItemDTO item){
-        item.setDeal(
-                dealFinder.getBestDeal(item.getItemName())
-        );
-        return item;
     }
 }
